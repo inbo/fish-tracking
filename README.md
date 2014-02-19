@@ -1,4 +1,5 @@
-eels-data-analysis
-==================
+# Fish tracking analysis
 
-Scripts for analyzing the data from our acoustic telemetry network for European eel
+## Description
+
+Scripts for analyzing and visualizing data from our fish tracking network.
