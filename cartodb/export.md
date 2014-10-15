@@ -3,6 +3,7 @@
 ## Export receiver data with Lambert x y coordinates
 
 1. Use the following query:
+
     ```SQL
     SELECT
         *,
@@ -11,4 +12,5 @@
     FROM fish_tracking_receivers
     ORDER BY cartodb_id
     ```
+
 2. In the header, click `options > Export...` and choose a format.
