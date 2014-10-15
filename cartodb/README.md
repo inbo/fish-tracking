@@ -1,4 +1,4 @@
-# Export manual
+# CartoDB documentation
 
 ## Export receiver data with Lambert x y coordinates
 
