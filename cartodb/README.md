@@ -37,5 +37,5 @@ SELECT
 FROM "fish-tracking".fish_tracking_test t
 LEFT JOIN lifewatch.fish_tracking_receivers r
 ON t.receiver = r.receiver_id
-WHERE transmitter = 'A69-1601-31902'
+WHERE transmitter = 'A69-1601-29929'
 ```
