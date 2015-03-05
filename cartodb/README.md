@@ -6,7 +6,7 @@
 SELECT
     transmitter,
     count(*)
-FROM "fish-tracking".fish_tracking_test
+FROM lifewatch.fish_tracking_export
 GROUP BY transmitter
 ORDER BY count DESC
 ```
@@ -14,15 +14,15 @@ ORDER BY count DESC
 ## Show tracking data for a single transmitter
 
 ```SQL
-SELECT
-    date_time,
-    transmitter,
+SELECT 
+    d.cartodb_id,
+    d.date_time,
     r.the_geom,
     r.the_geom_webmercator
-FROM "fish-tracking".fish_tracking_test t
+FROM lifewatch.fish_tracking_export d
 LEFT JOIN lifewatch.fish_tracking_receivers r
-ON t.receiver = r.receiver_id
-WHERE transmitter = 'A69-1601-29929'
+ON d.receiver = r.receiver_id
+WHERE d.transmitter = 'A69-1601-31855'
 ```
 
 ## Show catch locations
