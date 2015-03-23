@@ -1,4 +1,4 @@
 library("testthat")
-source("scripts/read_input.R")
+source("scripts/functions.R")
 test_dir("scripts/tests", reporter="Summary")
 

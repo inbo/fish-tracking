@@ -20,3 +20,14 @@ test_that("read_input can parse VLIZ detection files.", {
   expect_that(data[1, "Receiver.id"], equals("VR2W-123816"))
   expect_that(data[1, "Transmitter.id"], equals("A69-1601-14854"))
 })
+
+test_that("read_input can parse VUE export files.", {
+  example_vue_file = "example-files/VUE_export_20150226_head.csv"
+  header = c("Date.Time","Receiver.id","Receiver.Name","Transmitter.id")
+  data = read_input(example_vue_file)
+  expect_that(colnames(data), equals(header))
+  expect_that(length(data$Date.Time), equals(19))
+  expect_that(data[1, "Date.Time"], equals("1970-03-23 01:15:27"))
+  expect_that(data[1, "Receiver.id"], equals("VR2W-110783"))
+  expect_that(data[1, "Transmitter.id"], equals("A69-1601-19439"))
+})
