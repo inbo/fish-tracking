@@ -1,7 +1,6 @@
 library(plyr)
 source("scripts/functions.R")
-#dir = "~/Google Drive/LifeWatch INBO/Data management/Fish tracking/Raw data/"
-dir = "~/Projects/fish-tracking/data/example-files/"
+dir = ""
 outputfile = "fish_tracking.csv"
 
 
