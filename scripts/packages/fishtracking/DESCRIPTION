@@ -1,0 +1,12 @@
+Package: fishtracking
+Title: Manage fish tracking data from VEMCO telemetry
+Version: 0.1
+Authors: person("Bart", "Aelterman", email = "bart.aelterman@inbo.be")
+Description: This package will help you manage fish tracking telemetry data. It contains
+    a module to load data in a database, perform resendency search and other useful
+    techniques.
+Depends: R (>= 3.1.0)
+License: GPL
+LazyData: true
+Imports: testthat
+Suggests: testthat
