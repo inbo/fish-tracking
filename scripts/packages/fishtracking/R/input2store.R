@@ -16,6 +16,7 @@
 #' following columns: Date.Time, Receiver.id, Receiver.Name, Transmitter.id
 #' @examples
 #' read_input("VR2W_122340_20141010_1.csv")
+#' @export
 read_input <- function (filename) {
   data <- read.csv(filename, sep=",", stringsAsFactors=FALSE)
   if (length(colnames(data)) == 14) {
@@ -56,6 +57,7 @@ read_input <- function (filename) {
 #' with the columns Date.Time, Receiver.id, Receiver.Name, Transmitter.id
 #' @examples
 #' merge_files("/path/to/directory/")
+#' @export
 merge_files <- function (directory) {
   if (substr(directory, length(directory), length(directory)) != "/") {
     directory = paste(directory, "/", sep="")
@@ -81,6 +83,7 @@ merge_files <- function (directory) {
 #' @examples
 #' # should return c("2000-03-21 13:21:42", "1952-04-15 09:00:31", NA, NA)
 #' parse_date(c("2000-03-21 13:21:42", "15-04-1952 09:00:31", "03-31-2004 03:49:23", "31-02-2004 04:29:42"))
+#' @export
 parse_date <- function (dateStr) {
   # check format "yyyy-mm-dd hh:mm:ss"
   result1 = strptime(dateStr, "%Y-%m-%d %H:%M:%S")
@@ -98,6 +101,7 @@ parse_date <- function (dateStr) {
 #' 
 #' @param stations Vector containing station names
 #' @return Vector containing valid station names or NA's
+#' @export
 parse_station <- function(stations) {
 	result = grepl(".*-[0-9]*-[0-9]*", stations)
 	stations[!result] <- NA
@@ -112,6 +116,7 @@ parse_station <- function(stations) {
 #' @return TRUE if data is ok
 #' @examples
 #' validate_data(data)
+#' @export
 validate_data <- function(indata) {
   indata$Date.Time <- parse_date(indata$Date.Time)
   indata$Receiver.Name <- parse_station(indata$Receiver.Name)
@@ -139,6 +144,7 @@ validate_data <- function(indata) {
 #' @return Nothing
 #' @examples
 #' input2store("/path/to/input/directory/")
+#' @export
 input2store <- function(dbConnection, directory) {
   data <- merge_files(directory)
   validatedData <- validate_data(data)

@@ -4,7 +4,7 @@
 \alias{input2store}
 \title{Migrate input data to data store}
 \usage{
-input2store(directory)
+input2store(dbConnection, directory)
 }
 \arguments{
 \item{directory}{The directory containing the tracking data}
