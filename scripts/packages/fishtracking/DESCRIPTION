@@ -9,5 +9,8 @@ Description: This package will help you manage fish tracking telemetry data. It 
 Depends: R (>= 3.1.0)
 License: GPL
 LazyData: true
-Imports: testthat
-Suggests: testthat
+Imports: 
+  lubridate,
+  DBI
+Suggests: 
+  testthat

@@ -84,12 +84,13 @@ merge_files <- function (directory) {
 #' # should return c("2000-03-21 13:21:42", "1952-04-15 09:00:31", NA, NA)
 #' parse_date(c("2000-03-21 13:21:42", "15-04-1952 09:00:31", "03-31-2004 03:49:23", "31-02-2004 04:29:42"))
 #' @export
+#' @importFrom lubridate parse_date_time
 parse_date <- function (dateStr) {
-  # check format "yyyy-mm-dd hh:mm:ss"
-  result1 = strptime(dateStr, "%Y-%m-%d %H:%M:%S")
-   # check format "dd-mm-yyyy hh:mm:ss"
-  result2 = strptime(dateStr, "%d-%m-%Y %H:%M:%S")
-  result1[is.na(result1)] <- result2[is.na(result1)]
+  result1 <- parse_date_time(
+    dateStr, 
+    orders = c("Y-m-d H:M:S", "d-m-Y H:M:S"),
+    tz = ""
+  )
   return(as.character(result1))
 }
 
@@ -145,6 +146,7 @@ validate_data <- function(indata) {
 #' @examples
 #' input2store("/path/to/input/directory/")
 #' @export
+#' @importFrom DBI dbWriteTable
 input2store <- function(dbConnection, directory) {
   data <- merge_files(directory)
   validatedData <- validate_data(data)
