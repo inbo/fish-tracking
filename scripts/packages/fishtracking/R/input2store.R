@@ -139,7 +139,12 @@ validate_data <- function(indata) {
 #' @return Nothing
 #' @examples
 #' input2store("/path/to/input/directory/")
-input2store <- function(directory) {
+input2store <- function(dbConnection, directory) {
   data <- merge_files(directory)
   validatedData <- validate_data(data)
+  if (validatedData) {
+  	dbWriteTable(dbConnection, "detections", validatedData, overwrite=FALSE, append=TRUE)
+  } else {
+  	print("errors found during validation. Nothing written to database.")
+  }
 }

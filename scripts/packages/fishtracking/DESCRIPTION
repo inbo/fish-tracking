@@ -1,7 +1,8 @@
 Package: fishtracking
 Title: Manage fish tracking data from VEMCO telemetry
 Version: 0.1
-Authors: person("Bart", "Aelterman", email = "bart.aelterman@inbo.be")
+Author: Bart Aelterman
+Maintainer: Bart Aelterman <bart.aelterman@inbo.be>
 Description: This package will help you manage fish tracking telemetry data. It contains
     a module to load data in a database, perform resendency search and other useful
     techniques.
