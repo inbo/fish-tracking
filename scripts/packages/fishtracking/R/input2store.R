@@ -19,21 +19,21 @@
 #' @export
 read_input <- function (filename) {
   data <- read.csv(filename, sep=",", stringsAsFactors=FALSE)
-  if (length(colnames(data)) == 14) {
+  if (ncol(data) == 14) {
     # inbo format. Date header should be "Date.Time"
     if (colnames(data)[1] == "Date.Time") {
       outdata <- data[, c("Date.Time", "Receiver.Name", "Station.Name")]
       colnames(outdata) <- c("Date.Time", "Receiver.id", "Receiver.Name")
       outdata$Transmitter.id <- paste(data$Code.Space, data$ID, sep="-")
     }
-  } else if (length(colnames(data)) == 10) {
+  } else if (ncol(data) == 10) {
     # vliz format. Field 2 should be "Receiver"
     if (colnames(data)[2] == "Receiver") {
       colnames(data)[1] <- "Date.and.Time"
       outdata <- data[, c("Date.and.Time", "Receiver","Station.Name", "Transmitter")]
       colnames(outdata) <- c("Date.Time", "Receiver.id", "Receiver.Name", "Transmitter.id")
     }
-  } else if (length(colnames(data)) == 11) {
+  } else if (ncol(data) == 11) {
     # VUE export format. Field 1 should be "DateTimeUTC"
     if (colnames(data)[1] == "DateTimeUTC") {
       outdata <- data[, c("DateTimeUTC", "Receiver", "ReceiverCode", "Transmitter")]
@@ -59,12 +59,10 @@ read_input <- function (filename) {
 #' merge_files("/path/to/directory/")
 #' @export
 merge_files <- function (directory) {
-  if (substr(directory, length(directory), length(directory)) != "/") {
-    directory = paste(directory, "/", sep="")
-  }
-  csvfiles = Sys.glob(paste(directory, "*.csv", sep=""))
-  contents = lapply(csvfiles, read_input)
-  ldply(contents)
+  directory <- normalizePath(directory, winslash = "/", mustWork = TRUE)
+  csvfiles = Sys.glob(paste(directory, "/*.csv", sep=""))
+  contents <- lapply(csvfiles, read_input)
+  do.call(rbind, contents)
 }
 
 
@@ -121,16 +119,25 @@ parse_station <- function(stations) {
 validate_data <- function(indata) {
   indata$Date.Time <- parse_date(indata$Date.Time)
   indata$Receiver.Name <- parse_station(indata$Receiver.Name)
-  ok = TRUE
-  if (sum(is.na(indata$Date.Time)) > 0) {
-  	print(paste("invalid dates found at rows: ", paste(which(is.na(indata$Date.Time)), collapse=",")))
-  	ok = FALSE
+  if (anyNA(indata$Date.Time)) {
+  	stop(
+      "invalid dates found at rows: ", 
+      paste(
+        which(is.na(indata$Date.Time)), 
+        collapse=","
+      )
+    )
   }
-  if (sum(is.na(indata$Receiver.Name)) > 0) {
-  	print(paste("invalid receiver names found at rows: ", paste(which(is.na(indata$Receiver.Name)), collapse=",")))
-  	ok = FALSE
+  if (anyNA(indata$Receiver.Name)) {
+  	stop(
+      "invalid receiver names found at rows: ", 
+      paste(
+        which(is.na(indata$Receiver.Name)), 
+        collapse=","
+      )
+    )
   }
-  return(ok)
+  return(invisible(TRUE))
 }
 
 #================================
@@ -150,9 +157,5 @@ validate_data <- function(indata) {
 input2store <- function(dbConnection, directory) {
   data <- merge_files(directory)
   validatedData <- validate_data(data)
-  if (validatedData) {
-  	dbWriteTable(dbConnection, "detections", validatedData, overwrite=FALSE, append=TRUE)
-  } else {
-  	print("errors found during validation. Nothing written to database.")
-  }
+  dbWriteTable(dbConnection, "detections", validatedData, overwrite=FALSE, append=TRUE)
 }
