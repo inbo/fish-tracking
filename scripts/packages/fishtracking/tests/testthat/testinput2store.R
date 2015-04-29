@@ -62,12 +62,10 @@ test_that("validate_data will check whether all data meets the expectations. If 
 	
 	baddates = c("2014-01-01 08:00:00", "10-30-2013 08:30:13")
 	input_data$Date.Time <- baddates
-	result = validate_data(input_data)
-	expect_false(result)
+	expect_error(validate_data(input_data))
 	
 	badreceiverNames = c("VR2W-482942", "iso g 4920")
 	input_data$Date.Time = dates
 	input_data$Receiver.Name = badreceiverNames
-	result = validate_data(input_data)
-	expect_false(result)
+	expect_error(validate_data(input_data))
 })

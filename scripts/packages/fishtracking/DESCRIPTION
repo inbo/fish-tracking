@@ -1,5 +1,5 @@
 Package: fishtracking
-Title: Manage fish tracking data from VEMCO telemetry
+Title: Manage Fish Tracking Data From VEMCO Telemetry
 Version: 0.1
 Author: Bart Aelterman
 Maintainer: Bart Aelterman <bart.aelterman@inbo.be>
@@ -14,3 +14,4 @@ Imports:
   DBI
 Suggests: 
   testthat
+Encoding: utf-8

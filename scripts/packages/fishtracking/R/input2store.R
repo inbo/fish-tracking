@@ -82,13 +82,10 @@ merge_files <- function (directory) {
 #' # should return c("2000-03-21 13:21:42", "1952-04-15 09:00:31", NA, NA)
 #' parse_date(c("2000-03-21 13:21:42", "15-04-1952 09:00:31", "03-31-2004 03:49:23", "31-02-2004 04:29:42"))
 #' @export
-#' @importFrom lubridate parse_date_time
 parse_date <- function (dateStr) {
-  result1 <- parse_date_time(
-    dateStr, 
-    orders = c("Y-m-d H:M:S", "d-m-Y H:M:S"),
-    tz = ""
-  )
+  result1 <- strptime(dateStr, "%Y-%m-%d %H:%M:%S")
+  result2 <- strptime(dateStr, "%d-%m-%Y %H:%M:%S")
+  result1[is.na(result1)] <- result2[is.na(result1)]
   return(as.character(result1))
 }
 
@@ -114,7 +111,7 @@ parse_station <- function(stations) {
 #' @param indata A data frame containing tracking data
 #' @return TRUE if data is ok
 #' @examples
-#' validate_data(data)
+#' \dontrun{validate_data(data)}
 #' @export
 validate_data <- function(indata) {
   indata$Date.Time <- parse_date(indata$Date.Time)
