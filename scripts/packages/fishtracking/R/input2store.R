@@ -137,7 +137,7 @@ validate_data <- function(indata) {
       )
     )
   }
-  return(invisible(TRUE))
+  return(indata)
 }
 
 #================================

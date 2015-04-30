@@ -80,7 +80,7 @@ test_that("validate_data will check whether all data meets the expectations. If 
 		"Transmitter.id"=transmitters
 	)
 	result = validate_data(input_data)
-	expect_true(result)
+	expect_equal(nrow(result), 2)
 	
 	baddates = c("2014-01-01 08:00:00", "10-30-2013 08:30:13")
 	input_data$Date.Time <- baddates
