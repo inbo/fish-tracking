@@ -46,9 +46,18 @@ test_that("parse_date returns standard date format for known date formats and ot
   datetime2 = "4000-12-31 08:30:13" # years don't have a logic boundary
   datetime3 = "4000-13-31 08:30:14" # months should not be larger than 
   datetime4 = "4000-12-32 08:20:14" # days should not be larger than 31
-  datetime5= "01-02-2014 08:00:00" # should return "2014-02-01"
-  dates = c(datetime1, datetime2, datetime3, datetime4, datetime5)
-  expect_equal(parse_date(dates), c("2014-01-01 08:00:00", "4000-12-31 08:30:13", NA, NA, "2014-02-01 08:00:00"))
+  datetime5= "01-02-2014 08:00:00" # should return "2014-02-01 08:00:00"
+  datetime6= "05/11/2014 05:24" # should return "2014-11-05 05:24:00"
+  dates = c(datetime1, datetime2, datetime3, datetime4, datetime5, datetime6)
+  expect_equal(parse_date(dates),
+    c("2014-01-01 08:00:00",
+    	"4000-12-31 08:30:13",
+    	NA,
+    	NA,
+    	"2014-02-01 08:00:00",
+      "2014-11-05 05:24:00"
+    )
+  )
 })
 
 test_that("parse_station checks station names", {
@@ -64,7 +73,12 @@ test_that("validate_data will check whether all data meets the expectations. If 
 	receiverIds = c("VR2W-149332", "VR2W-29429")
 	receiverNames = c("bsa-42-3", "hb-2-4")
 	transmitters = c("A93-2993-29402", "A32-4294-29492")
-	input_data <- data.frame("Date.Time"=dates, "Receiver.id"=receiverIds, "Receiver.Name"=receiverNames, "Transmitter.id"=transmitters)
+	input_data <- data.frame(
+		"Date.Time"=dates,
+		"Receiver.id"=receiverIds,
+		"Receiver.Name"=receiverNames,
+		"Transmitter.id"=transmitters
+	)
 	result = validate_data(input_data)
 	expect_true(result)
 	

@@ -86,6 +86,8 @@ merge_files <- function (directory) {
 parse_date <- function (dateStr) {
   result1 <- strptime(dateStr, "%Y-%m-%d %H:%M:%S")
   result2 <- strptime(dateStr, "%d-%m-%Y %H:%M:%S")
+  result3 <- strptime(dateStr, "%d/%m/%Y %H:%M")
+  result2[is.na(result2)] <- result3[is.na(result2)]
   result1[is.na(result1)] <- result2[is.na(result1)]
   return(as.character(result1))
 }
@@ -155,5 +157,6 @@ validate_data <- function(indata) {
 input2store <- function(dbConnection, directory) {
   data <- merge_files(directory)
   validatedData <- validate_data(data)
-  dbWriteTable(dbConnection, "detections", validatedData, overwrite=FALSE, append=TRUE)
+  dbWriteTable(dbConnection, "detections", validatedData, overwrite=TRUE, append=TRUE)
+  return(validatedData)
 }
