@@ -1,35 +1,37 @@
 test_that("read_input can parse INBO detection files.", {
 	print(getwd())
-  example_inbo_file = "example-files/VR2W_122340_20141010_1.csv"
+  example_inbo_file = "example-files/VR2W_INBO_example.csv"
   header = c("Date.Time","Receiver.id","Receiver.Name","Transmitter.id")
   data = read_input(example_inbo_file)
-  record1 = c("2014-10-08 17:53:10","A69-1601-26451","VR2W-122340","")
   expect_equal(colnames(data), header)
-  expect_equal(length(data$Date.Time), 526)
-  expect_equal(data[1, "Date.Time"], "2014-10-08 17:53:10")
-  expect_equal(data[1, "Receiver.id"], "VR2W-122340")
-  expect_equal(data[1, "Transmitter.id"], "A69-1601-26451")
+  expect_equal(length(data$Date.Time), 20)
+  expect_equal(data[1, "Date.Time"], "05/11/2014 06:15")
+  expect_equal(data[1, "Receiver.id"], "VR2W-112296")
+	expect_equal(data[1, "Receiver.Name"], "Haven SA Braakman")
+  expect_equal(data[1, "Transmitter.id"], "A69-1601-33263")
 })
 
 test_that("read_input can parse VLIZ detection files.", {
-  example_vliz_file = "example-files/VR2W_123816_20141209_1.csv"
+  example_vliz_file = "example-files/VR2W_VLIZ_example.csv"
   header = c("Date.Time","Receiver.id","Receiver.Name","Transmitter.id")
   data = read_input(example_vliz_file)
   expect_equal(colnames(data), header)
-  expect_equal(length(data$Date.Time), 28)
-  expect_equal(data[1, "Date.Time"], "2014-11-16 09:35:56")
-  expect_equal(data[1, "Receiver.id"], "VR2W-123816")
-  expect_equal(data[1, "Transmitter.id"], "A69-1601-14854")
+  expect_equal(length(data$Date.Time), 20)
+  expect_equal(data[1, "Date.Time"], "2015-02-19 01:45:55")
+  expect_equal(data[1, "Receiver.id"], "VR2W-124071")
+  expect_equal(data[1, "Receiver.Name"], "Boei Iso 8s 12A")
+  expect_equal(data[1, "Transmitter.id"], "A69-1601-14872")
 })
 
 test_that("read_input can parse VUE export files.", {
-  example_vue_file = "example-files/VUE_export_20150226_head.csv"
+  example_vue_file = "example-files/VUE_export_example.csv"
   header = c("Date.Time","Receiver.id","Receiver.Name","Transmitter.id")
   data = read_input(example_vue_file)
   expect_equal(colnames(data), header)
-  expect_equal(length(data$Date.Time), 19)
+  expect_equal(length(data$Date.Time), 20)
   expect_equal(data[1, "Date.Time"], "1970-03-23 01:15:27")
   expect_equal(data[1, "Receiver.id"], "VR2W-110783")
+  expect_equal(data[1, "Receiver.Name"], "bpns-6-1")
   expect_equal(data[1, "Transmitter.id"], "A69-1601-19439")
 })
 

@@ -15,7 +15,7 @@
 #' @return The tracking data from the input file as a data frame with the
 #' following columns: Date.Time, Receiver.id, Receiver.Name, Transmitter.id
 #' @examples
-#' read_input("VR2W_122340_20141010_1.csv")
+#' \dontrun{ read_input("VR2W_INBO_example.csv")}
 #' @export
 read_input <- function (filename) {
   data <- read.csv(filename, sep=",", stringsAsFactors=FALSE)
@@ -26,17 +26,18 @@ read_input <- function (filename) {
       colnames(outdata) <- c("Date.Time", "Receiver.id", "Receiver.Name")
       outdata$Transmitter.id <- paste(data$Code.Space, data$ID, sep="-")
     }
-  } else if (ncol(data) == 10) {
-    # vliz format. Field 2 should be "Receiver"
-    if (colnames(data)[2] == "Receiver") {
-      colnames(data)[1] <- "Date.and.Time"
-      outdata <- data[, c("Date.and.Time", "Receiver","Station.Name", "Transmitter")]
-      colnames(outdata) <- c("Date.Time", "Receiver.id", "Receiver.Name", "Transmitter.id")
-    }
   } else if (ncol(data) == 11) {
-    # VUE export format. Field 1 should be "DateTimeUTC"
-    if (colnames(data)[1] == "DateTimeUTC") {
-      outdata <- data[, c("DateTimeUTC", "Receiver", "ReceiverCode", "Transmitter")]
+    if (colnames(data)[1] == "Date.UTC.") {
+    	# vliz format. Field 1 should be Date.UTC.
+      outdata <- data[, c("Receiver","StationName", "Transmitter")]
+      outdata$Date.Time <- paste(data$Date.UTC., data$Time.UTC., sep=" ") # paste date and time
+      outdata <- outdata[, c("Date.Time", "Receiver", "StationName", "Transmitter")] # swap columns
+      colnames(outdata) <- c("Date.Time", "Receiver.id", "Receiver.Name", "Transmitter.id") # set column names
+    }
+  } else if (ncol(data) == 7) {
+    if (colnames(data)[1] == "date_time_utc") {
+    	# VUE export format. Field 1 should be "date_time_utc"
+      outdata <- data[, c("date_time_utc", "receiver_id", "station_name", "transmitter_id")]
       colnames(outdata) <- c("Date.Time", "Receiver.id", "Receiver.Name", "Transmitter.id")
     }
   }
@@ -56,7 +57,7 @@ read_input <- function (filename) {
 #' @return All tracking data of the different input files as one data frame
 #' with the columns Date.Time, Receiver.id, Receiver.Name, Transmitter.id
 #' @examples
-#' merge_files("/path/to/directory/")
+#' \dontrun {merge_files("/path/to/directory/")}
 #' @export
 merge_files <- function (directory) {
   directory <- normalizePath(directory, winslash = "/", mustWork = TRUE)
@@ -148,7 +149,7 @@ validate_data <- function(indata) {
 #' @param directory The directory containing the tracking data
 #' @return Nothing
 #' @examples
-#' input2store("/path/to/input/directory/")
+#' \dontrun{input2store(dbConnection, "/path/to/input/directory/")}
 #' @export
 #' @importFrom DBI dbWriteTable
 input2store <- function(dbConnection, directory) {
