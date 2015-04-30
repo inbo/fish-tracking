@@ -9,6 +9,7 @@ Description: Will help you manage fish tracking telemetry data. It contains
     techniques.
 Depends: R (>= 3.2.0)
 License: GPL
+Encoding: UTF-8
 LazyData: true
 Imports: 
   lubridate,
