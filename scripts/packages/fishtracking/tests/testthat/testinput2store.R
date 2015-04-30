@@ -35,6 +35,12 @@ test_that("read_input can parse VUE export files.", {
   expect_equal(data[1, "Transmitter.id"], "A69-1601-19439")
 })
 
+test_that("merge files will merge all file in an input directory", {
+	dir = "example-files/"
+	data = merge_files(dir)
+	expect_equal(nrow(data), 60)
+})
+
 test_that("parse_date returns standard date format for known date formats and otherwise NA", {
   datetime1 = "2014-01-01 08:00:00"
   datetime2 = "4000-12-31 08:30:13" # years don't have a logic boundary
