@@ -6,14 +6,15 @@ This file documents the different formats that can be obtained from the hardware
 
 | field name | description | data type | example |
 | ---------- | ----------- | --------- | ------- |
-| Date and Time (UTC) | date and time of the detection | date time as 'yyyy-mm-dd hh:mm:ss' | 2014-11-16 09:35:56 |
+| Date(UTC) | date of the detection | date as 'yyyy-mm-dd' | 2014-11-16 |
+| Time(UTC) | time of the detection | time as 'hh:mm:ss' | 09:35:56 |
 | Receiver | id of the receiver. only 1 different value per file | text | VR2W-123816 |
 | Transmitter | id of the detected transmitter | text | A69-1601-14854 |
-| Transmitter Name | name of the detected transmitter |  |  |
-| Transmitter Serial |  |  |  |
-| Sensor Value |  |  |  |
-| Sensor Unit |  |  |  |
-| Station Name | name of the receiver | text | WN-2 |
+| TransmitterName | name of the detected transmitter |  |  |
+| TransmitterSerial |  |  |  |
+| SensorValue |  |  |  |
+| SensorUnit |  |  |  |
+| StationName | name of the location | text | WN-2 |
 | Latitude | position of the receiver (lat) |  |  |
 | Longitude | position of the receiver (long) |  |  |
 
