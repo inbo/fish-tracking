@@ -11,7 +11,7 @@ read_input(filename)
 }
 \value{
 The tracking data from the input file as a data frame with the
-following columns: Date.Time, Receiver.id, Receiver.Name, Transmitter.id
+following columns: Date.Time, Receiver.id, Station.Name, Transmitter.id
 }
 \description{
 Read a file containing tracking data and convert it to a

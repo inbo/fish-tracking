@@ -11,13 +11,13 @@ merge_files(directory)
 }
 \value{
 All tracking data of the different input files as one data frame
-with the columns Date.Time, Receiver.id, Receiver.Name, Transmitter.id
+with the columns Date.Time, Receiver.id, Station.Name, Transmitter.id
 }
 \description{
 Merge all input files containing tracking data that are located in a single
 directory
 }
 \examples{
-\dontrun {merge_files("/path/to/directory/")}
+\dontrun{merge_files("/path/to/directory/")}
 }
 

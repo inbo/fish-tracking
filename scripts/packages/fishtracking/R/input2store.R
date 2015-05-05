@@ -13,7 +13,7 @@
 #' 
 #' @param filename The name of the input file to read.
 #' @return The tracking data from the input file as a data frame with the
-#' following columns: Date.Time, Receiver.id, Receiver.Name, Transmitter.id
+#' following columns: Date.Time, Receiver.id, Station.Name, Transmitter.id
 #' @examples
 #' \dontrun{ read_input("VR2W_INBO_example.csv")}
 #' @export
@@ -23,7 +23,7 @@ read_input <- function (filename) {
     # inbo format. Date header should be "Date.Time"
     if (colnames(data)[1] == "Date.Time") {
       outdata <- data[, c("Date.Time", "Receiver.Name", "Station.Name")]
-      colnames(outdata) <- c("Date.Time", "Receiver.id", "Receiver.Name")
+      colnames(outdata) <- c("Date.Time", "Receiver.id", "Station.Name")
       outdata$Transmitter.id <- paste(data$Code.Space, data$ID, sep="-")
     }
   } else if (ncol(data) == 11) {
@@ -32,13 +32,13 @@ read_input <- function (filename) {
       outdata <- data[, c("Receiver","StationName", "Transmitter")]
       outdata$Date.Time <- paste(data$Date.UTC., data$Time.UTC., sep=" ") # paste date and time
       outdata <- outdata[, c("Date.Time", "Receiver", "StationName", "Transmitter")] # swap columns
-      colnames(outdata) <- c("Date.Time", "Receiver.id", "Receiver.Name", "Transmitter.id") # set column names
+      colnames(outdata) <- c("Date.Time", "Receiver.id", "Station.Name", "Transmitter.id") # set column names
     }
   } else if (ncol(data) == 7) {
     if (colnames(data)[1] == "date_time_utc") {
     	# VUE export format. Field 1 should be "date_time_utc"
       outdata <- data[, c("date_time_utc", "receiver_id", "station_name", "transmitter_id")]
-      colnames(outdata) <- c("Date.Time", "Receiver.id", "Receiver.Name", "Transmitter.id")
+      colnames(outdata) <- c("Date.Time", "Receiver.id", "Station.Name", "Transmitter.id")
     }
   }
   return(outdata)
@@ -55,9 +55,9 @@ read_input <- function (filename) {
 #' 
 #' @param directory The directory containing all tracking data input files
 #' @return All tracking data of the different input files as one data frame
-#' with the columns Date.Time, Receiver.id, Receiver.Name, Transmitter.id
+#' with the columns Date.Time, Receiver.id, Station.Name, Transmitter.id
 #' @examples
-#' \dontrun {merge_files("/path/to/directory/")}
+#' \dontrun{merge_files("/path/to/directory/")}
 #' @export
 merge_files <- function (directory) {
   directory <- normalizePath(directory, winslash = "/", mustWork = TRUE)
@@ -118,7 +118,7 @@ parse_station <- function(stations) {
 #' @export
 validate_data <- function(indata) {
   indata$Date.Time <- parse_date(indata$Date.Time)
-  indata$Receiver.Name <- parse_station(indata$Receiver.Name)
+  indata$Station.Name <- parse_station(indata$Station.Name)
   if (anyNA(indata$Date.Time)) {
   	stop(
       "invalid dates found at rows: ", 
@@ -128,11 +128,11 @@ validate_data <- function(indata) {
       )
     )
   }
-  if (anyNA(indata$Receiver.Name)) {
+  if (anyNA(indata$Station.Name)) {
   	stop(
-      "invalid receiver names found at rows: ", 
+      "invalid station names found at rows: ", 
       paste(
-        which(is.na(indata$Receiver.Name)), 
+        which(is.na(indata$Station.Name)), 
         collapse=","
       )
     )
@@ -157,6 +157,6 @@ validate_data <- function(indata) {
 input2store <- function(dbConnection, directory) {
   data <- merge_files(directory)
   validatedData <- validate_data(data)
-  dbWriteTable(dbConnection, "detections", validatedData, overwrite=TRUE, append=TRUE)
+  dbWriteTable(dbConnection, "detections", validatedData, overwrite=TRUE, append=FALSE)
   return(validatedData)
 }

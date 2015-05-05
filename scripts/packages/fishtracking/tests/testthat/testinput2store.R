@@ -1,37 +1,37 @@
 test_that("read_input can parse INBO detection files.", {
 	print(getwd())
   example_inbo_file = "example-files/VR2W_INBO_example.csv"
-  header = c("Date.Time","Receiver.id","Receiver.Name","Transmitter.id")
+  header = c("Date.Time","Receiver.id","Station.Name","Transmitter.id")
   data = read_input(example_inbo_file)
   expect_equal(colnames(data), header)
   expect_equal(length(data$Date.Time), 20)
   expect_equal(data[1, "Date.Time"], "05/11/2014 06:15")
   expect_equal(data[1, "Receiver.id"], "VR2W-112296")
-	expect_equal(data[1, "Receiver.Name"], "Haven SA Braakman")
+	expect_equal(data[1, "Station.Name"], "Haven SA Braakman")
   expect_equal(data[1, "Transmitter.id"], "A69-1601-33263")
 })
 
 test_that("read_input can parse VLIZ detection files.", {
   example_vliz_file = "example-files/VR2W_VLIZ_example.csv"
-  header = c("Date.Time","Receiver.id","Receiver.Name","Transmitter.id")
+  header = c("Date.Time","Receiver.id","Station.Name","Transmitter.id")
   data = read_input(example_vliz_file)
   expect_equal(colnames(data), header)
   expect_equal(length(data$Date.Time), 20)
   expect_equal(data[1, "Date.Time"], "2015-02-19 01:45:55")
   expect_equal(data[1, "Receiver.id"], "VR2W-124071")
-  expect_equal(data[1, "Receiver.Name"], "Boei Iso 8s 12A")
+  expect_equal(data[1, "Station.Name"], "Boei Iso 8s 12A")
   expect_equal(data[1, "Transmitter.id"], "A69-1601-14872")
 })
 
 test_that("read_input can parse VUE export files.", {
   example_vue_file = "example-files/VUE_export_example.csv"
-  header = c("Date.Time","Receiver.id","Receiver.Name","Transmitter.id")
+  header = c("Date.Time","Receiver.id","Station.Name","Transmitter.id")
   data = read_input(example_vue_file)
   expect_equal(colnames(data), header)
   expect_equal(length(data$Date.Time), 20)
   expect_equal(data[1, "Date.Time"], "1970-03-23 01:15:27")
   expect_equal(data[1, "Receiver.id"], "VR2W-110783")
-  expect_equal(data[1, "Receiver.Name"], "bpns-6-1")
+  expect_equal(data[1, "Station.Name"], "bpns-6-1")
   expect_equal(data[1, "Transmitter.id"], "A69-1601-19439")
 })
 
@@ -71,12 +71,12 @@ test_that("parse_station checks station names", {
 test_that("validate_data will check whether all data meets the expectations. If not, it fails", {
 	dates = c("2014-01-01 08:00:00", "30-10-2010 08:30:13")
 	receiverIds = c("VR2W-149332", "VR2W-29429")
-	receiverNames = c("bsa-42-3", "hb-2-4")
+	stationNames = c("bsa-42-3", "hb-2-4")
 	transmitters = c("A93-2993-29402", "A32-4294-29492")
 	input_data <- data.frame(
 		"Date.Time"=dates,
 		"Receiver.id"=receiverIds,
-		"Receiver.Name"=receiverNames,
+		"Station.Name"=stationNames,
 		"Transmitter.id"=transmitters
 	)
 	result = validate_data(input_data)
@@ -86,8 +86,8 @@ test_that("validate_data will check whether all data meets the expectations. If 
 	input_data$Date.Time <- baddates
 	expect_error(validate_data(input_data))
 	
-	badreceiverNames = c("VR2W-482942", "iso g 4920")
+	badstationNames = c("VR2W-482942", "iso g 4920")
 	input_data$Date.Time = dates
-	input_data$Receiver.Name = badreceiverNames
+	input_data$Station.Name = badstationNames
 	expect_error(validate_data(input_data))
 })
