@@ -89,7 +89,7 @@ parse_date <- function (dateStr) {
   result3 <- strptime(dateStr, "%d/%m/%Y %H:%M")
   result2[is.na(result2)] <- result3[is.na(result2)]
   result1[is.na(result1)] <- result2[is.na(result1)]
-  return(as.character(result1))
+  return(result1)
 }
 
 #' Parse stations names from input
@@ -148,6 +148,7 @@ validate_data <- function(indata) {
 #' @description Read all the tracking data in a directory, validate it and
 #' write it to the data store.
 #' 
+#' @param dbConnection a DBI database connection
 #' @param directory The directory containing the tracking data
 #' @return Nothing
 #' @examples
