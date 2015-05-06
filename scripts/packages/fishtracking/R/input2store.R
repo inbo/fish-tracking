@@ -84,9 +84,9 @@ merge_files <- function (directory) {
 #' parse_date(c("2000-03-21 13:21:42", "15-04-1952 09:00:31", "03-31-2004 03:49:23", "31-02-2004 04:29:42"))
 #' @export
 parse_date <- function (dateStr) {
-  result1 <- strptime(dateStr, "%Y-%m-%d %H:%M:%S")
-  result2 <- strptime(dateStr, "%d-%m-%Y %H:%M:%S")
-  result3 <- strptime(dateStr, "%d/%m/%Y %H:%M")
+  result1 <- as.POSIXct(dateStr, tz="UTC", "%Y-%m-%d %H:%M:%S")
+  result2 <- as.POSIXct(dateStr, tz="UTC", "%d-%m-%Y %H:%M:%S")
+  result3 <- as.POSIXct(dateStr, tz="UTC", "%d/%m/%Y %H:%M")
   result2[is.na(result2)] <- result3[is.na(result2)]
   result1[is.na(result1)] <- result2[is.na(result1)]
   return(result1)
@@ -118,7 +118,7 @@ parse_station <- function(stations) {
 #' @export
 validate_data <- function(indata) {
   indata$Date.Time <- parse_date(indata$Date.Time)
-  #indata$Station.Name <- parse_station(indata$Station.Name)
+  indata$Station.Name <- parse_station(indata$Station.Name)
   if (anyNA(indata$Date.Time)) {
   	stop(
       "invalid dates found at rows: ", 

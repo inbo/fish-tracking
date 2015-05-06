@@ -49,14 +49,14 @@ test_that("parse_date returns standard date format for known date formats and ot
   datetime5= "01-02-2014 08:00:00" # should return "2014-02-01 08:00:00"
   datetime6= "05/11/2014 05:24" # should return "2014-11-05 05:24:00"
   dates = c(datetime1, datetime2, datetime3, datetime4, datetime5, datetime6)
-  expected_dates <- strptime(
+  expected_dates <- as.POSIXct(
     c("2014-01-01 08:00:00",
     	"4000-12-31 08:30:13",
     	NA,
     	NA,
     	"2014-02-01 08:00:00",
       "2014-11-05 05:24:00"
-    ), "%Y-%m-%d %H:%M:%S"
+    ), tz="UTC", "%Y-%m-%d %H:%M:%S"
   )
   expect_equal(parse_date(dates), expected_dates)
 })
