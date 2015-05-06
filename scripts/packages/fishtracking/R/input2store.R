@@ -118,7 +118,7 @@ parse_station <- function(stations) {
 #' @export
 validate_data <- function(indata) {
   indata$Date.Time <- parse_date(indata$Date.Time)
-  indata$Station.Name <- parse_station(indata$Station.Name)
+  #indata$Station.Name <- parse_station(indata$Station.Name)
   if (anyNA(indata$Date.Time)) {
   	stop(
       "invalid dates found at rows: ", 

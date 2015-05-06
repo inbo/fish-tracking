@@ -7,6 +7,8 @@
 input2store(dbConnection, directory)
 }
 \arguments{
+\item{dbConnection}{a DBI database connection}
+
 \item{directory}{The directory containing the tracking data}
 }
 \value{
