@@ -102,7 +102,7 @@ parse_date <- function (dateStr) {
 #' @return Vector containing valid station names or NA's
 #' @export
 parse_station <- function(stations) {
-	result = grepl(".*-[0-9]*-[0-9]*", stations)
+	result = grepl("^[a-zA-Z]*-[a-zA-Z0-9]*$", stations, perl=TRUE)
 	stations[!result] <- NA
 	return(stations)
 }
