@@ -1,6 +1,6 @@
 import pandas as pd
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from time import strptime
 
 
@@ -106,4 +106,26 @@ class Aggregator():
                 'receiver': dataframe['receiver_id']
             }
         )
+        return outdf
+
+
+    def aggregate(self, indata, minutes_delta=30):
+        sorted_data = indata.sort(['timestamp'])
+        sorted_data['interval_id'] = (sorted_data['timestamp'].diff() >= timedelta(minutes=minutes_delta)).cumsum()
+        grouped = sorted_data.groupby(['interval_id', 'transmitter', 'stationname'])
+        starts = []
+        stops = []
+        transmitters = []
+        stationnames = []
+        for name, group in grouped:
+            starts.append(group['timestamp'].min())
+            stops.append(group['timestamp'].max())
+            transmitters.append(name[1])
+            stationnames.append(name[2])
+        outdf = pd.DataFrame(data={
+            'start': starts,
+            'stop': stops,
+            'transmitter': transmitters,
+            'stationname': stationnames
+        })
         return outdf
