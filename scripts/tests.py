@@ -2,7 +2,10 @@ import unittest
 import os
 import pandas as pd
 from datetime import datetime
-from fish_tracking import Aggregator
+from boto.dynamodb2.table import Table
+from boto.dynamodb2.exceptions import ValidationException
+from fish_tracking import Aggregator, DataStore
+
 
 # Locate test files
 VLIZ_DETECTIONS = os.path.dirname(os.path.realpath(__file__)) + '/example-files/VR2W_VLIZ_example.csv'
@@ -163,8 +166,8 @@ class TestAggregator(unittest.TestCase):
         self.assertEquals(len(result.index), 2)
         record1 = list(result.iloc[0])
         record2 = list(result.iloc[1])
-        self.assertEquals(record1, [datetime(2015, 1, 1, 10, 30, 10), 'vr1', datetime(2015, 1, 1, 10, 50, 00), 'id1'])
-        self.assertEquals(record2, [datetime(2015, 1, 1, 11, 30, 00), 'vr1', datetime(2015, 1, 1, 11, 30, 00), 'id1'])
+        self.assertEquals(record1, ['2015-01-01 10:30:10', 'vr1', '2015-01-01 10:50:00', 'id1'])
+        self.assertEquals(record2, ['2015-01-01 11:30:00', 'vr1', '2015-01-01 11:30:00', 'id1'])
         # When minutes_delta=10, three resulting records are given because the delta between
         # datetime(2015, 1, 1, 10, 40, 00) and datetime(2015, 1, 1, 10, 50, 00) equals 10 minutes.
         result = self.agg.aggregate(indata, minutes_delta=10)
@@ -194,7 +197,199 @@ class TestAggregator(unittest.TestCase):
         record2 = list(result.iloc[1])
         record3 = list(result.iloc[2])
         record4 = list(result.iloc[3])
-        self.assertEquals(record1, [datetime(2015, 1, 1, 10, 30, 10), 'vr1', datetime(2015, 1, 1, 10, 30, 10), 'id1'])
-        self.assertEquals(record2, [datetime(2015, 1, 1, 10, 40, 00), 'vr2', datetime(2015, 1, 1, 10, 40, 00), 'id1'])
-        self.assertEquals(record3, [datetime(2015, 1, 1, 10, 50, 00), 'vr1', datetime(2015, 1, 1, 10, 50, 00), 'id2'])
-        self.assertEquals(record4, [datetime(2015, 1, 1, 11, 30, 00), 'vr1', datetime(2015, 1, 1, 11, 30, 00), 'id1'])
+        self.assertEquals(record1, ['2015-01-01 10:30:10', 'vr1', '2015-01-01 10:30:10', 'id1'])
+        self.assertEquals(record2, ['2015-01-01 10:40:00', 'vr2', '2015-01-01 10:40:00', 'id1'])
+        self.assertEquals(record3, ['2015-01-01 10:50:00', 'vr1', '2015-01-01 10:50:00', 'id2'])
+        self.assertEquals(record4, ['2015-01-01 11:30:00', 'vr1', '2015-01-01 11:30:00', 'id1'])
+
+    def test_aggregate_diff_locations(self):
+        """
+        Compare this test with test_aggregate_only_time. If we add a record that shows that we detected id1 at another
+        location, at time x, where x > y and x < z, then the aggregator will not aggregate y and z.
+        """
+        indata = pd.DataFrame(
+            data={
+                'timestamp': [
+                    datetime(2015, 1, 1, 10, 30, 10),
+                    datetime(2015, 1, 1, 10, 50, 00),
+                    datetime(2015, 1, 1, 11, 30, 00),
+                    datetime(2015, 1, 1, 10, 40, 00),
+                    datetime(2015, 1, 1, 10, 30, 40)
+                ],
+                'transmitter': ['id1', 'id1', 'id1', 'id1', 'id1'],
+                'stationname': ['vr1', 'vr1', 'vr1', 'vr1', 'vr2']
+            }
+        )
+        result = self.agg.aggregate(indata, minutes_delta=30)
+        self.assertEquals(len(result.index), 4)
+        record1 = list(result.iloc[0])
+        record2 = list(result.iloc[1])
+        record3 = list(result.iloc[2])
+        record4 = list(result.iloc[3])
+        self.assertEquals(record1, ['2015-01-01 10:30:10', 'vr1', '2015-01-01 10:30:10', 'id1'])
+        self.assertEquals(record2, ['2015-01-01 10:30:40', 'vr2', '2015-01-01 10:30:40', 'id1'])
+        self.assertEquals(record3, ['2015-01-01 10:40:00', 'vr1', '2015-01-01 10:50:00', 'id1'])
+        self.assertEquals(record4, ['2015-01-01 11:30:00', 'vr1', '2015-01-01 11:30:00', 'id1'])
+
+
+class TestDataStore(unittest.TestCase):
+    def tearDown(self):
+        try:
+            results = self.intervals_table.query_2(transmitter__eq='transm1')
+            for r in results:
+                r.delete()
+        except RuntimeError, e:
+            print e.message
+
+    def setUp(self):
+        self.ds = DataStore(mode='local')
+        self.conn = self.ds._connectLocal()
+        self.intervals_table = Table('intervals', connection=self.conn)
+
+    def test_add_record(self):
+        interval = {
+            'start': '1435129182000',
+            'stop': '1435129642000',
+            'transmitter': 'transm1',
+            'stationname': 'station1'
+        }
+        self.assertEquals(self.intervals_table.query_count(transmitter__eq='transm1'), 0)
+        self.ds.saveIntervals([interval])
+        self.assertEquals(self.intervals_table.query_count(transmitter__eq='transm1'), 1)
+
+    def test_fail_add_record(self):
+        interval = {
+            'start': '2015-01-01 10:23:00',
+            'stop': '2015-01-01 10:23:00'
+        }
+        with self.assertRaises(ValidationException):
+            self.ds.saveIntervals([interval])
+
+    def test_get_by_transmitter(self):
+        interval = {
+            'start': '1435129182000',
+            'stop': '1435129642000',
+            'transmitter': 'transm1',
+            'stationname': 'station1'
+        }
+        self.assertEquals(self.intervals_table.query_count(transmitter__eq='transm1'), 0)
+        self.ds.saveIntervals([interval])
+        results = self.ds.getTransmitterData('transm1')
+        expected_results = [interval]
+        for i in range(len(results)):
+            self.assertDictEqual(results[i], expected_results[i])
+
+
+    def test_compare_elements(self):
+        item1 = {'start': 20, 'stop': 25, 'stationname': '1'}
+        item2 = {'start': 30, 'stop': 35, 'stationname': '1'}
+        diffvalue = 5
+        result = self.ds._compare_elements(item1, item2, diffvalue)
+        self.assertTrue(result, 'compare elements did not return True')
+        item1['stationname'] = '4'
+        result = self.ds._compare_elements(item1, item2, diffvalue)
+        self.assertFalse(result, 'compare elements did not return False')
+        diffvalue = 4
+        result = self.ds._compare_elements(item1, item2, diffvalue)
+        self.assertFalse(result, 'compare elements did not return False')
+
+
+    def test_merge_elements(self):
+        item1 = {'start': 20, 'stop': 25}
+        item2 = {'start': 30, 'stop': 35}
+        result = self.ds._merge_elements(item1, item2)
+        expected = {'start': 20, 'stop': 35}
+        self.assertEquals(result['start'], expected['start'])
+        self.assertEquals(result['stop'], expected['stop'])
+
+
+    def test_merge_sorted_elements_list(self):
+        new_items = [
+            {'start': 20, 'stop': 25, 'stationname': 'st1'},
+            {'start': 50, 'stop': 52, 'stationname': 'st1'},
+            {'start': 56, 'stop': 57, 'stationname': 'st1'},
+            {'start': 60, 'stop': 61, 'stationname': 'st1'},
+            {'start': 80, 'stop': 83, 'stationname': 'st4'}
+        ]
+        existing_items = [
+            {'start': 10, 'stop': 19, 'stationname': 'st1'},
+            {'start': 48, 'stop': 49, 'stationname': 'st1'},
+            {'start': 53, 'stop': 55, 'stationname': 'st1'},
+            {'start': 62, 'stop': 62, 'stationname': 'st2'},
+            {'start': 63, 'stop': 66, 'stationname': 'st1'},
+            {'start': 84, 'stop': 88, 'stationname': 'st4'}
+        ]
+        expected_new_items = [
+            {'start': 10, 'stop': 25, 'stationname': 'st1'}, # merge from list1[0] and list2[0]
+            {'start': 48, 'stop': 57, 'stationname': 'st1'}, # merge from list1[1], list2[1], list2[2] and list1[2]
+            {'start': 60, 'stop': 61, 'stationname': 'st1'}, # new from list1
+            {'start': 80, 'stop': 88, 'stationname': 'st4'} # merge from list1[4] and list2[5]
+        ]
+        expected_deleted_items = [0, 1, 2, 5]
+        results = self.ds._mergeSortedElementLists(new_items, existing_items, 2)
+        for i in range(len(expected_new_items)):
+            self.assertDictEqual(results['new_elements'][i], expected_new_items[i])
+        self.assertEquals(results['elements_to_delete'], expected_deleted_items)
+
+    def test_merge_sorted_elements_list_stop1(self):
+        # test alternative stop scenarios
+        # 1. list 1 has several elements at the end that come after the last element of list 2.
+        #     These should all be added to the output.
+        new_items = [
+            {'start': 20, 'stop': 25, 'stationname': 'st1'},
+            {'start': 50, 'stop': 52, 'stationname': 'st1'},
+            {'start': 56, 'stop': 57, 'stationname': 'st1'},
+            {'start': 60, 'stop': 61, 'stationname': 'st1'},
+            {'start': 80, 'stop': 83, 'stationname': 'st4'},
+            {'start': 90, 'stop': 92, 'stationname': 'st1'},
+            {'start': 95, 'stop': 99, 'stationname': 'st1'},
+            {'start': 104, 'stop': 105, 'stationname': 'st1'}
+        ]
+        existing_items = [
+            {'start': 10, 'stop': 19, 'stationname': 'st1'},
+            {'start': 48, 'stop': 49, 'stationname': 'st1'},
+            {'start': 53, 'stop': 55, 'stationname': 'st1'},
+            {'start': 62, 'stop': 62, 'stationname': 'st2'},
+            {'start': 63, 'stop': 66, 'stationname': 'st1'},
+            {'start': 84, 'stop': 88, 'stationname': 'st4'}
+        ]
+        expected_new_items = [
+            {'start': 10, 'stop': 25, 'stationname': 'st1'},
+            {'start': 48, 'stop': 57, 'stationname': 'st1'},
+            {'start': 60, 'stop': 61, 'stationname': 'st1'},
+            {'start': 80, 'stop': 88, 'stationname': 'st4'},
+            {'start': 90, 'stop': 92, 'stationname': 'st1'},
+            {'start': 95, 'stop': 99, 'stationname': 'st1'},
+            {'start': 104, 'stop': 105, 'stationname': 'st1'}
+        ]
+        expected_deleted_items = [0, 1, 2, 5]
+        results = self.ds._mergeSortedElementLists(new_items, existing_items, 2)
+        for i in range(len(expected_new_items)):
+            self.assertDictEqual(results['new_elements'][i], expected_new_items[i])
+        self.assertEquals(results['elements_to_delete'], expected_deleted_items)
+
+    def test_merge_sorted_elements_list_stop2(self):
+        # test alternative stop scenarios
+        # 2. list 2 has several elements at the end that come after the last element of list 1.
+        #     None of these should be added to the output.
+        new_items = [
+            {'start': 20, 'stop': 25, 'stationname': 'st1'},
+            {'start': 50, 'stop': 52, 'stationname': 'st1'}
+        ]
+        existing_items = [
+            {'start': 10, 'stop': 19, 'stationname': 'st1'},
+            {'start': 48, 'stop': 49, 'stationname': 'st1'},
+            {'start': 53, 'stop': 55, 'stationname': 'st1'},
+            {'start': 62, 'stop': 62, 'stationname': 'st2'},
+            {'start': 63, 'stop': 66, 'stationname': 'st1'},
+            {'start': 84, 'stop': 88, 'stationname': 'st4'}
+        ]
+        expected_new_items = [
+            {'start': 10, 'stop': 25, 'stationname': 'st1'}, # merge from list1[0] and list2[0]
+            {'start': 48, 'stop': 55, 'stationname': 'st1'}, # merge from list1[1], list2[1] and list2[2]
+        ]
+        expected_deleted_items = [0, 1, 2]
+        results = self.ds._mergeSortedElementLists(new_items, existing_items, 2)
+        for i in range(len(expected_new_items)):
+            self.assertDictEqual(results['new_elements'][i], expected_new_items[i])
+        self.assertEquals(results['elements_to_delete'], expected_deleted_items)
