@@ -91,7 +91,11 @@ def add():
             filename = secure_filename(f.filename)
             full_filename = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             f.save(full_filename)
-            detections = g.agg.parse_detections(full_filename)
+            try:
+                detections = g.agg.parse_detections(full_filename)
+            except Exception, e:
+                print e.message
+                return 'Could not parse uploaded file.'
             intervals_df = g.agg.aggregate(detections, minutes_delta=app.config['MINUTES_DELTA'])
             intervals = intervals_df.T
             print intervals
