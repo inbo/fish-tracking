@@ -173,20 +173,27 @@ class DataStore():
         and el1['stationname'] == el2['stationname']
 
 
-    def _mergeSortedElementLists(self, list1, list2, diffvalue):
+    def _mergeSortedElementLists(self, list1, list2, diffvalue, _log=False):
+        output = {'new_elements': [], 'elements_to_delete': []}
+        if len(list1) == 0:
+            return output
+        if len(list2) == 0:
+            output['new_elements'] = list1
+            return output
         i1 = -1
         i2 = -1
         max_ts = list1[-1]['stop'] + diffvalue
-        output = {'new_elements': [], 'elements_to_delete': []}
         if list1[i1+1]['start'] > list2[i2+1]['start']:
             i2 += 1
             element = {'list': '2', 'el': list2[i2]}
         else:
             i1 += 1
             element = {'list': '1', 'el': list1[i1]}
-        # LOG: print 'len1: {0}, len2: {1}'.format(len(list1), len(list2))
+        if _log:
+            print 'len1: {0}, len2: {1}'.format(len(list1), len(list2))
         while element['el']['start'] < max_ts and i1 < len(list1):
-            # LOG: print '   i1: {0}, i2: {1}'.format(i1, i2)
+            if _log:
+                print '   i1: {0}, i2: {1}'.format(i1, i2)
             if i1 < len(list1) - 1 and i2 < len(list2) - 1:
                 if list1[i1+1]['start'] < list2[i2+1]['start']: # compare next of list1 with next of list2 and choose next element
                     i1 += 1
@@ -201,16 +208,20 @@ class DataStore():
                 i1 += 1
                 next_element = {'list': '1', 'el': list1[i1]}
             else: # list 1 and list 2 are exhausted
-                # LOG: print 'BREAK'
+                if _log:
+                    print 'BREAK'
                 if 'isMerged' in element.keys() or element['list'] == '1':
                     # the last element is either a merged one, or a new one from list 1 and should be added
-                    # LOG: print 'added: {0}'.format(element['el'])
+                    if _log:
+                        print 'added: {0}'.format(element['el'])
                     output['new_elements'].append(element['el'])
                 break
 
-            # LOG: print 'comparing {0} and {1}'.format(element['el'], next_element['el'])
+            if _log:
+                print 'comparing {0} and {1}'.format(element['el'], next_element['el'])
             if self._compare_elements(element['el'], next_element['el'], diffvalue):
-                # LOG: print '...merging {0} and {1}'.format(element['el'], next_element['el'])
+                if _log:
+                    print '...merging {0} and {1}'.format(element['el'], next_element['el'])
                 merged_element = self._merge_elements(element['el'], next_element['el'])
                 next_element['el']['start'] = merged_element['start']
                 next_element['el']['stop'] = merged_element['stop']
@@ -221,17 +232,45 @@ class DataStore():
             else:
                 if element['list'] == '1':
                     # this is an unmerged element of list 1 and should be added
-                    # LOG: print 'added: {0}'.format(element['el'])
+                    if _log:
+                        print 'added: {0}'.format(element['el'])
                     output['new_elements'].append(element['el'])
             element = next_element
         return output
 
+    def _interval_strings_to_ints(self, interval):
+        interval['start'] = int(interval['start'])
+        interval['stop'] = int(interval['stop'])
+        return interval
 
+    def _interval_ints_to_strings(self, interval):
+        interval['start'] = str(interval['start'])
+        interval['stop'] = str(interval['stop'])
+        return interval
 
-    def saveIntervals(self, new_intervals):
-        with self.intervals_table.batch_write() as batch:
-            for interval in new_intervals:
-                result = batch.put_item(data=interval)
+    def saveIntervals(self, new_intervals, minutes_delta, log=False):
+        intervals_df = pd.DataFrame(data=new_intervals)
+        intervals_df['start'] = int(intervals_df['start'])
+        intervals_df['stop'] = int(intervals_df['stop'])
+        groups = intervals_df.groupby('transmitter')
+        for name, group in groups:
+            existing_intervals = self.getTransmitterData(name)
+            existing_intervals = [self._interval_strings_to_ints(x) for x in existing_intervals]
+            group_intervals = group.T.to_dict().values()
+            merge_result = self._mergeSortedElementLists(group_intervals, existing_intervals, minutes_delta * 60)
+            if log:
+                print 'merge result: ' + str(merge_result)
+            with self.intervals_table.batch_write() as batch:
+                for delete_index in merge_result['elements_to_delete']:
+                    delete_element = existing_intervals[delete_index]
+                    if log:
+                        print 'element to delete: ' + str(delete_element)
+                    batch.delete_item(transmitter=name, start=str(delete_element['start']))
+            with self.intervals_table.batch_write() as batch:
+                for interval in merge_result['new_elements']:
+                    if log:
+                        print 'inserting element: ' + str(interval)
+                    batch.put_item(data=self._interval_ints_to_strings(interval))
         return True
 
     def getTransmitterData(self, transmitterID):
@@ -239,6 +278,5 @@ class DataStore():
         outresults = []
         for r in results:
             outresults.append(dict(r))
-        print outresults
         return outresults
 

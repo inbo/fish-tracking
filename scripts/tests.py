@@ -254,16 +254,16 @@ class TestDataStore(unittest.TestCase):
             'stationname': 'station1'
         }
         self.assertEquals(self.intervals_table.query_count(transmitter__eq='transm1'), 0)
-        self.ds.saveIntervals([interval])
+        self.ds.saveIntervals([interval], 30)
         self.assertEquals(self.intervals_table.query_count(transmitter__eq='transm1'), 1)
 
     def test_fail_add_record(self):
         bad_interval = {
-            'start': '2015-01-01 10:23:00',
-            'stop': '2015-01-01 10:23:00'
+            'start': '10',
+            'stop': '20'
         }
         with self.assertRaises(ValidationException):
-            self.ds.saveIntervals([bad_interval])
+            self.ds.saveIntervals([bad_interval], 30)
 
 
     def test_get_by_transmitter(self):
@@ -274,7 +274,7 @@ class TestDataStore(unittest.TestCase):
             'stationname': 'station1'
         }
         self.assertEquals(self.intervals_table.query_count(transmitter__eq='transm1'), 0)
-        self.ds.saveIntervals([interval])
+        self.ds.saveIntervals([interval], 30)
         results = self.ds.getTransmitterData('transm1')
         expected_results = [interval]
         for i in range(len(results)):
@@ -394,3 +394,52 @@ class TestDataStore(unittest.TestCase):
         for i in range(len(expected_new_items)):
             self.assertDictEqual(results['new_elements'][i], expected_new_items[i])
         self.assertEquals(results['elements_to_delete'], expected_deleted_items)
+
+    def test_merge_sorted_elements_list_empty_list2(self):
+        # test alternative scenario
+        # If no existing elements, all new elements should be entered
+        new_items = [
+            {'start': 20, 'stop': 25, 'stationname': 'st1'},
+            {'start': 50, 'stop': 52, 'stationname': 'st1'}
+        ]
+        existing_items = []
+        expected_new_items = new_items
+        expected_deleted_items = []
+        results = self.ds._mergeSortedElementLists(new_items, existing_items, 2)
+        for i in range(len(expected_new_items)):
+            self.assertDictEqual(results['new_elements'][i], expected_new_items[i])
+        self.assertEquals(results['elements_to_delete'], expected_deleted_items)
+
+
+
+    def test_insert_merged_element(self):
+        """
+        first enter the database with a time interval
+        add a new entry that should get merged with the existing one
+        check that the old element was replaced by the new one.
+        """
+        interval = {
+            'start': '1435129182',
+            'stop': '1435129642',
+            'transmitter': 'transm1',
+            'stationname': 'station1'
+        }
+        minutes_delta = 30
+        self.ds.saveIntervals([interval], minutes_delta)
+        new_interval = {
+            'start': '1435129842',
+            'stop': '1435129900',
+            'transmitter': 'transm1',
+            'stationname': 'station1'
+        }
+        self.ds.saveIntervals([new_interval], minutes_delta)
+        expected_intervals = [{
+            'start': '1435129182',
+            'stop': '1435129900',
+            'transmitter': 'transm1',
+            'stationname': 'station1'
+        }]
+        results = self.ds.getTransmitterData('transm1')
+        self.assertEquals(self.intervals_table.query_count(transmitter__eq='transm1'), 1)
+        for i in range(len(expected_intervals)):
+            self.assertDictEqual(results[i], expected_intervals[i])
