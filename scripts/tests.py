@@ -166,8 +166,8 @@ class TestAggregator(unittest.TestCase):
         self.assertEquals(len(result.index), 2)
         record1 = list(result.iloc[0])
         record2 = list(result.iloc[1])
-        self.assertEquals(record1, ['2015-01-01 10:30:10', 'vr1', '2015-01-01 10:50:00', 'id1'])
-        self.assertEquals(record2, ['2015-01-01 11:30:00', 'vr1', '2015-01-01 11:30:00', 'id1'])
+        self.assertEquals(record1, ['1420108210', 'vr1', '1420109400', 'id1'])
+        self.assertEquals(record2, ['1420111800', 'vr1', '1420111800', 'id1'])
         # When minutes_delta=10, three resulting records are given because the delta between
         # datetime(2015, 1, 1, 10, 40, 00) and datetime(2015, 1, 1, 10, 50, 00) equals 10 minutes.
         result = self.agg.aggregate(indata, minutes_delta=10)
@@ -197,10 +197,10 @@ class TestAggregator(unittest.TestCase):
         record2 = list(result.iloc[1])
         record3 = list(result.iloc[2])
         record4 = list(result.iloc[3])
-        self.assertEquals(record1, ['2015-01-01 10:30:10', 'vr1', '2015-01-01 10:30:10', 'id1'])
-        self.assertEquals(record2, ['2015-01-01 10:40:00', 'vr2', '2015-01-01 10:40:00', 'id1'])
-        self.assertEquals(record3, ['2015-01-01 10:50:00', 'vr1', '2015-01-01 10:50:00', 'id2'])
-        self.assertEquals(record4, ['2015-01-01 11:30:00', 'vr1', '2015-01-01 11:30:00', 'id1'])
+        self.assertEquals(record1, ['1420108210', 'vr1', '1420108210', 'id1'])
+        self.assertEquals(record2, ['1420108800', 'vr2', '1420108800', 'id1'])
+        self.assertEquals(record3, ['1420109400', 'vr1', '1420109400', 'id2'])
+        self.assertEquals(record4, ['1420111800', 'vr1', '1420111800', 'id1'])
 
     def test_aggregate_diff_locations(self):
         """
@@ -226,10 +226,10 @@ class TestAggregator(unittest.TestCase):
         record2 = list(result.iloc[1])
         record3 = list(result.iloc[2])
         record4 = list(result.iloc[3])
-        self.assertEquals(record1, ['2015-01-01 10:30:10', 'vr1', '2015-01-01 10:30:10', 'id1'])
-        self.assertEquals(record2, ['2015-01-01 10:30:40', 'vr2', '2015-01-01 10:30:40', 'id1'])
-        self.assertEquals(record3, ['2015-01-01 10:40:00', 'vr1', '2015-01-01 10:50:00', 'id1'])
-        self.assertEquals(record4, ['2015-01-01 11:30:00', 'vr1', '2015-01-01 11:30:00', 'id1'])
+        self.assertEquals(record1, ['1420108210', 'vr1', '1420108210', 'id1'])
+        self.assertEquals(record2, ['1420108240', 'vr2', '1420108240', 'id1'])
+        self.assertEquals(record3, ['1420108800', 'vr1', '1420109400', 'id1'])
+        self.assertEquals(record4, ['1420111800', 'vr1', '1420111800', 'id1'])
 
 
 class TestDataStore(unittest.TestCase):
@@ -248,8 +248,8 @@ class TestDataStore(unittest.TestCase):
 
     def test_add_record(self):
         interval = {
-            'start': '1435129182000',
-            'stop': '1435129642000',
+            'start': '1435129182',
+            'stop': '1435129642',
             'transmitter': 'transm1',
             'stationname': 'station1'
         }
@@ -258,12 +258,13 @@ class TestDataStore(unittest.TestCase):
         self.assertEquals(self.intervals_table.query_count(transmitter__eq='transm1'), 1)
 
     def test_fail_add_record(self):
-        interval = {
+        bad_interval = {
             'start': '2015-01-01 10:23:00',
             'stop': '2015-01-01 10:23:00'
         }
         with self.assertRaises(ValidationException):
-            self.ds.saveIntervals([interval])
+            self.ds.saveIntervals([bad_interval])
+
 
     def test_get_by_transmitter(self):
         interval = {

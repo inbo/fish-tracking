@@ -10,6 +10,11 @@ class Aggregator():
     def __init__(self, logging=False):
         self.logging = logging
 
+    def unix_time(self, dt):
+        epoch = datetime.utcfromtimestamp(0)
+        delta = dt - epoch
+        return int(delta.total_seconds())
+
     def parse_detections(self, infile):
         vliz_cols = [
             'Date(UTC)',
@@ -121,8 +126,8 @@ class Aggregator():
         transmitters = []
         stationnames = []
         for name, group in grouped:
-            starts.append(group['timestamp'].min().strftime('%Y-%m-%d %H:%M:%S'))
-            stops.append(group['timestamp'].max().strftime('%Y-%m-%d %H:%M:%S'))
+            starts.append(str(self.unix_time(group['timestamp'].min())))
+            stops.append(str(self.unix_time(group['timestamp'].max())))
             transmitters.append(name[2])
             stationnames.append(name[3])
         outdf = pd.DataFrame(data={
@@ -226,7 +231,7 @@ class DataStore():
     def saveIntervals(self, new_intervals):
         with self.intervals_table.batch_write() as batch:
             for interval in new_intervals:
-                batch.put_item(data=interval)
+                result = batch.put_item(data=interval)
         return True
 
     def getTransmitterData(self, transmitterID):
@@ -236,3 +241,4 @@ class DataStore():
             outresults.append(dict(r))
         print outresults
         return outresults
+
