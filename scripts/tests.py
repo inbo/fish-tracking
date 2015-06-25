@@ -275,7 +275,7 @@ class TestDataStore(unittest.TestCase):
         }
         self.assertEquals(self.intervals_table.query_count(transmitter__eq='transm1'), 0)
         self.ds.saveIntervals([interval], 30)
-        results = self.ds.getTransmitterData('transm1')
+        results = self.ds._getTransmitterData('transm1')
         expected_results = [interval]
         for i in range(len(results)):
             self.assertDictEqual(results[i], expected_results[i])
@@ -439,7 +439,7 @@ class TestDataStore(unittest.TestCase):
             'transmitter': 'transm1',
             'stationname': 'station1'
         }]
-        results = self.ds.getTransmitterData('transm1')
+        results = self.ds._getTransmitterData('transm1')
         self.assertEquals(self.intervals_table.query_count(transmitter__eq='transm1'), 1)
         for i in range(len(expected_intervals)):
             self.assertDictEqual(results[i], expected_intervals[i])

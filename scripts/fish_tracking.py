@@ -250,11 +250,11 @@ class DataStore():
 
     def saveIntervals(self, new_intervals, minutes_delta, log=False):
         intervals_df = pd.DataFrame(data=new_intervals)
-        intervals_df['start'] = int(intervals_df['start'])
-        intervals_df['stop'] = int(intervals_df['stop'])
+        intervals_df['start'] = intervals_df['start'].astype(int)
+        intervals_df['stop'] = intervals_df['stop'].astype(int)
         groups = intervals_df.groupby('transmitter')
         for name, group in groups:
-            existing_intervals = self.getTransmitterData(name)
+            existing_intervals = self._getTransmitterData(name)
             existing_intervals = [self._interval_strings_to_ints(x) for x in existing_intervals]
             group_intervals = group.T.to_dict().values()
             merge_result = self._mergeSortedElementLists(group_intervals, existing_intervals, minutes_delta * 60)
@@ -273,10 +273,28 @@ class DataStore():
                     batch.put_item(data=self._interval_ints_to_strings(interval))
         return True
 
-    def getTransmitterData(self, transmitterID):
+    def _getTransmitterData(self, transmitterID):
+        """
+        get records stored in the intervals table by querying for a given transmitterID
+        """
         results = self.intervals_table.query_2(transmitter__eq=transmitterID)
         outresults = []
         for r in results:
             outresults.append(dict(r))
         return outresults
+
+    def getTransmitterData(self, transmitterID):
+        """
+        get time intervals from intervals table. Note difference with _getTransmitterData: this method
+        converts start and stop to iso timestamp strings
+        """
+        results = self.intervals_table.query_2(transmitter__eq=transmitterID)
+        outresults = []
+        for r in results:
+            record_dict = dict(r)
+            record_dict['start'] = datetime.utcfromtimestamp(int(record_dict['start'])).isoformat()
+            record_dict['stop'] = datetime.utcfromtimestamp(int(record_dict['stop'])).isoformat()
+            outresults.append(record_dict)
+        return outresults
+
 
