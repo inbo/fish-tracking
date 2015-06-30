@@ -122,7 +122,7 @@ class Aggregator():
     def aggregate(self, indata, minutes_delta=30):
         print '{0} AGGREGATOR: starting to aggregate detections'.format(datetime.now().isoformat())
         print '{0} AGGREGATOR:    sorting detections...'.format(datetime.now().isoformat())
-        sorted_data = indata.sort(['transmitter', 'stationname', 'timestamp'])
+        sorted_data = indata.sort(['transmitter', 'timestamp'])
         print '{0} AGGREGATOR:    calculating interval id...'.format(datetime.now().isoformat())
         sorted_data['interval_id'] = (sorted_data['timestamp'].diff() >= timedelta(minutes=minutes_delta)).cumsum()
         print '{0} AGGREGATOR:    calculating station interval id...'.format(datetime.now().isoformat())

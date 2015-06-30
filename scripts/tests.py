@@ -183,7 +183,7 @@ class TestAggregator(unittest.TestCase):
                 'timestamp': [
                     datetime(2015, 1, 1, 10, 30, 10), # 1420108210
                     datetime(2015, 1, 1, 10, 50, 00), # 1420109400
-                    datetime(2015, 1, 1, 10, 51, 00), # 1420109460 this one should merge with record 1
+                    datetime(2015, 1, 1, 10, 51, 00), # 1420109460 this one should not merge with record 1 because id1 was also detected at vr2 at 1420108800
                     datetime(2015, 1, 1, 11, 30, 00), # 1420111800
                     datetime(2015, 1, 1, 10, 40, 00)  # 1420108800
                 ],
@@ -193,15 +193,16 @@ class TestAggregator(unittest.TestCase):
             }
         )
         result = self.agg.aggregate(indata, minutes_delta=30)
-        self.assertEquals(len(result.index), 4)
+        self.assertEquals(len(result.index), 5)
         expected_records = [
-            ['1420108210', 'vr1', '1420109460', 'id1'],
+            ['1420108210', 'vr1', '1420108210', 'id1'],
             ['1420108800', 'vr2', '1420108800', 'id1'],
             ['1420109400', 'vr1', '1420109400', 'id2'],
+            ['1420109460', 'vr1', '1420109460', 'id1'],
             ['1420111800', 'vr1', '1420111800', 'id1']
         ]
         result_sorted = result.sort('start')
-        result_sorted.index = pd.Index(range(4))
+        result_sorted.index = pd.Index(range(5))
         for i, row in result_sorted.iterrows():
             self.assertEquals(list(row), expected_records[i])
 
