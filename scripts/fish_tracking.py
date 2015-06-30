@@ -5,6 +5,7 @@ from time import strptime
 from boto.dynamodb2.layer1 import DynamoDBConnection
 from boto.dynamodb2 import connect_to_region
 from boto.dynamodb2.table import Table
+from timer import Timer
 
 class Aggregator():
     def __init__(self, logging=False):
@@ -54,7 +55,9 @@ class Aggregator():
             'latitude',
             'longitude'
         ]
+        print '{0} AGGREGATOR: reading file'.format(datetime.now().isoformat())
         df = pd.read_csv(infile, encoding='utf-8-sig')
+        print '{0} AGGREGATOR: parsing file'.format(datetime.now().isoformat())
         if len(df.columns) is len(vliz_cols):
             if (df.columns == vliz_cols).all():
                 return self.parse_vliz_detections(df)
@@ -117,14 +120,20 @@ class Aggregator():
 
 
     def aggregate(self, indata, minutes_delta=30):
-        sorted_data = indata.sort(['timestamp'])
+        print '{0} AGGREGATOR: starting to aggregate detections'.format(datetime.now().isoformat())
+        print '{0} AGGREGATOR:    sorting detections...'.format(datetime.now().isoformat())
+        sorted_data = indata.sort(['transmitter', 'stationname', 'timestamp'])
+        print '{0} AGGREGATOR:    calculating interval id...'.format(datetime.now().isoformat())
         sorted_data['interval_id'] = (sorted_data['timestamp'].diff() >= timedelta(minutes=minutes_delta)).cumsum()
+        print '{0} AGGREGATOR:    calculating station interval id...'.format(datetime.now().isoformat())
         sorted_data['station_interval_id'] = (sorted_data['stationname'] != sorted_data['stationname'].shift()).cumsum()
+        print '{0} AGGREGATOR:    performing group by...'.format(datetime.now().isoformat())
         grouped = sorted_data.groupby(['interval_id', 'station_interval_id', 'transmitter', 'stationname'])
         starts = []
         stops = []
         transmitters = []
         stationnames = []
+        print '{0} AGGREGATOR:    formatting intervals...'.format(datetime.now().isoformat())
         for name, group in grouped:
             starts.append(str(self.unix_time(group['timestamp'].min())))
             stops.append(str(self.unix_time(group['timestamp'].max())))
@@ -136,6 +145,7 @@ class Aggregator():
             'transmitter': transmitters,
             'stationname': stationnames
         })
+        print '{0} AGGREGATOR: aggregation done'.format(datetime.now().isoformat())
         return outdf
 
 class DataStore():
@@ -222,13 +232,17 @@ class DataStore():
             if self._compare_elements(element['el'], next_element['el'], diffvalue):
                 if _log:
                     print '...merging {0} and {1}'.format(element['el'], next_element['el'])
+                if next_element['list'] == '2':
+                    remove_start = next_element['el']['start']
+                else:
+                    remove_start = element['el']['start']
                 merged_element = self._merge_elements(element['el'], next_element['el'])
                 next_element['el']['start'] = merged_element['start']
                 next_element['el']['stop'] = merged_element['stop']
                 next_element['isMerged'] = True
                 next_element['list'] = '1'
-                if not i2 in output['elements_to_delete']:
-                    output['elements_to_delete'].append(i2)
+                if not remove_start in output['elements_to_delete']:
+                    output['elements_to_delete'].append(remove_start)
             else:
                 if element['list'] == '1':
                     # this is an unmerged element of list 1 and should be added
@@ -252,25 +266,46 @@ class DataStore():
         intervals_df = pd.DataFrame(data=new_intervals)
         intervals_df['start'] = intervals_df['start'].astype(int)
         intervals_df['stop'] = intervals_df['stop'].astype(int)
+        print '{0} DATASTORE: grouping input data'.format(datetime.now().isoformat())
         groups = intervals_df.groupby('transmitter')
+        print '{0} DATASTORE: merging and inserting intervals'.format(datetime.now().isoformat())
+        merging_time = 0
+        writing_time = 0
+        deleting_time = 0
+        nr_new_groups = 0
+        nr_deleted_items = 0
         for name, group in groups:
             existing_intervals = self._getTransmitterData(name)
+            if log:
+                print 'existing intervals: {0}'.format(str(existing_intervals))
             existing_intervals = [self._interval_strings_to_ints(x) for x in existing_intervals]
             group_intervals = group.T.to_dict().values()
-            merge_result = self._mergeSortedElementLists(group_intervals, existing_intervals, minutes_delta * 60)
+            with Timer() as t:
+                merge_result = self._mergeSortedElementLists(group_intervals, existing_intervals, minutes_delta * 60)
+            merging_time += t.secs
             if log:
                 print 'merge result: ' + str(merge_result)
-            with self.intervals_table.batch_write() as batch:
-                for delete_index in merge_result['elements_to_delete']:
-                    delete_element = existing_intervals[delete_index]
-                    if log:
-                        print 'element to delete: ' + str(delete_element)
-                    batch.delete_item(transmitter=name, start=str(delete_element['start']))
-            with self.intervals_table.batch_write() as batch:
-                for interval in merge_result['new_elements']:
-                    if log:
-                        print 'inserting element: ' + str(interval)
-                    batch.put_item(data=self._interval_ints_to_strings(interval))
+
+            with Timer() as t:
+                with self.intervals_table.batch_write() as batch:
+                    for delete_start in merge_result['elements_to_delete']:
+                        nr_deleted_items += 1
+                        if log:
+                            print 'element to delete: ' + 'transmitter: ' + name + 'start: ' + str(delete_start)
+                        batch.delete_item(transmitter=name, start=str(delete_start))
+            deleting_time += t.secs
+            with Timer() as t:
+                with self.intervals_table.batch_write() as batch:
+                    for interval in merge_result['new_elements']:
+                        nr_new_groups += 1
+                        if log:
+                            # print 'inserting element: ' + str(interval)
+                            pass
+                        batch.put_item(data=self._interval_ints_to_strings(interval))
+            writing_time += t.secs
+        print '{0} DATASTORE: done'.format(datetime.now().isoformat())
+        print 'timing results:'
+        print '    merging time: {0}\n    writing time: {1}\n    deleting time: {2}\n    nr of new intervals: {3}\n    nr of items deleted: {4}'.format(merging_time, writing_time, deleting_time, nr_new_groups, nr_deleted_items)
         return True
 
     def _getTransmitterData(self, transmitterID):

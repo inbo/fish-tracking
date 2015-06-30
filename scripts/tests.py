@@ -181,26 +181,30 @@ class TestAggregator(unittest.TestCase):
         indata = pd.DataFrame(
             data={
                 'timestamp': [
-                    datetime(2015, 1, 1, 10, 30, 10),
-                    datetime(2015, 1, 1, 10, 50, 00),
-                    datetime(2015, 1, 1, 11, 30, 00),
-                    datetime(2015, 1, 1, 10, 40, 00)
+                    datetime(2015, 1, 1, 10, 30, 10), # 1420108210
+                    datetime(2015, 1, 1, 10, 50, 00), # 1420109400
+                    datetime(2015, 1, 1, 10, 51, 00), # 1420109460 this one should merge with record 1
+                    datetime(2015, 1, 1, 11, 30, 00), # 1420111800
+                    datetime(2015, 1, 1, 10, 40, 00)  # 1420108800
                 ],
-                'transmitter': ['id1', 'id2', 'id1', 'id1'],
-                'stationname': ['vr1', 'vr1', 'vr1', 'vr2']
+                'transmitter': ['id1', 'id2', 'id1', 'id1', 'id1'],
+                'stationname': ['vr1', 'vr1', 'vr1', 'vr1', 'vr2']
 
             }
         )
         result = self.agg.aggregate(indata, minutes_delta=30)
         self.assertEquals(len(result.index), 4)
-        record1 = list(result.iloc[0])
-        record2 = list(result.iloc[1])
-        record3 = list(result.iloc[2])
-        record4 = list(result.iloc[3])
-        self.assertEquals(record1, ['1420108210', 'vr1', '1420108210', 'id1'])
-        self.assertEquals(record2, ['1420108800', 'vr2', '1420108800', 'id1'])
-        self.assertEquals(record3, ['1420109400', 'vr1', '1420109400', 'id2'])
-        self.assertEquals(record4, ['1420111800', 'vr1', '1420111800', 'id1'])
+        expected_records = [
+            ['1420108210', 'vr1', '1420109460', 'id1'],
+            ['1420108800', 'vr2', '1420108800', 'id1'],
+            ['1420109400', 'vr1', '1420109400', 'id2'],
+            ['1420111800', 'vr1', '1420111800', 'id1']
+        ]
+        result_sorted = result.sort('start')
+        result_sorted.index = pd.Index(range(4))
+        for i, row in result_sorted.iterrows():
+            self.assertEquals(list(row), expected_records[i])
+
 
     def test_aggregate_diff_locations(self):
         """
@@ -210,26 +214,28 @@ class TestAggregator(unittest.TestCase):
         indata = pd.DataFrame(
             data={
                 'timestamp': [
-                    datetime(2015, 1, 1, 10, 30, 10),
-                    datetime(2015, 1, 1, 10, 50, 00),
-                    datetime(2015, 1, 1, 11, 30, 00),
-                    datetime(2015, 1, 1, 10, 40, 00),
-                    datetime(2015, 1, 1, 10, 30, 40)
+                    datetime(2015, 1, 1, 10, 30, 10), # 1420108210
+                    datetime(2015, 1, 1, 10, 50, 00), # 1420109400
+                    datetime(2015, 1, 1, 11, 30, 00), # 1420111800
+                    datetime(2015, 1, 1, 10, 40, 00), # 1420108800
+                    datetime(2015, 1, 1, 10, 30, 40)  # 1420108240
                 ],
-                'transmitter': ['id1', 'id1', 'id1', 'id1', 'id1'],
+                'transmitter': ['id2', 'id1', 'id1', 'id1', 'id1'],
                 'stationname': ['vr1', 'vr1', 'vr1', 'vr1', 'vr2']
             }
         )
         result = self.agg.aggregate(indata, minutes_delta=30)
+        result_sorted = result.sort('start')
+        result_sorted.index = pd.Index(range(4))
         self.assertEquals(len(result.index), 4)
-        record1 = list(result.iloc[0])
-        record2 = list(result.iloc[1])
-        record3 = list(result.iloc[2])
-        record4 = list(result.iloc[3])
-        self.assertEquals(record1, ['1420108210', 'vr1', '1420108210', 'id1'])
-        self.assertEquals(record2, ['1420108240', 'vr2', '1420108240', 'id1'])
-        self.assertEquals(record3, ['1420108800', 'vr1', '1420109400', 'id1'])
-        self.assertEquals(record4, ['1420111800', 'vr1', '1420111800', 'id1'])
+        expected_output = [
+            ['1420108210', 'vr1', '1420108210', 'id2'],
+            ['1420108240', 'vr2', '1420108240', 'id1'],
+            ['1420108800', 'vr1', '1420109400', 'id1'],
+            ['1420111800', 'vr1', '1420111800', 'id1']
+        ]
+        for i, row in result_sorted.iterrows():
+            self.assertEquals(list(row), expected_output[i])
 
 
 class TestDataStore(unittest.TestCase):
@@ -326,7 +332,7 @@ class TestDataStore(unittest.TestCase):
             {'start': 60, 'stop': 61, 'stationname': 'st1'}, # new from list1
             {'start': 80, 'stop': 88, 'stationname': 'st4'} # merge from list1[4] and list2[5]
         ]
-        expected_deleted_items = [0, 1, 2, 5]
+        expected_deleted_items = [10, 48, 53, 84]
         results = self.ds._mergeSortedElementLists(new_items, existing_items, 2)
         for i in range(len(expected_new_items)):
             self.assertDictEqual(results['new_elements'][i], expected_new_items[i])
@@ -363,7 +369,7 @@ class TestDataStore(unittest.TestCase):
             {'start': 95, 'stop': 99, 'stationname': 'st1'},
             {'start': 104, 'stop': 105, 'stationname': 'st1'}
         ]
-        expected_deleted_items = [0, 1, 2, 5]
+        expected_deleted_items = [10, 48, 53, 84]
         results = self.ds._mergeSortedElementLists(new_items, existing_items, 2)
         for i in range(len(expected_new_items)):
             self.assertDictEqual(results['new_elements'][i], expected_new_items[i])
@@ -389,7 +395,7 @@ class TestDataStore(unittest.TestCase):
             {'start': 10, 'stop': 25, 'stationname': 'st1'}, # merge from list1[0] and list2[0]
             {'start': 48, 'stop': 55, 'stationname': 'st1'}, # merge from list1[1], list2[1] and list2[2]
         ]
-        expected_deleted_items = [0, 1, 2]
+        expected_deleted_items = [10, 48, 53]
         results = self.ds._mergeSortedElementLists(new_items, existing_items, 2)
         for i in range(len(expected_new_items)):
             self.assertDictEqual(results['new_elements'][i], expected_new_items[i])
