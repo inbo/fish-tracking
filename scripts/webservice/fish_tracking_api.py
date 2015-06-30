@@ -98,7 +98,6 @@ def add():
                 return 'Could not parse uploaded file.'
             intervals_df = g.agg.aggregate(detections, minutes_delta=app.config['MINUTES_DELTA'])
             intervals = intervals_df.T
-            print intervals
             try:
                 g.ds.saveIntervals([intervals[x].to_dict() for x in intervals], app.config['MINUTES_DELTA'])
                 print 'intervals saved'
