@@ -67,7 +67,7 @@ def apiDoc():
     for rule in app.url_map.iter_rules():
         try:
             method = possibles.get(rule.endpoint)
-            endpoint_title = rule.endpoint.capitalize()
+            endpoint_title = rule.endpoint.replace('_', ' ').capitalize()
             url = url_for(str(rule.endpoint))
             mdoc = method.__doc__
             doc += '<h2>{0}</h2> <p>url: <a href="{1}">{1}</a></p>{2}\n'.format(endpoint_title, url, mdoc)
@@ -139,7 +139,7 @@ def view():
     return construct_output(results)
 
 @app.route('/transmitters')
-def getTransmitters():
+def get_transmitters():
     """
     <p>view list of stored transmitters</p>
 
