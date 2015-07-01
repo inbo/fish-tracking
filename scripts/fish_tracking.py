@@ -338,9 +338,9 @@ class DataStore():
         return outresults
 
     def getTransmitterIDs(self):
-        results = self.intervals_table.scan()
-        transmitterids = []
+        results = self.intervals_table.scan(attributes=['transmitter'])
+        transmitterids = set([])
         for r in results:
-            transmitterids.append(r['transmitter'])
-        return transmitterids
+            transmitterids.add(r['transmitter'])
+        return list(transmitterids)
 
