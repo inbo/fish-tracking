@@ -5,6 +5,7 @@ from time import strptime
 from boto.dynamodb2.layer1 import DynamoDBConnection
 from boto.dynamodb2 import connect_to_region
 from boto.dynamodb2.table import Table
+from boto.dynamodb2.exceptions import ValidationException
 from timer import Timer
 
 class Aggregator():
@@ -294,14 +295,18 @@ class DataStore():
                             print 'element to delete: ' + 'transmitter: ' + name + 'start: ' + str(delete_start)
                         batch.delete_item(transmitter=name, start=str(delete_start))
             deleting_time += t.secs
-            with Timer() as t:
-                with self.intervals_table.batch_write() as batch:
-                    for interval in merge_result['new_elements']:
-                        nr_new_groups += 1
-                        if log:
-                            # print 'inserting element: ' + str(interval)
-                            pass
-                        batch.put_item(data=self._interval_ints_to_strings(interval))
+            try:
+                with Timer() as t:
+                    with self.intervals_table.batch_write() as batch:
+                        for interval in merge_result['new_elements']:
+                            nr_new_groups += 1
+                            if log:
+                                # print 'inserting element: ' + str(interval)
+                                pass
+                            batch.put_item(data=self._interval_ints_to_strings(interval))
+            except ValidationException, e:
+                print 'could not write item {0} to the database'.format(str(self._interval_ints_to_strings(interval)))
+                raise RuntimeError(e.message)
             writing_time += t.secs
         print '{0} DATASTORE: done'.format(datetime.now().isoformat())
         print 'timing results:'
@@ -332,4 +337,10 @@ class DataStore():
             outresults.append(record_dict)
         return outresults
 
+    def getTransmitterIDs(self):
+        results = self.intervals_table.scan()
+        transmitterids = []
+        for r in results:
+            transmitterids.append(r['transmitter'])
+        return transmitterids
 

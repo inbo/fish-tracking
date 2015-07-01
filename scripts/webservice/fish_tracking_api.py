@@ -29,6 +29,13 @@ app.config.from_object(__name__)
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
+def construct_output(resultsdict):
+    output = {
+        'count': len(resultsdict),
+        'rows': resultsdict
+    }
+    return json.dumps(output)
+
 
 #================
 # before and teardown
@@ -129,7 +136,22 @@ def view():
     """
     transmitterid = request.args.get('transmitter', 'transm2')
     results = g.ds.getTransmitterData(transmitterid)
-    return json.dumps(results)
+    return construct_output(results)
+
+@app.route('/transmitters')
+def getTransmitters():
+    """
+    <p>view list of stored transmitters</p>
+
+        <ul>
+        <li>GET: get a list of stored transmitters</li>
+        </ul>
+
+        <p>Parameters: None</p>
+    """
+    results = g.ds.getTransmitterIDs()
+    return construct_output(results)
+
 
 if __name__ == '__main__':
     app.run()

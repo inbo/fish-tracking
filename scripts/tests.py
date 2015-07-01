@@ -269,7 +269,7 @@ class TestDataStore(unittest.TestCase):
             'start': '10',
             'stop': '20'
         }
-        with self.assertRaises(ValidationException):
+        with self.assertRaises(RuntimeError):
             self.ds.saveIntervals([bad_interval], 30)
 
 
@@ -286,6 +286,23 @@ class TestDataStore(unittest.TestCase):
         expected_results = [interval]
         for i in range(len(results)):
             self.assertDictEqual(results[i], expected_results[i])
+
+    def test_get_transmitter_ids(self):
+        interval1 = {
+            'start': '1435129182000',
+            'stop': '1435129642000',
+            'transmitter': 'transm1',
+            'stationname': 'station1'
+        }
+        interval2 = {
+            'start': '1435129182000',
+            'stop': '1435129642000',
+            'transmitter': 'transm2',
+            'stationname': 'station1'
+        }
+        self.ds.saveIntervals([interval1, interval2], 30)
+        result = self.ds.getTransmitterIDs()
+        self.assertEquals(sorted(result), ['transm1', 'transm2'])
 
 
     def test_compare_elements(self):
