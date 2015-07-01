@@ -242,9 +242,10 @@ class TestAggregator(unittest.TestCase):
 class TestDataStore(unittest.TestCase):
     def tearDown(self):
         try:
-            results = self.intervals_table.query_2(transmitter__eq='transm1')
-            for r in results:
-                r.delete()
+            for key in ['transm1', 'transm2']:
+                results = self.intervals_table.query_2(transmitter__eq=key)
+                for r in results:
+                    r.delete()
         except RuntimeError, e:
             print e.message
 
