@@ -49,7 +49,7 @@ def connectRemote():
 
 
 @click.command()
-@click.option('--conn', default='local', help='connection type')
+@click.option('--conn', default='local', help='connection type ("local" [default]  or "remote")')
 def create_table(conn):
     if conn == 'local':
         connection = connectLocal()
@@ -72,7 +72,7 @@ def create_table(conn):
     )
 
 @click.command()
-@click.option('--conn', default='local', help='connection type')
+@click.option('--conn', default='local', help='connection type ("local" [default]  or "remote")')
 def delete_table(conn):
     if conn == 'local':
         connection = connectLocal()
