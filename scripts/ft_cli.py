@@ -31,7 +31,7 @@ def cons(directory, minutes, debug):
             detection_dataframes.append(tmpdetections)
     detections = pd.concat(detection_dataframes)
     # print detections
-    intervals = agg.aggregate(detections, minutes_delta=minutes)
+    intervals = agg.aggregate(detections, minutes_delta=minutes, time_format='iso')
     print intervals.to_csv(index=False)
 
 

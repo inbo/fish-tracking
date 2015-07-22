@@ -155,7 +155,7 @@ class Aggregator():
         return outdf
 
 
-    def aggregate(self, indata, minutes_delta=30):
+    def aggregate(self, indata, minutes_delta=30, time_format='unix'):
         print '{0} AGGREGATOR: starting to aggregate detections'.format(datetime.now().isoformat())
         print '{0} AGGREGATOR:    sorting detections...'.format(datetime.now().isoformat())
         sorted_data = indata.sort(['transmitter', 'timestamp'])
@@ -171,8 +171,12 @@ class Aggregator():
         stationnames = []
         print '{0} AGGREGATOR:    formatting intervals...'.format(datetime.now().isoformat())
         for name, group in grouped:
-            starts.append(str(self.unix_time(group['timestamp'].min())))
-            stops.append(str(self.unix_time(group['timestamp'].max())))
+            if time_format == 'unix':
+                starts.append(str(self.unix_time(group['timestamp'].min())))
+                stops.append(str(self.unix_time(group['timestamp'].max())))
+            elif time_format == 'iso':
+                starts.append(str(group['timestamp'].min().isoformat()))
+                stops.append(str(group['timestamp'].max().isoformat()))
             transmitters.append(name[2])
             stationnames.append(name[3])
         outdf = pd.DataFrame(data={
