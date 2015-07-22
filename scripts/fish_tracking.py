@@ -31,6 +31,18 @@ class Aggregator():
             'Latitude',
             'Longitude'
         ]
+        vliz_2_cols = [
+            'Date and Time (UTC)',
+            'Receiver',
+            'Transmitter',
+            'Transmitter Name',
+            'Transmitter Serial',
+            'Sensor Value',
+            'Sensor Unit',
+            'Station Name',
+            'Latitude',
+            'Longitude'
+        ]
         inbo_cols = [
             'Date/Time',
             'Code Space',
@@ -56,12 +68,17 @@ class Aggregator():
             'latitude',
             'longitude'
         ]
-        print '{0} AGGREGATOR: reading file'.format(datetime.now().isoformat())
+        if self.logging:
+            print '{0} AGGREGATOR: reading file'.format(datetime.now().isoformat())
         df = pd.read_csv(infile, encoding='utf-8-sig')
-        print '{0} AGGREGATOR: parsing file'.format(datetime.now().isoformat())
+        if self.logging:
+            print '{0} AGGREGATOR: parsing file'.format(datetime.now().isoformat())
         if len(df.columns) is len(vliz_cols):
             if (df.columns == vliz_cols).all():
                 return self.parse_vliz_detections(df)
+        if len(df.columns) is len(vliz_2_cols):
+            if (df.columns == vliz_2_cols).all():
+                return self.parse_vliz_2_detections(df)
         if len(df.columns) is len(inbo_cols):
             if (df.columns == inbo_cols).all():
                 return self.parse_inbo_detections(df)
@@ -89,8 +106,26 @@ class Aggregator():
         )
         return outdf
 
+    def parse_vliz_2_detections(self, dataframe):
+        timestamps = dataframe['Date and Time (UTC)'].apply(lambda x: datetime(*strptime(x, '%Y-%m-%d %H:%M:%S')[:6]))
+        # check station name format
+        if self.check_stationnames(dataframe['Station Name']):
+            raise Exception('Station Name found that does not match required format')
+        outdf = pd.DataFrame(
+            data={
+                'timestamp': timestamps,
+                'transmitter': dataframe['Transmitter'],
+                'stationname': dataframe['Station Name'],
+                'receiver': dataframe['Receiver']
+            }
+        )
+        return outdf
+
     def parse_inbo_detections(self, dataframe):
-        timestamps = dataframe['Date/Time'].apply(lambda x: datetime(*strptime(x, '%d/%m/%Y %H:%M')[:6]))
+        try:
+            timestamps = dataframe['Date/Time'].apply(lambda x: datetime(*strptime(x, '%d/%m/%Y %H:%M')[:6]))
+        except:
+            timestamps = dataframe['Date/Time'].apply(lambda x: datetime(*strptime(x, '%Y-%m-%d %H:%M:%S')[:6]))
         transmitters = dataframe['Code Space'] + '-' + dataframe['ID'].apply(str)
         if self.check_stationnames(dataframe['Station Name']):
             raise Exception('Station Name found that does not match required format')

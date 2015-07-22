@@ -9,10 +9,9 @@ from fish_tracking import Aggregator, DataStore
 
 # Locate test files
 VLIZ_DETECTIONS = os.path.dirname(os.path.realpath(__file__)) + '/example-files/VR2W_VLIZ_example.csv'
+VLIZ_2_DETECTIONS = os.path.dirname(os.path.realpath(__file__)) + '/example-files/VR2W_VLIZ_2_example.csv'
 INBO_DETECTIONS = os.path.dirname(os.path.realpath(__file__)) + '/example-files/VR2W_INBO_example.csv'
 VUE_DETECTIONS = os.path.dirname(os.path.realpath(__file__)) + '/example-files/VUE_export_example.csv'
-FAILED_VLIZ_DETECTIONS = os.path.dirname(os.path.realpath(__file__)) + '/example-files/VR2W_VLIZ_example_fail.csv'
-
 
 class TestAggregator(unittest.TestCase):
 
@@ -70,6 +69,46 @@ class TestAggregator(unittest.TestCase):
         for df in failing_dfs:
             with self.assertRaises(Exception):
                 self.agg.parse_vliz_detections(df)
+
+    def test_fail_parse_vliz_2_detections(self):
+        failing_data = [
+            # empty data frame will fail
+            {},
+            # wrong date format
+            {
+                'Date and Time (UTC)': ['15-01-01 10:42:29'],
+                'Transmitter': ['29JEQ'],
+                'StationName': ['as-43'],
+                'Receiver': ['VR92S']
+            },
+            # wrong date time format
+            {
+                'Date and Time (UTC)': ['2015-01-01 10h 42'],
+                'Transmitter': ['29JEQ'],
+                'StationName': ['as-43'],
+                'Receiver': ['VR92S']
+            },
+            # wrong station name format
+            {
+                'Date and Time (UTC)': ['2015-01-01 10:32:42'],
+                'Transmitter': ['29JEQ'],
+                'StationName': ['VSE49293'],
+                'Receiver': ['VR92S']
+            },
+        ]
+        failing_dfs = map(lambda x: pd.DataFrame(data=x), failing_data)
+        for df in failing_dfs:
+            with self.assertRaises(Exception):
+                self.agg.parse_vliz_detections(df)
+
+    def test_parse_vliz2_detections(self):
+        detections = self.agg.parse_detections(VLIZ_2_DETECTIONS)
+        self.assertEquals(
+            sorted(list(detections.columns)),
+            sorted(['timestamp', 'transmitter', 'stationname', 'receiver'])
+        )
+        results = detections['timestamp'].apply(lambda x: isinstance(x, datetime))
+        self.assertTrue(results.all())
 
     def test_parse_inbo_detections(self):
         detections = self.agg.parse_detections(INBO_DETECTIONS)
