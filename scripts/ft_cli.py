@@ -3,10 +3,6 @@ import click
 import sys
 import os
 import pandas as pd
-from boto.dynamodb2.table import Table, HashKey, RangeKey, GlobalAllIndex
-from boto.dynamodb2.types import STRING
-from boto.dynamodb2.layer1 import DynamoDBConnection
-from boto.dynamodb2 import connect_to_region
 
 @click.group()
 def fish_tracking():
@@ -35,56 +31,7 @@ def cons(directory, minutes, debug):
     print intervals.to_csv(index=False)
 
 
-def connectLocal():
-    return DynamoDBConnection(
-        aws_access_key_id='foo',
-        aws_secret_access_key='bar',
-        host='localhost',
-        port=8000,
-        is_secure=False
-    )
-
-def connectRemote():
-    return connect_to_region('eu-west-1')
-
-
-@click.command()
-@click.option('--conn', default='local', help='connection type ("local" [default]  or "remote")')
-def create_table(conn):
-    if conn == 'local':
-        connection = connectLocal()
-    else:
-        raise RuntimeError('Unknown mode: {0}.\nShould be \'local\' or \'remote\''.format(conn))
-    intervals = Table.create(
-        'intervals',
-        schema=[
-            HashKey('transmitter'),
-            RangeKey('start')
-        ],
-        global_indexes=[
-            GlobalAllIndex(
-                'stopIndex',
-                parts=[HashKey('transmitter'), RangeKey('stop', data_type=STRING)],
-                throughput={'read': 1, 'write': 1}
-            )
-        ],
-        connection=connection
-    )
-
-@click.command()
-@click.option('--conn', default='local', help='connection type ("local" [default]  or "remote")')
-def delete_table(conn):
-    if conn == 'local':
-        connection = connectLocal()
-    else:
-        raise RuntimeError('Unknown mode: {0}.\nShould be \'local\' or \'remote\''.format(conn))
-    intervals = Table('intervals', connection=connection)
-    intervals.delete()
-
-
 fish_tracking.add_command(cons)
-fish_tracking.add_command(create_table)
-fish_tracking.add_command(delete_table)
 
 if __name__ == '__main__':
     fish_tracking()
