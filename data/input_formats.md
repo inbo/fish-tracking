@@ -33,6 +33,6 @@ This file documents the different formats that can be obtained from the hardware
 | Transmitter S/N |  |  |  |
 | Receiver Name | id of the receiver. only 1 different value per file | text | VR2W-122340 |
 | Receiver S/N | serial number of the receiver | number | 122340 |
-| Station Name | name of the receiver |  |  |
+| Station Name | name of the receiver |  | WN-2 |
 | Station Latitude | position of the receiver (lat) |  |  |
 | Station Longitude | position of the receiver (long) |  |  |
