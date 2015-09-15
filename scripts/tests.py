@@ -10,6 +10,7 @@ VLIZ_DETECTIONS = os.path.dirname(os.path.realpath(__file__)) + '/example-files/
 VLIZ_2_DETECTIONS = os.path.dirname(os.path.realpath(__file__)) + '/example-files/VR2W_VLIZ_2_example.csv'
 INBO_DETECTIONS = os.path.dirname(os.path.realpath(__file__)) + '/example-files/VR2W_INBO_example.csv'
 VUE_DETECTIONS = os.path.dirname(os.path.realpath(__file__)) + '/example-files/VUE_export_example.csv'
+STATION_MAPPING = os.path.dirname(os.path.realpath(__file__)) + '/example-files/station_names.csv'
 
 class TestAggregator(unittest.TestCase):
 
@@ -31,7 +32,12 @@ class TestAggregator(unittest.TestCase):
         )
         results = detections['timestamp'].apply(lambda x: isinstance(x, datetime))
         self.assertTrue(results.all())
+        self.assertEquals(detections['stationname'][0], 'VG-2') # station_mapping not given, so station names not translated
 
+    def test_parse_vliz_detections_rename_stations(self):
+        """If station_mapping is given, translate station names based on the mapping file"""
+        detections = self.agg.parse_detections(VLIZ_DETECTIONS, station_mapping=STATION_MAPPING)
+        self.assertEquals(detections['stationname'][0], 'bpns-VG2')
 
 
     def test_fail_parse_vliz_detections(self):
