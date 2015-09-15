@@ -29,7 +29,7 @@ def aggregate(DIRECTORY, minutes, st_mapping, debug):
 
 @click.command()
 @click.argument('DIRECTORY', type=click.Path(exists=True))
-@click.option('--st_mapping', default='./data/station_names.md', help='points to the station names mapping file. If given, old stations names will be replaced by new ones.')
+@click.option('--st_mapping', default='./data/station_names.csv', help='points to the station names mapping file. If given, old stations names will be replaced by new ones.')
 @click.option('--debug/--no-debug', default=False)
 def parse(DIRECTORY, st_mapping, debug):
     """Create consolidated detections file based on data in DIRECTORY but do not aggregate time frames"""
