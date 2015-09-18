@@ -29,110 +29,138 @@ S7,bpns-S7
 126195,ak-41
 126196,ak-44
 126197,ak-45
-17 Iso 8s 18,
-O6,
-Nieuwpoort Kust 8,
-Toevoerkanaal Isabellagemaal,
-Houten brug SA gemaal,
-Braakman,
-Haven SA Braakman,
-Kanaal Gent-Oostende - Lovendegem,
-Schipdonkkanaal - Kant Zomergem,
-Noordervak Ringvaart - Stroomaf Complex,
-SO stuw St Laureins,
-SA stuw St Laureins,
-Leopoldkanaal nood zoekt troost,
-Notelaarsbrug,
-BOEREKREEK NATUURRESERVAAT,
-BOEREKREEK MONDING ROESELAREKREEK,
-LEOPOLDKANAAL BRUG WATERVLIET,
-LEOPOLDKANAAL ZONNEBRUG,
-LEOPOLDKANAAL MONDING BOEREKREEK,
-STUW SINT LAUREINS SO (vervanging),
-Isabellakanaal,
-ISABELLAGELEED SA STUW,
-Braakman 3,
-Braakman 5,
-Braakman 4,
-Braakman 2,
-Braakman 1,
-VLIETBEEK SA,
-Zeebrugge SA uitwatering zout,
-1 PPC,
-3 A5,
-6 VQ 15 A,
-11 ISO 8s 13,
-12 ISO 4s 11,
-10 VQ(3)5s,
-7 Q 15,
-8 ISO 8s 6,
-9 ISO 4s 4,
-14 Q25,
-21 Iso 4s 23,
-4 A3,
-20 Iso 8s 12A,
-19 14,
-18 Iso 4s 16,
-13 Q 2C,
-Zwartesluisbeek SO Fuiken 1,
-GROTE KIL SO,
-ZWARTESLUISBEEK,
-15 Obstn K,
-5 A1,
-16 Iso 8s 25B,
-GROTE GEUL UITSTROOM,
-GROTE GEUL NOTARIS,
-2 PPB,
-Zeeschelde - Dendermonde - Ponton Brand,
-Braakman4,
-Schipdonkkanaal - Kant Merendree,
-Kanaal Gent-Oostende kruising Schipdonk,
-VLIETBEEK SO,
-Genk SO,
-Uitzet SO 1,
-Uitzet SO2,
-Genk SA,
-Diepenbeek SO,
-Diepenbeek SA,
-Q2C,
-Isabella-800m SA uitwatering Legemeersa,
-Isabella- Stenenschuurbrug,
-Isabella-400m SO Stenenschuurbrug,
-IN_KS_ROZWDEMER,
-SA_GB_RODEMER,
-AAN_GB2_RODEMER,
-SA_SB_RODEMER,
-IN_VB_LODEMER,
-SA_RIF_LODEMER,
-SO_ZICHEM_DEMER,
-SO_SB_RODEMER,
-SA_KS_RODEMER,
-AAN_RIF_LODEMER,
-SO_KS_LODEMER,
-SO2_KS_RODEMER,
-IN_MZ_RODEMER,
-SO_MZ_ROZB,
-IN_VB_ROZB,
-SA_KS_LOZB,
-SO_KS_LOZB,
-Testelt,
-SO_SB_LOZB,
-SA_SB_LODE,
-fietsersbrug aarschot,
-Isabella-400m SA uitwatering Legemeersa,
-SA_SB_RODE_VOETGANGERS,
-Legemeersbeek 1a,
-Houten brug SA gemaal (Braakman 6),
-rommelaar,
-Ham Sluis Midden,
-Boei Iso 8s 12A,
-Boei 14,
-Hasselt SO,
-STEEN,
-OGDL,
-Iso 4s 16,
-A1,
-Voorhaven Zeebrugge,
-TRAWL,
-D1,
-A1-Bis,
+1 PPC,ws-PPC
+1,ak-2
+10 VQ(3)5s,ws-PVTSS
+10,ak-10
+11 ISO 8s 13,ws-13
+11,ak-13
+12 ISO 4s 11,ws-11
+12,ak-14
+13 Q 2C,ws-2C
+13,ak-15
+14 Q25,ws-25
+14,ak-16
+15 Obstn K,ws-K
+15,ak-18
+16 Iso 8s 25B,ws-25B
+16,ak-17
+17 Iso 8s 18,ws-18
+2 PPB,ws-PPB
+2,ak-3
+25A,ws-25A
+25B,ws-25B
+3 A5,ws-A5
+3,ak-1
+4 A3,ws-A3
+4,ak-5
+5 A1,ws-A1
+5,ak-6
+6 VQ 15 A,ws-15A
+6,ak-4
+7 Q 15,ws-15
+7,ak-7
+8 ISO 8s 6,ws-6
+8',ak-9
+8,ak-8
+9 ISO 4s 4,ws-4
+9',ak-12
+9,ak-11
+A1,ws-A1
+A1-Bis,bpns-A1BIS
+AAN_GB2_RODEMER,de-8
+AAN_RIF_LODEMER,de-7
+BIRKENFILS,"bpns-BIRKENFELS
+BOEREKREEK MONDING ROESELAREKREEK,bh-8
+Boei 14,ws-14
+Boei Iso 8s 12A,ws-12A
+Boudewijnsluis Albertkanaal,ak-44
+Boudewijnsluis Schelde,ak-45
+Braakman 1,bh-36
+Braakman 2,bh-35
+C05 Belwind,bpns-C05BELWIND
+D1,bpns-D1
+DL-12,ws-DL12
+DL-7,ws-DL7
+DL-9,ws-DL9
+Diepenbeek SA,ak-25
+Diepenbeek SO,ak-24
+GVW-SP,ws-GVWSP
+Genk SA,ak-23
+Genk SO,ak-22
+Ham SA,ak-33
+Ham SO,ak-29
+Ham Sluis Midden,ak-31
+Hasselt SA,ak-27
+Hasselt SO,ak-26
+IN_KB_TUNNEL,de-15
+IN_KS_ROZWDEMER,de-19
+IN_MZ_RODEMER,de-10
+IN_VB_LODEMER,de-12
+IN_VB_ROZB,de-13
+Isabella- Stenenschuurbrug,bh-13
+Iso 4s 16,ws-16
+LEOPOLDKANAAL BRUG WATERVLIET,bh-11
+LEOPOLDKANAAL MONDING BOEREKREEK,bh-9
+Legemeersbeek 1a,bh-14
+Legemeersbeek 2,bh-15
+Maas SA Borgharen,ma-3
+Messelbroek,de-3
+NOORD HINDER SE,bpns-NHSE
+Nieuwpoort Kust 8,bpns-NIEUWPOORTKUST8
+Notelaarsbrug,bh-20
+O6,bpns-OH6
+OG-10,ws-OG10
+OGDL,ws-OGDL
+Obstn K,ws-K
+Olen SA,ak-36
+Olen SA,ak-37
+Olen SO,ak-35
+Q2C,ws-2C
+Rommelaar,de-2
+Royersluis Albertkanaal,ak-42
+Royersluis Schelde,ak-41
+S 7,bpns-S7
+SA Hasselt,ak-27
+SA_GB_RODEMER,de-9
+SA_KS_LOZB,de-18
+SA_KS_RODEMER,de-21
+SA_RIF_LODEMER,de-6
+SA_SB_LODE,de-12
+SA_SB_RODEMER,de-14
+SA_SB_RODE_VOETGANGERS,de-12
+SO Diepenbeek,ak-24
+SO2_KS_RODEMER,de-23
+SO_KS_LODEMER,de-22
+SO_KS_LOZB,de-20
+SO_MZ_ROZB,de-11
+SO_SB_LOZB,de-17
+SO_SB_RODEMER,de-16
+SO_ZICHEM_DEMER,de-5
+SP-2,ws-SP3
+STEEN,ws-STEEN
+Schelde-Rijn verbinding,ak-48
+TRAWL,ws-TRAWL
+Testelt,de-4
+Toevoerkanaal ,ak-28
+Uitzet SO 1,ak-21
+Uitzet SO2,ak-19
+VLIETBEEK SA,bh-27
+VLIETBEEK SO,bh-28
+W-6,ws-W6
+W-7,ws-W7
+W1,bpns-W1
+WENDUINE BANK W,bpns-WENDUINEBANKW
+WK14,bpns-WK14
+WN-2,ws-WN2
+WZ,bpns-WZ
+Wijnegem SA,ak-40
+Wijnegem SO,ak-39
+Zandvlietsluis Albertkanaal,ak-46
+Zandvlietsluis Schelde,ak-47
+Zuid-Willemsvaart,ak-20
+Zwartesluisbeek SO Fuiken 1,bh-25
+duwvaartsluis Ham,ak-32
+fietsersbrug aarschot,de-1
+rommelaar,de-2
+sluis Ham RO,ak-30
