@@ -66,33 +66,49 @@ class Aggregator():
         if self.logging:
             print '{0} AGGREGATOR: reading file'.format(datetime.now().isoformat())
         df = pd.read_csv(infile, encoding='utf-8-sig')
+        if len(df.columns) is 1:
+            df = pd.read_csv(infile, sep='\t', encoding='utf-8-sig')
         if self.logging:
             print '{0} AGGREGATOR: parsing file'.format(datetime.now().isoformat())
         if len(df.columns) is len(vliz_cols):
-            if (df.columns == vliz_cols).all():
+            if sorted(list(df.columns)) == sorted(vliz_cols):
                 return self.parse_vliz_detections(df, station_mapping=station_mapping)
         if len(df.columns) is len(vliz_2_cols):
-            if (df.columns == vliz_2_cols).all():
+            if sorted(list(df.columns)) == sorted(vliz_2_cols):
                 return self.parse_vliz_2_detections(df, station_mapping=station_mapping)
         if len(df.columns) is len(inbo_cols):
-            if (df.columns == inbo_cols).all():
+            if sorted(df.columns) == sorted(inbo_cols):
                 return self.parse_inbo_detections(df, station_mapping=station_mapping)
         if len(df.columns) is len(vue_export_cols):
-            if (df.columns == vue_export_cols).all():
+            if sorted(df.columns) == sorted(vue_export_cols):
                 return self.parse_vue_export_detections(df, station_mapping=station_mapping)
-        raise Exception('Unknown input format')
+        raise Exception('Unknown input format for {0}'.format(infile))
 
     def check_stationnames(self, inseries, station_mapping):
         if station_mapping:
             stations = pd.read_csv(station_mapping, header=0)
-            inseries.replace(to_replace=list(stations['old_name']), value=list(stations['new_name']), inplace=True)
-        return inseries.apply(lambda x: re.search('^[a-zA-Z]+-[0-9a-zA-Z]+$', x)).hasnans()
+            stations['old_name'].fillna(stations['receiver_id'][stations['old_name'].isnull()], inplace=True)
+            inseries.replace(
+                to_replace=list(stations['old_name'].apply(lambda x: str(x).strip())),
+                value=list(stations['new_name'].apply(lambda x: str(x).strip())),
+                inplace=True
+            )
+        wrong_station_names = inseries[inseries.apply(lambda x: False if re.search('^[a-zA-Z]+-[0-9a-zA-Z]+$', str(x)) else True)]
+        print wrong_station_names
+        if self.logging:
+            if len(wrong_station_names) > 0:
+                print '{0} wrong station names: \'{1}\''.format(len(wrong_station_names), str(wrong_station_names))
+        return len(wrong_station_names) == 0
 
     def parse_vliz_detections(self, dataframe, station_mapping=None):
         timestamps_str = dataframe['Date(UTC)'] + ' ' + dataframe['Time(UTC)']
-        timestamps = timestamps_str.apply(lambda x: datetime(*strptime(x, '%Y-%m-%d %H:%M:%S')[:6]))
+        try:
+            timestamps = timestamps_str.apply(lambda x: datetime(*strptime(x, '%Y-%m-%d %H:%M:%S')[:6]))
+        except:
+            timestamps = timestamps_str.apply(lambda x: datetime(*strptime(x, '%d/%m/%Y %H:%M:%S')[:6]))
         # check station name format
-        if self.check_stationnames(dataframe['StationName'], station_mapping):
+        dataframe['StationName'].fillna(dataframe['Receiver'][dataframe['StationName'].isnull()], inplace=True) # fill in empty station names with receiver ids
+        if not self.check_stationnames(dataframe['StationName'], station_mapping):
             raise Exception('StationName found that does not match required format')
         outdf = pd.DataFrame(
             data={
@@ -107,7 +123,7 @@ class Aggregator():
     def parse_vliz_2_detections(self, dataframe, station_mapping=None):
         timestamps = dataframe['Date and Time (UTC)'].apply(lambda x: datetime(*strptime(x, '%Y-%m-%d %H:%M:%S')[:6]))
         # check station name format
-        if self.check_stationnames(dataframe['Station Name'], station_mapping):
+        if not self.check_stationnames(dataframe['Station Name'], station_mapping):
             raise Exception('Station Name found that does not match required format')
         outdf = pd.DataFrame(
             data={
@@ -125,7 +141,7 @@ class Aggregator():
         except:
             timestamps = dataframe['Date/Time'].apply(lambda x: datetime(*strptime(x, '%Y-%m-%d %H:%M:%S')[:6]))
         transmitters = dataframe['Code Space'] + '-' + dataframe['ID'].apply(str)
-        if self.check_stationnames(dataframe['Station Name'], station_mapping):
+        if not self.check_stationnames(dataframe['Station Name'], station_mapping):
             raise Exception('Station Name found that does not match required format')
         outdf = pd.DataFrame(
             data={
@@ -138,8 +154,11 @@ class Aggregator():
         return outdf
 
     def parse_vue_export_detections(self, dataframe, station_mapping=None):
-        timestamps = dataframe['date_time_utc'].apply(lambda x: datetime(*strptime(x, '%Y-%m-%d %H:%M:%S')[:6]))
-        if self.check_stationnames(dataframe['station_name'], station_mapping):
+        try:
+            timestamps = dataframe['date_time_utc'].apply(lambda x: datetime(*strptime(x, '%d/%m/%Y %H:%M')[:6]))
+        except:
+            timestamps = dataframe['date_time_utc'].apply(lambda x: datetime(*strptime(x, '%Y-%m-%d %H:%M:%S')[:6]))
+        if not self.check_stationnames(dataframe['station_name'], station_mapping):
             print 'station error'
             raise Exception('station_name found that does not match required format')
         outdf = pd.DataFrame(

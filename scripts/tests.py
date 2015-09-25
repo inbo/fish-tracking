@@ -16,7 +16,7 @@ class TestAggregator(unittest.TestCase):
 
     # Set up
     def setUp(self):
-        self.agg = Aggregator()
+        self.agg = Aggregator(logging=True)
 
 
     # Tests
@@ -24,6 +24,15 @@ class TestAggregator(unittest.TestCase):
     #======================
     # Data validation
     #======================
+    def test_check_station_names(self):
+        test_station_names = pd.Series(['some-5', 'hba-42q'])
+        self.assertTrue(self.agg.check_stationnames(test_station_names, None))
+
+    def test_failing_station_names(self):
+        test_station_names = pd.Series(['some-5', 'not ok'])
+        self.assertFalse(self.agg.check_stationnames(test_station_names, None))
+
+    # @unittest.SkipTest
     def test_parse_vliz_detections(self):
         detections = self.agg.parse_detections(VLIZ_DETECTIONS)
         self.assertEquals(
@@ -34,12 +43,27 @@ class TestAggregator(unittest.TestCase):
         self.assertTrue(results.all())
         self.assertEquals(detections['stationname'][0], 'VG-2') # station_mapping not given, so station names not translated
 
+    # @unittest.SkipTest
     def test_parse_vliz_detections_rename_stations(self):
         """If station_mapping is given, translate station names based on the mapping file"""
         detections = self.agg.parse_detections(VLIZ_DETECTIONS, station_mapping=STATION_MAPPING)
         self.assertEquals(detections['stationname'][0], 'bpns-VG2')
+        # if station name is empty, map by using the receiver id
+        error_record = pd.DataFrame(data={
+            'Date(UTC)': ['2015-02-19'],
+            'Time(UTC)': ['15:01:57'],
+            'Receiver': ['VR2W-122324'],
+            'Transmitter': ['A69-1601-14872'],
+            'StationName': [None]
+        }, index=[20])
+        df = pd.read_csv(VLIZ_DETECTIONS, encoding='utf-8-sig')
+        full_df = pd.concat([df, error_record])
+        print 'ADDING WRONG STATION NAME'
+        detections = self.agg.parse_vliz_detections(full_df, station_mapping=STATION_MAPPING)
+        self.assertEquals(detections['stationname'].iloc[-1], 'ma-3')
 
 
+    # @unittest.SkipTest
     def test_fail_parse_vliz_detections(self):
         failing_data = [
             # empty data frame will fail
@@ -74,6 +98,7 @@ class TestAggregator(unittest.TestCase):
             with self.assertRaises(Exception):
                 self.agg.parse_vliz_detections(df)
 
+    # @unittest.SkipTest
     def test_fail_parse_vliz_2_detections(self):
         failing_data = [
             # empty data frame will fail
@@ -105,6 +130,7 @@ class TestAggregator(unittest.TestCase):
             with self.assertRaises(Exception):
                 self.agg.parse_vliz_detections(df)
 
+    # @unittest.SkipTest
     def test_parse_vliz2_detections(self):
         detections = self.agg.parse_detections(VLIZ_2_DETECTIONS)
         self.assertEquals(
@@ -114,6 +140,7 @@ class TestAggregator(unittest.TestCase):
         results = detections['timestamp'].apply(lambda x: isinstance(x, datetime))
         self.assertTrue(results.all())
 
+    # @unittest.SkipTest
     def test_parse_inbo_detections(self):
         detections = self.agg.parse_detections(INBO_DETECTIONS)
         self.assertEquals(
@@ -123,6 +150,7 @@ class TestAggregator(unittest.TestCase):
         results = detections['timestamp'].apply(lambda x: isinstance(x, datetime))
         self.assertTrue(results.all())
 
+    # @unittest.SkipTest
     def test_fail_parse_inbo_detections(self):
         failing_data = [
             # empty data frame will fail
@@ -149,6 +177,7 @@ class TestAggregator(unittest.TestCase):
             with self.assertRaises(Exception):
                 self.agg.parse_vliz_detections(df)
 
+    # @unittest.SkipTest
     def test_parse_vueexport_detections(self):
         detections = self.agg.parse_detections(VUE_DETECTIONS)
         self.assertEquals(
@@ -158,6 +187,7 @@ class TestAggregator(unittest.TestCase):
         results = detections['timestamp'].apply(lambda x: isinstance(x, datetime))
         self.assertTrue(results.all())
 
+    # @unittest.SkipTest
     def test_fail_parse_vueexport_detections(self):
         failing_data = [
             # empty data frame will fail
@@ -173,7 +203,7 @@ class TestAggregator(unittest.TestCase):
             {
                 'date_time_utc': ['2010-04-20 10:42:21'],
                 'transmitter_id': ['29JEQ'],
-                'station_name': ['17 Iso 8s 18'],
+                'station_name': ['17 Iso 8s this is not ok'],
                 'receiver_id': ['VR92S']
             },
         ]
@@ -188,6 +218,7 @@ class TestAggregator(unittest.TestCase):
     # Aggregation detections
     #=======================
 
+    # @unittest.SkipTest
     def test_aggregate_only_time(self):
         """
         Leave transmitter and stationname out of consideration by giving them constant values. The records are
@@ -216,6 +247,7 @@ class TestAggregator(unittest.TestCase):
         result = self.agg.aggregate(indata, minutes_delta=10)
         self.assertEquals(len(result.index), 3)
 
+    # @unittest.SkipTest
     def test_aggregate(self):
         """
         Now use different transmitter ids or station names. The records are no longer aggregated the way they did
@@ -250,6 +282,7 @@ class TestAggregator(unittest.TestCase):
             self.assertEquals(list(row), expected_records[i])
 
 
+    # @unittest.SkipTest
     def test_aggregate_diff_locations(self):
         """
         Compare this test with test_aggregate_only_time. If we add a record that shows that we detected id1 at another

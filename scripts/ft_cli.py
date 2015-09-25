@@ -33,7 +33,7 @@ def aggregate(directory, minutes, st_mapping, debug):
 @click.option('--debug/--no-debug', default=False)
 def parse(directory, st_mapping, debug):
     """Create consolidated detections file based on data in DIRECTORY but do not aggregate time frames"""
-    agg = Aggregator()
+    agg = Aggregator(logging=debug)
     detection_dataframes = []
     for fname in os.listdir(directory):
         if fname.split('.')[-1] == 'csv':
