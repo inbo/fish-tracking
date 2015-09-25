@@ -94,7 +94,6 @@ class Aggregator():
                 inplace=True
             )
         wrong_station_names = inseries[inseries.apply(lambda x: False if re.search('^[a-zA-Z]+-[0-9a-zA-Z]+$', str(x)) else True)]
-        print wrong_station_names
         if self.logging:
             if len(wrong_station_names) > 0:
                 print '{0} wrong station names: \'{1}\''.format(len(wrong_station_names), str(wrong_station_names))
