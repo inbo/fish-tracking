@@ -85,6 +85,8 @@ class Aggregator():
         raise Exception('Unknown input format for {0}'.format(infile))
 
     def check_stationnames(self, inseries, station_mapping):
+        if self.logging:
+            print '{0} AGGREGATOR: inseries data type: {1}'.format(datetime.now().isoformat(), inseries.dtype)
         if station_mapping:
             stations = pd.read_csv(station_mapping, header=0)
             stations['old_name'].fillna(stations['receiver_id'][stations['old_name'].isnull()], inplace=True)
@@ -106,6 +108,9 @@ class Aggregator():
         except:
             timestamps = timestamps_str.apply(lambda x: datetime(*strptime(x, '%d/%m/%Y %H:%M:%S')[:6]))
         # check station name format
+        # first cast to string. If original series was not a string (because data was absent) NaN will be replaced by 'nan'. We'll explicitly replace those too.
+        dataframe['Station Name'] = dataframe['StationName'].astype(str).replace(to_replace=['nan'], value=[None])
+        # Now, where the StationName is empty (None or NaN instead of 'nan'), replace it by the Receiver
         dataframe['StationName'].fillna(dataframe['Receiver'][dataframe['StationName'].isnull()], inplace=True) # fill in empty station names with receiver ids
         if not self.check_stationnames(dataframe['StationName'], station_mapping):
             raise Exception('StationName found that does not match required format')
@@ -122,6 +127,10 @@ class Aggregator():
     def parse_vliz_2_detections(self, dataframe, station_mapping=None):
         timestamps = dataframe['Date and Time (UTC)'].apply(lambda x: datetime(*strptime(x, '%Y-%m-%d %H:%M:%S')[:6]))
         # check station name format
+        # first cast to string. If original series was not a string (because data was absent) NaN will be replaced by 'nan'. We'll explicitly replace those too.
+        dataframe['Station Name'] = dataframe['Station Name'].astype(str).replace(to_replace=['nan'], value=[None])
+        # Now, where the StationName is empty (None or NaN instead of 'nan'), replace it by the Receiver
+        dataframe['Station Name'].fillna(dataframe['Receiver'][dataframe['Station Name'].isnull()], inplace=True) # fill in empty station names with receiver ids
         if not self.check_stationnames(dataframe['Station Name'], station_mapping):
             raise Exception('Station Name found that does not match required format')
         outdf = pd.DataFrame(
@@ -140,6 +149,10 @@ class Aggregator():
         except:
             timestamps = dataframe['Date/Time'].apply(lambda x: datetime(*strptime(x, '%Y-%m-%d %H:%M:%S')[:6]))
         transmitters = dataframe['Code Space'] + '-' + dataframe['ID'].apply(str)
+        # first cast to string. If original series was not a string (because data was absent) NaN will be replaced by 'nan'. We'll explicitly replace those too.
+        dataframe['Station Name'] = dataframe['Station Name'].astype(str).replace(to_replace=['nan'], value=[None])
+        # Now, where the StationName is empty (None or NaN instead of 'nan'), replace it by the Receiver
+        dataframe['Station Name'].fillna(dataframe['Receiver Name'][dataframe['Station Name'].isnull()], inplace=True) # fill in empty station names with receiver ids
         if not self.check_stationnames(dataframe['Station Name'], station_mapping):
             raise Exception('Station Name found that does not match required format')
         outdf = pd.DataFrame(
@@ -157,8 +170,11 @@ class Aggregator():
             timestamps = dataframe['date_time_utc'].apply(lambda x: datetime(*strptime(x, '%d/%m/%Y %H:%M')[:6]))
         except:
             timestamps = dataframe['date_time_utc'].apply(lambda x: datetime(*strptime(x, '%Y-%m-%d %H:%M:%S')[:6]))
+        # first cast to string. If original series was not a string (because data was absent) NaN will be replaced by 'nan'. We'll explicitly replace those too.
+        dataframe['station_name'] = dataframe['station_name'].astype(str).replace(to_replace=['nan'], value=[None])
+        # Now, where the StationName is empty (None or NaN instead of 'nan'), replace it by the Receiver
+        dataframe['station_name'].fillna(dataframe['receiver_id'][dataframe['station_name'].isnull()], inplace=True) # fill in empty station names with receiver ids
         if not self.check_stationnames(dataframe['station_name'], station_mapping):
-            print 'station error'
             raise Exception('station_name found that does not match required format')
         outdf = pd.DataFrame(
             data={
