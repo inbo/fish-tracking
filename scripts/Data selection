@@ -1,0 +1,161 @@
+##
+###R-Script for general telemetry analyses
+##
+# written by Jan Reubens & Ans Mouton
+#
+##
+#REMARK: make sure your Rprofile.site is set correct for factors!:
+# 'options(stringsAsFactors = FALSE)'
+#
+##order of things: 
+# 1)name what you need
+# 2)read in data files needed: vemco data, environmental data, GIS files
+# 3)Filter data: remove doubtful data; filter data between dates/receivers/tags
+# 4)Start basic analyses
+# 5)Perform detailed analyses
+# 6)Visualize data
+
+#
+## READ LIBRARIES  + SET WORKING DIRECTORY
+#
+library(chron)
+library(PBSmapping)
+library(ks)
+library(misc3d)
+library(rgl)
+library(rgdal)
+library(oce)
+library(CircStats)
+library(VTrack)
+library(reshape)
+library(gtools)
+library(ggplot2)
+
+
+setwd("D:/Jreubens/Documents/Work/Artificial hard substrates/Acoustic telemetry/Fish Telemetry Network/Data analysis/Scripts/Data Input")
+
+#
+## 1) Name what you need
+#
+filename <- "test.csv" #filename of the Vemco detections
+filenameReceivers <- "selectedreceivers.csv" #filename of receiver list
+filenameTags<- "selectedtags.csv" #filename of tag list
+
+starttime<- "2012-01-01 00:00:00"
+stoptime<- "2015-11-03 00:00:00"
+
+selection<-1 # selection of the data you loaded linked to 'selectedtags' and 'selectedreceivers'files
+timeselection<-0 # if you want an extra selection in the timeframe your working in
+sensor<-0 #if you have sensor data (T or P, this should be 1, if not, choose 0)
+
+plotgraph<-1 # 1 als je grafieken wil plotten, anders 0
+
+savefile<-1 # 1 als je outputfiles wil opslaan, anders 0
+
+label<-"Eng" #Kies taal van je grafieken: "Eng" of "NL"
+
+#
+  
+####################################
+##DON'T CHANGE ANYTHING BELOW THIS##
+####################################
+
+## 2) READ IN DATA FILES NEEDED
+# A)read in a tag data file
+tagdata <- read.csv(filename)
+summary(tagdata)
+head (tagdata, n=10L)
+colnames (tagdata)
+
+#create factorvalue for field names
+tagdata$ID<-factor(tagdata$ID)
+tagdata$Receiver.S.N<-factor(tagdata$Receiver.S.N)
+
+#combine Code.Space and ID to get tagname (as we work with data from many people its important to have both codespace and  ID)
+tagname <-paste(tagdata$Code.Space,tagdata$ID,sep="-")
+
+
+#split day, month and year form Date.Time
+Day<-strftime(tagdata$Date.Time, "%d")
+Month<-strftime(tagdata$Date.Time, "%m")
+Year<-strftime(tagdata$Date.Time, "%y")
+Date<-strftime(tagdata$Date.Time, "%d/%m/%y")
+Time<-strftime(tagdata$Date.Time, "%H:%M:%S")
+head(Time)
+
+#add tagname, Day, Month and Year to the dataframe
+tagdatax <-data.frame(tagdata,tagname,Day,Month,Year, Date, Time)
+head (tagdatax)
+summary (tagdatax)
+
+# B)read in csv file for selecting tags and receivers
+tagspec <- read.csv(filenameTags,header=TRUE,sep=";")
+recspec <- read.csv(filenameReceivers,header=TRUE,sep=";")
+
+#combine Code.Space and ID to get tagname (as we work with data from many people its important to have both codespace and  ID)
+tags <- paste(tagspec$Code.Space,tagspec$ID,sep="-")
+tagspec2 <-data.frame(tagspec,tags)
+summary (tagspec2)
+
+#
+## 3)FILTER DATA: REMOVE DOUBTFUL DATA; FILTER DATA BETWEEN DATES/RECEIVERS/TAGS
+#
+
+#remove unwanted fields 
+if (sensor==0){
+tagdatax$Sensor.1<-NULL
+tagdatax$Units.1<-NULL
+tagdatax$Sensor.2<-NULL
+tagdatax$Units.2<-NULL}
+
+
+##filter data
+# list of available receivers and tags
+unique(tagdatax$Receiver.S.N)
+unique(tagdatax$tagname)
+
+# select receivers & tags 
+if (selection==1){
+  for (i in 1:dim(tagspec2)[1]){
+    if (i==1){
+    dataselect <- subset(tagdatax,tagdatax$tagname == tagspec2$tags[i])
+    }
+    if (i!=1){
+    datatransfer <- subset(tagdatax,tagdatax$tagname == tagspec2$tags[i])
+    dataselect<-rbind(dataselect,datatransfer)
+    }
+  }
+  for (i in 1:dim(recspec)[1]){
+    if (i==1){
+      dataselect2 <- subset(dataselect,dataselect$Receiver.S.N == recspec$Receiver.S.N[i])
+    }
+    if (i!=1){
+      datatransfer2<-subset(dataselect,dataselect$Receiver.S.N == recspec$Receiver.S.N[i])
+      dataselect2<-rbind(dataselect2,datatransfer2)
+    }
+  }
+  
+}
+   if (selection!=1){
+  dataselect<-tagdatax
+  dataselect2<-dataselect
+  
+}
+
+summary(dataselect2)
+
+
+
+#Select timeframe
+if (timeselection==1){
+  newdata<-subset(dataselect2, as.character(Date.Time) > starttime & as.character(Date.Time) < stoptime)
+}
+if (timeselection!=1){
+  newdata<-dataselect2
+}
+
+summary(newdata)
+write.csv(newdata, file = "MyData.csv") #CHECK THIS DATA BEFORE YOU START ANALYSES!!
+
+
+
