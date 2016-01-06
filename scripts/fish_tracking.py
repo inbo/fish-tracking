@@ -77,10 +77,10 @@ class Aggregator():
             if sorted(list(df.columns)) == sorted(vliz_2_cols):
                 return self.parse_vliz_2_detections(df, station_mapping=station_mapping)
         if len(df.columns) is len(inbo_cols):
-            if sorted(df.columns) == sorted(inbo_cols):
+            if sorted(list(df.columns)) == sorted(inbo_cols):
                 return self.parse_inbo_detections(df, station_mapping=station_mapping)
         if len(df.columns) is len(vue_export_cols):
-            if sorted(df.columns) == sorted(vue_export_cols):
+            if sorted(list(df.columns)) == sorted(vue_export_cols):
                 return self.parse_vue_export_detections(df, station_mapping=station_mapping)
         raise Exception('Unknown input format for {0}'.format(infile))
 
@@ -95,10 +95,15 @@ class Aggregator():
                 value=list(stations['new_name'].apply(lambda x: str(x).strip())),
                 inplace=True
             )
+            inseries.replace(
+                to_replace=list(stations['receiver_id'].apply(lambda x: str(x).strip())),
+                value=list(stations['new_name'].apply(lambda x: str(x).strip())),
+                inplace=True
+            )
         wrong_station_names = inseries[inseries.apply(lambda x: False if re.search('^[a-zA-Z]+-[0-9a-zA-Z]+$', str(x)) else True)]
         if self.logging:
             if len(wrong_station_names) > 0:
-                print '{0} wrong station names: \'{1}\''.format(len(wrong_station_names), str(wrong_station_names))
+                print '{0} wrong station names: \'{1}\''.format(len(wrong_station_names), str(wrong_station_names.unique()))
         return len(wrong_station_names) == 0
 
     def parse_vliz_detections(self, dataframe, station_mapping=None):
@@ -152,7 +157,9 @@ class Aggregator():
         # first cast to string. If original series was not a string (because data was absent) NaN will be replaced by 'nan'. We'll explicitly replace those too.
         dataframe['Station Name'] = dataframe['Station Name'].astype(str).replace(to_replace=['nan'], value=[None])
         # Now, where the StationName is empty (None or NaN instead of 'nan'), replace it by the Receiver
-        dataframe['Station Name'].fillna(dataframe['Receiver Name'][dataframe['Station Name'].isnull()], inplace=True) # fill in empty station names with receiver ids
+        dataframe['Station Name'].fillna(dataframe['Receiver Name'][dataframe['Station Name'].isnull()], inplace=True) # fill in empty station names with receiver names
+        # Or.. if that doesn't work, replace it with the Receiver serial number
+        dataframe['Station Name'].fillna(dataframe['Receiver S/N'][dataframe['Station Name'].isnull()], inplace=True) # fill in empty station names with receiver serial number
         if not self.check_stationnames(dataframe['Station Name'], station_mapping):
             raise Exception('Station Name found that does not match required format')
         outdf = pd.DataFrame(

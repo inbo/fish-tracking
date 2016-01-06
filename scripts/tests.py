@@ -43,7 +43,6 @@ class TestAggregator(unittest.TestCase):
         self.assertTrue(results.all())
         self.assertEquals(detections['stationname'][0], 'VG-2') # station_mapping not given, so station names not translated
 
-    # @unittest.SkipTest
     def test_parse_vliz_detections_rename_stations(self):
         """If station_mapping is given, translate station names based on the mapping file"""
         detections = self.agg.parse_detections(VLIZ_DETECTIONS, station_mapping=STATION_MAPPING)
