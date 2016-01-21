@@ -1,0 +1,136 @@
+---
+title: "Tracking network analysis"
+author: Bart Aelterman (bart.aelterman@inbo.be)
+output: html_document
+---
+
+This document demonstrates how to construct a graph from fish tracking data.
+
+Content:
+
+- [Load required libraries](#load-required-libraries)
+- [Introduction to igraph](#introduction-to-igraph)
+- [Construct a graph from tracking data](#construct-a-graph-from-tracking-data)
+  - [Raw tracking data](#raw-tracking-data)
+  - [Interval data](#interval-data)
+
+## Load required libraries
+
+- [igraph](http://igraph.org/r/): igraph is a very extensive package for working with graphs.
+- [plyr](http://plyr.had.co.nz/): Tools for Splitting, Applying and Combining Data.
+
+```{r}
+source("receiver_network.R")
+```
+
+## Introduction to igraph
+
+Every graph consists of vertices (nodes) and edges (arrows that connect the nodes). Both vertices and edges can have additional attributes which can be useful for analysis or plotting. Igraph allows you to quickly create a graph by providing it a dataframe containing only edges. Vertices are extracted from that dataframe. The first column of the edge is expected to contain the names of the staring vertex of the edges while the second column should contain the name of the end vertex. A basic plot can then be created with the `plot` function.
+
+Here is a quick example:
+
+```{r}
+edges <- data.frame(col1=c("A", "A", "B", "B", "C", "D"),
+                    col2=c("B", "C", "C", "D", "D", "A"))
+print(edges)
+g <- graph.data.frame(edges)
+plot(g)
+```
+
+You can inspect the graph's vertices and edges using the `V(g)` and `E(g)` functions respectively:
+
+```{r}
+print(E(g))
+print(V(g))
+```
+
+Additional columns in the edges dataframe will be added as attributes to the edges. If you want to add attributes to the vertices, you have to pass in a dataframe containing the vertices rather than letting igraph fetch these from the edges dataframe.
+
+A final example to illustrate this:
+
+```{r}
+edges <- data.frame(col1=c("A", "A", "B", "B", "C", "D"),
+                    col2=c("B", "C", "C", "D", "D", "A"),
+                    counts=c(1, 1, 4, 2, 2, 5))
+vertices <- data.frame(col1=c("A", "B", "C", "D"),
+                       weight=c(10, 4, 9, 2))
+g <- graph.data.frame(edges, vertices=vertices)
+
+# Now use the extra columns in the plotting function
+plot(g, edge.width=E(g)$counts * 2, vertex.size=V(g)$weight * 3)
+```
+
+## Construct a graph from tracking data
+
+### Raw tracking data
+
+The function `detections2graph` in `receiver_network.R` will construct a graph based on raw tracking data. Each vertex represents a station (receiver) and each edge represents the movement of the tracked animal between two stations. The frequency of each edge will be added as an additional attribute. A dataframe with receiver metadata can be given to create a custom layout for the graph. The `plot.migration.detections` function can be used to create a plot from the graph.
+
+Here's an example:
+
+```{r}
+detections <- data.frame(
+  transmitter=c(1, 1, 1, 1, 1),
+  stationname=c(1,2,1,2,3),
+  timestamp=c("2014-01-02 01:00:00", "2014-01-02 01:10:00",
+              "2014-01-02 01:20:00", "2014-01-02 01:30:00",
+              "2014-01-02 01:40:00")
+)
+receivers <- data.frame(
+  station_name=c(1, 2, 3),
+  longitude=c(1, 2, 3),
+  latitude=c(1, 2, 1)
+)
+
+g.detections <- detections2graph(detections, receivers, 1)
+plot.migration.detections(g.detections)
+```
+
+### Interval data
+
+Now we will construct a graph from the intervals (these are aggregated detections indicating when a fish arrived at a station and when it left). 
+
+Additionally to the previous section, the following additional attributes will be added to the vertices:
+
+- `total_time`: indicating the sum of all residence times of the animal at that station
+- `avg_time`: indicating the average residence time of the animal at that station
+- `last_departure`: the last time at which the animal left the station
+- `X`: longitude of the station
+- `Y`: latitude of the station
+
+
+The function `intervals2graph` will construct the graph from a dataframe containing intervals. This dataframe is expected to have at least the following columns:
+
+- `Transmitter`: id of the detected transmitter
+- `Station.Name`: name of the station
+- `X`: longitude of the station
+- `Y`: latitude of the station
+- `residencetime`: number of seconds the transmitter was at the station
+- `Arrival_time`: time at which transmitter arrived at the station
+- `Departure_time`: time at which transmitter left the station
+
+Here is an example:
+
+```{r}
+intervals <- data.frame(
+  Transmitter=c(1, 1, 1, 1, 1),
+  Station.Name=c(1,2,1,2,3),
+  X=c(1,2,1,2,3),
+  Y=c(1, 10, 1, 10, 20),
+  residencetime=c(10, 10, 20, 42, 21),
+  Arrival_time=c("2014-01-02 01:00:00", "2014-01-02 01:10:00",
+              "2014-01-02 01:20:00", "2014-01-02 01:30:00",
+              "2014-01-02 01:40:00"),
+  Departure_time=c("2014-01-02 01:05:00", "2014-01-02 01:15:00",
+              "2014-01-02 01:25:00", "2014-01-02 01:35:00",
+              "2014-01-02 01:45:00")
+)
+g.intervals <- intervals2graph(intervals, 1)
+plot(g.intervals)
+```
+
+With `plot.migration.intervals` we can use the additional attributes to create a more pleasing plot. The vertices are colored by their last departure time. The earliest is colored yellow while the latest is colored blue.
+
+```{r}
+plot.migration.intervals(g.intervals)
+```
