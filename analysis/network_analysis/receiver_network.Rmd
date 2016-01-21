@@ -13,6 +13,7 @@ Content:
 - [Construct a graph from tracking data](#construct-a-graph-from-tracking-data)
   - [Raw tracking data](#raw-tracking-data)
   - [Interval data](#interval-data)
+- [Create a movement matrix](#create-a-movement-matrix)
 
 ## Load required libraries
 
@@ -133,4 +134,13 @@ With `plot.migration.intervals` we can use the additional attributes to create a
 
 ```{r}
 plot.migration.intervals(g.intervals)
+```
+
+## Create a movement matrix
+
+The function `detections2movementmatrix` can be used directly to create a movement matrix. Here is an example where we use the `detections` dataframe create before.
+
+```{r}
+matrix <- detections2movementmatrix(detections, 1)
+print(matrix)
 ```
