@@ -34,11 +34,10 @@ detections2movementedges <- function(detectionsDF, transmitter.id) {
 }
 
 # ==================================
-# Generate a movement matrix from a data frame containing raw detections.
-# A movement matrix has a row and a column for each receiver. Every cell indicates the
-# number of times a fish migrated from receiver1 (the row) to receiver2 (the column)
-detections2movementmatrix <- function(detectionsDF, transmitter.id) {
-  edges <- detections2movementedges(detectionsDF, transmitter.id)
+# Generate a movement matrix based on a data frame containing graph edges.
+# This function can be used in `detections2movementmatrix` and
+# `intervals2movementmatrix`
+edges2movementmatrix <- function(edges) {
   names <- levels(as.factor(c(edges$receiver1, edges$receiver2)))
   m <- sparseMatrix(i=as.numeric(as.factor(edges$receiver1)),
                     j=as.numeric(as.factor(edges$receiver2)),
@@ -46,6 +45,16 @@ detections2movementmatrix <- function(detectionsDF, transmitter.id) {
   movementDF <- as.data.frame(as.matrix(m))
   row.names(movementDF) <- levels(as.factor(edges$receiver1))
   colnames(movementDF) <- levels(as.factor(edges$receiver2))
+  return(movementDF)
+}
+
+# ==================================
+# Generate a movement matrix from a data frame containing raw detections.
+# A movement matrix has a row and a column for each receiver. Every cell indicates the
+# number of times a fish migrated from receiver1 (the row) to receiver2 (the column)
+detections2movementmatrix <- function(detectionsDF, transmitter.id) {
+  edges <- detections2movementedges(detectionsDF, transmitter.id)
+  movementDF <- edges2movementmatrix(edges)
   return(movementDF)
 }
 
@@ -79,25 +88,11 @@ detections2graph <- function(detectionsDF, receiversDF, transmitter.id) {
 }
 
 # ==================================
-# Generate a graph representing the movement of the fish carrying the given
-# transmitter. Vertices (nodes) in the graph represent receivers while edges (arrows)
-# represent movement between receivers.
-# Parameters:
-#    - `intervalsDF`: a dataframe with intervals. Expected columns
-#            are `Station.Name`, `Arrival_time`, `Departure_time`, `Transmitter`, `X`, `Y`,
-#            and `residencetime`. Other columns are ignored.
-#    - `transmitter.id`: id of the transmitter for which a movement graph should be
-#            created.
-intervals2graph <- function(intervalsDF, transmitter.id) {
+# Generate movement edges from a data frame containing detection intervals.
+# The movement edges is a datafame with columns: "receiver1", "receiver2" and "count"
+intervals2movementedges <- function(intervalsDF, transmitter.id) {
   # sort the intervals DF by transmitter and arrival time
   d <- intervalsDF[order(intervalsDF$Transmitter, intervalsDF$Arrival_time), ]
-  station.attr <- ddply(d[, c("Transmitter", "X", "Y", "Station.Name",
-                                 "residencetime", "Departure_time")],
-                           .(Transmitter, Station.Name, X, Y), # aggregate by transmitter and station
-                           summarize, total_time=sum(residencetime), # add total residencetime
-                           avg_time=mean(residencetime), # add mean residencetime
-                           last_departure=max(ymd_hms(Departure_time))
-                        ) # add last departure time
   # add a flag when a new transmitter starts
   d$new.transm <- c(1, diff(as.factor(d$Transmitter)))
   # add a flag when the station name of the interval differs from the previous interval
@@ -109,12 +104,46 @@ intervals2graph <- function(intervalsDF, transmitter.id) {
       d[d$stationdiff != 0 & d$Transmitter==transmitter.id, "Station.Name"]
     ),
     c(d[d$stationdiff != 0 & d$Transmitter==transmitter.id, "Station.Name"],
-    0)
+      0)
   )
   edges.df <- data.frame(all.edges[2:(length(all.edges[,1]) - 1),])
   colnames(edges.df) <- c("receiver1", "receiver2")
   # create a dataframe containing the edges and their counts
   edges <- count(edges.df)
+}
+
+# ==================================
+# Generate a movement matrix from a data frame containing detection intervals.
+# A movement matrix has a row and a column for each receiver. Every cell indicates the
+# number of times a fish migrated from receiver1 (the row) to receiver2 (the column)
+intervals2movementmatrix <- function(intervalsDF, transmitter.id) {
+  edges <- intervals2movementedges(intervalsDF, transmitter.id)
+  movementMatrix <- edges2movementmatrix(edges)
+  return(movementMatrix)
+}
+
+# ==================================
+# Generate a graph representing the movement of the fish carrying the given
+# transmitter. Vertices (nodes) in the graph represent receivers while edges (arrows)
+# represent movement between receivers.
+# Parameters:
+#    - `intervalsDF`: a dataframe with intervals. Expected columns
+#            are `Station.Name`, `Arrival_time`, `Departure_time`, `Transmitter`, `X`, `Y`,
+#            and `residencetime`. Other columns are ignored.
+#    - `transmitter.id`: id of the transmitter for which a movement graph should be
+#            created.
+intervals2graph <- function(intervalsDF, transmitter.id) {
+  edges <- intervals2movementedges(intervalsDF, transmitter.id)
+  # sort the intervals DF by transmitter and arrival time
+  d <- intervalsDF[order(intervalsDF$Transmitter, intervalsDF$Arrival_time), ]
+  station.attr <- ddply(d[, c("Transmitter", "X", "Y", "Station.Name",
+                                 "residencetime", "Departure_time")],
+                           .(Transmitter, Station.Name, X, Y), # aggregate by transmitter and station
+                           summarize, total_time=sum(residencetime), # add total residencetime
+                           avg_time=mean(residencetime), # add mean residencetime
+                           last_departure=max(ymd_hms(Departure_time))
+                        ) # add last departure time
+  
   # select all station names that where visited
   all.vertices <- c(as.character(edges$receiver1),
                     as.character(edges$receiver2))

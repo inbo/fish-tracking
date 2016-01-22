@@ -144,3 +144,10 @@ The function `detections2movementmatrix` can be used directly to create a moveme
 matrix <- detections2movementmatrix(detections, 1)
 print(matrix)
 ```
+
+Or you can use the `intervals2movementmatrix` function to get the same movement matrix based on intervals data.
+
+```{r}
+matrix <- intervals2movementmatrix(intervals, 1)
+print(matrix)
+```
