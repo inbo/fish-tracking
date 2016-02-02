@@ -11,7 +11,7 @@ library(Matrix)
 # ==================================
 # Generate movement edges from a data frame containing raw detections.
 # The movement edges is a datafame with columns: "receiver1", "receiver2" and "count"
-detections2movementedges <- function(detectionsDF, transmitter.id) {
+detections2movementedges <- function(detectionsDF, transmitter.id, allow.loops=FALSE) {
   # sort the detections DF by transmitter and timestamp
   d <- detectionsDF[order(detectionsDF$transmitter, detectionsDF$timestamp), ]
   d$new.transm <- c(1, diff(as.factor(d$transmitter)))
@@ -19,13 +19,23 @@ detections2movementedges <- function(detectionsDF, transmitter.id) {
   d$stationdiff <- c(1, diff(as.factor(d$stationname)))
   # create a matrix with column1 containing the previous station (reveiver1) and column2
   # containing the next station (receiver2)
-  all.edges <- cbind(
-    c(0,
-      d[d$stationdiff != 0 & d$transmitter==transmitter.id, "stationname"]
-    ),
-    c(d[d$stationdiff != 0 & d$transmitter==transmitter.id, "stationname"],
-      0)
-  )
+  if (allow.loops) {
+    all.edges <- cbind(
+      c(0,
+        d[d$transmitter==transmitter.id, "stationname"]
+      ),
+      c(d[d$transmitter==transmitter.id, "stationname"],
+        0)
+    )
+  } else {
+    all.edges <- cbind(
+      c(0,
+        d[d$stationdiff != 0 & d$transmitter==transmitter.id, "stationname"]
+      ),
+      c(d[d$stationdiff != 0 & d$transmitter==transmitter.id, "stationname"],
+        0)
+    )
+  }
   edges.df <- data.frame(all.edges[2:(length(all.edges[,1]) - 1),])
   colnames(edges.df) <- c("receiver1", "receiver2")
   # create a dataframe containing the edges and their counts
@@ -52,8 +62,8 @@ edges2movementmatrix <- function(edges) {
 # Generate a movement matrix from a data frame containing raw detections.
 # A movement matrix has a row and a column for each receiver. Every cell indicates the
 # number of times a fish migrated from receiver1 (the row) to receiver2 (the column)
-detections2movementmatrix <- function(detectionsDF, transmitter.id) {
-  edges <- detections2movementedges(detectionsDF, transmitter.id)
+detections2movementmatrix <- function(detectionsDF, transmitter.id, allow.loops=FALSE) {
+  edges <- detections2movementedges(detectionsDF, transmitter.id, allow.loops=allow.loops)
   movementDF <- edges2movementmatrix(edges)
   return(movementDF)
 }
@@ -69,8 +79,8 @@ detections2movementmatrix <- function(detectionsDF, transmitter.id) {
 #            are `station_name`, `longitude` and `latitude`. Other columns are ignored.
 #    - `transmitter.id`: id of the transmitter for which a movement graph should be
 #            created.
-detections2graph <- function(detectionsDF, receiversDF, transmitter.id) {
-  edges <- detections2movementedges(detectionsDF, transmitter.id)
+detections2graph <- function(detectionsDF, receiversDF, transmitter.id, allow.loops=FALSE) {
+  edges <- detections2movementedges(detectionsDF, transmitter.id, allow.loops=allow.loops)
   # select all station names that where visited
   all.vertices <- c(as.character(edges$receiver1),
                     as.character(edges$receiver2))
@@ -90,7 +100,7 @@ detections2graph <- function(detectionsDF, receiversDF, transmitter.id) {
 # ==================================
 # Generate movement edges from a data frame containing detection intervals.
 # The movement edges is a datafame with columns: "receiver1", "receiver2" and "count"
-intervals2movementedges <- function(intervalsDF, transmitter.id) {
+intervals2movementedges <- function(intervalsDF, transmitter.id, allow.loops=FALSE) {
   # sort the intervals DF by transmitter and arrival time
   d <- intervalsDF[order(intervalsDF$Transmitter, intervalsDF$Arrival_time), ]
   # add a flag when a new transmitter starts
@@ -99,13 +109,23 @@ intervals2movementedges <- function(intervalsDF, transmitter.id) {
   d$stationdiff <- c(1, diff(as.factor(d$Station.Name)))
   # create a matrix with column1 containing the previous station (reveiver1) and column2
   # containing the next station (receiver2)
-  all.edges <- cbind(
-    c(0,
-      d[d$stationdiff != 0 & d$Transmitter==transmitter.id, "Station.Name"]
-    ),
-    c(d[d$stationdiff != 0 & d$Transmitter==transmitter.id, "Station.Name"],
-      0)
-  )
+  if (allow.loops) {
+    all.edges <- cbind(
+      c(0,
+        d[d$Transmitter==transmitter.id, "Station.Name"]
+      ),
+      c(d[d$Transmitter==transmitter.id, "Station.Name"],
+        0)
+    )
+  } else {
+    all.edges <- cbind(
+      c(0,
+        d[d$stationdiff != 0 & d$Transmitter==transmitter.id, "Station.Name"]
+      ),
+      c(d[d$stationdiff != 0 & d$Transmitter==transmitter.id, "Station.Name"],
+        0)
+    )
+  }
   edges.df <- data.frame(all.edges[2:(length(all.edges[,1]) - 1),])
   colnames(edges.df) <- c("receiver1", "receiver2")
   # create a dataframe containing the edges and their counts
@@ -116,8 +136,8 @@ intervals2movementedges <- function(intervalsDF, transmitter.id) {
 # Generate a movement matrix from a data frame containing detection intervals.
 # A movement matrix has a row and a column for each receiver. Every cell indicates the
 # number of times a fish migrated from receiver1 (the row) to receiver2 (the column)
-intervals2movementmatrix <- function(intervalsDF, transmitter.id) {
-  edges <- intervals2movementedges(intervalsDF, transmitter.id)
+intervals2movementmatrix <- function(intervalsDF, transmitter.id, allow.loops=FALSE) {
+  edges <- intervals2movementedges(intervalsDF, transmitter.id, allow.loops=allow.loops)
   movementMatrix <- edges2movementmatrix(edges)
   return(movementMatrix)
 }
@@ -132,8 +152,8 @@ intervals2movementmatrix <- function(intervalsDF, transmitter.id) {
 #            and `residencetime`. Other columns are ignored.
 #    - `transmitter.id`: id of the transmitter for which a movement graph should be
 #            created.
-intervals2graph <- function(intervalsDF, transmitter.id) {
-  edges <- intervals2movementedges(intervalsDF, transmitter.id)
+intervals2graph <- function(intervalsDF, transmitter.id, allow.loops=FALSE) {
+  edges <- intervals2movementedges(intervalsDF, transmitter.id, allow.loops=allow.loops)
   # sort the intervals DF by transmitter and arrival time
   d <- intervalsDF[order(intervalsDF$Transmitter, intervalsDF$Arrival_time), ]
   station.attr <- ddply(d[, c("Transmitter", "X", "Y", "Station.Name",
