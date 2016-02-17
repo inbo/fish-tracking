@@ -102,7 +102,7 @@ detections2graph <- function(detectionsDF, receiversDF, transmitter.id, allow.lo
 # The movement edges is a datafame with columns: "receiver1", "receiver2" and "count"
 intervals2movementedges <- function(intervalsDF, transmitter.id, allow.loops=FALSE) {
   # sort the intervals DF by transmitter and arrival time
-  d <- intervalsDF[order(intervalsDF$Transmitter, intervalsDF$Arrival_time), ]
+  d <- intervalsDF[order(intervalsDF$Transmitter, intervalsDF$Arrivalnum), ]
   # add a flag when a new transmitter starts
   d$new.transm <- c(1, diff(as.factor(d$Transmitter)))
   # add a flag when the station name of the interval differs from the previous interval
@@ -115,6 +115,8 @@ intervals2movementedges <- function(intervalsDF, transmitter.id, allow.loops=FAL
         d[d$Transmitter==transmitter.id, "Station.Name"]
       ),
       c(d[d$Transmitter==transmitter.id, "Station.Name"],
+        0),
+      c(d[d$Transmitter==transmitter.id, "swimdistance"],
         0)
     )
   } else {
@@ -123,11 +125,13 @@ intervals2movementedges <- function(intervalsDF, transmitter.id, allow.loops=FAL
         d[d$stationdiff != 0 & d$Transmitter==transmitter.id, "Station.Name"]
       ),
       c(d[d$stationdiff != 0 & d$Transmitter==transmitter.id, "Station.Name"],
+        0),
+      c(d[d$stationdiff != 0 & d$Transmitter==transmitter.id, "swimdistance"],
         0)
     )
   }
   edges.df <- data.frame(all.edges[2:(length(all.edges[,1]) - 1),])
-  colnames(edges.df) <- c("receiver1", "receiver2")
+  colnames(edges.df) <- c("receiver1", "receiver2", "swimdistance")
   # create a dataframe containing the edges and their counts
   edges <- count(edges.df)
 }
@@ -155,7 +159,7 @@ intervals2movementmatrix <- function(intervalsDF, transmitter.id, allow.loops=FA
 intervals2graph <- function(intervalsDF, transmitter.id, allow.loops=FALSE) {
   edges <- intervals2movementedges(intervalsDF, transmitter.id, allow.loops=allow.loops)
   # sort the intervals DF by transmitter and arrival time
-  d <- intervalsDF[order(intervalsDF$Transmitter, intervalsDF$Arrival_time), ]
+  d <- intervalsDF[order(intervalsDF$Transmitter, intervalsDF$Arrivalnum), ]
   station.attr <- ddply(d[, c("Transmitter", "X", "Y", "Station.Name",
                                  "residencetime", "Departure_time")],
                            .(Transmitter, Station.Name, X, Y), # aggregate by transmitter and station
