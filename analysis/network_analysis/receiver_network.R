@@ -82,13 +82,23 @@ detections2movementmatrix <- function(detectionsDF, transmitter.id, allow.loops=
 detections2graph <- function(detectionsDF, receiversDF, transmitter.id, allow.loops=FALSE) {
   edges <- detections2movementedges(detectionsDF, transmitter.id, allow.loops=allow.loops)
   # select all station names that where visited
-  all.vertices <- c(as.character(edges$receiver1)[1], # only the first receiver of this list is needed. The others are also in edges$receiver2
+  all.vertices <- c(as.character(edges$receiver1),
                     as.character(edges$receiver2))
   # create a list of unique receivers
   receivers <- unique(receiversDF[, c("station_name", "longitude", "latitude")])
   # add a flag when a new transmitter starts
   # create a dataframe containing all station names and their counts
   unique.vertices <- count(all.vertices)
+  # fix the count. All vertices are counted double, except for the first occurrence of the first vertex and the last occurrence of the last vertex
+  unique.vertices$freq <- sapply(unique.vertices$freq,
+                                 function(x) {
+                                   if (x%%2 == 0) {
+                                     return(x/2)
+                                   } else {
+                                     return((x+1)/2)
+                                   }
+                                 }
+  )
   colnames(unique.vertices) <- c("station_name", "count")
   # join the vertices (station names) with the receivers dataframe
   vertices <- merge(unique.vertices, receivers)
@@ -169,11 +179,21 @@ intervals2graph <- function(intervalsDF, transmitter.id, allow.loops=FALSE) {
                         ) # add last departure time
   
   # select all station names that where visited
-  all.vertices <- c(as.character(edges$receiver1)[1], # only the first receiver of this list is needed. The others are also in edges$receiver2
+  all.vertices <- c(as.character(edges$receiver1),
                     as.character(edges$receiver2))
 
   # create a dataframe containing all station names and their counts
   unique.vertices <- count(all.vertices)
+  # fix the count. All vertices are counted double, except for the first occurrence of the first vertex and the last occurrence of the last vertex
+  unique.vertices$freq <- sapply(unique.vertices$freq,
+                                 function(x) {
+                                   if (x%%2 == 0) {
+                                     return(x/2)
+                                   } else {
+                                     return((x+1)/2)
+                                   }
+                                }
+                              )
   colnames(unique.vertices) <- c("Station.Name", "count")
   # join the vertices (station names) with the station.attr. The one holding the additional
   # attributes such as total_time and last_departure
