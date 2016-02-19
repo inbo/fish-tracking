@@ -82,7 +82,7 @@ detections2movementmatrix <- function(detectionsDF, transmitter.id, allow.loops=
 detections2graph <- function(detectionsDF, receiversDF, transmitter.id, allow.loops=FALSE) {
   edges <- detections2movementedges(detectionsDF, transmitter.id, allow.loops=allow.loops)
   # select all station names that where visited
-  all.vertices <- c(as.character(edges$receiver1),
+  all.vertices <- c(as.character(edges$receiver1)[1], # only the first receiver of this list is needed. The others are also in edges$receiver2
                     as.character(edges$receiver2))
   # create a list of unique receivers
   receivers <- unique(receiversDF[, c("station_name", "longitude", "latitude")])
@@ -169,7 +169,7 @@ intervals2graph <- function(intervalsDF, transmitter.id, allow.loops=FALSE) {
                         ) # add last departure time
   
   # select all station names that where visited
-  all.vertices <- c(as.character(edges$receiver1),
+  all.vertices <- c(as.character(edges$receiver1)[1], # only the first receiver of this list is needed. The others are also in edges$receiver2
                     as.character(edges$receiver2))
 
   # create a dataframe containing all station names and their counts
