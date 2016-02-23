@@ -36,8 +36,10 @@ detections2movementedges <- function(detectionsDF, transmitter.id, allow.loops=F
         0)
     )
   }
-  edges.df <- data.frame(all.edges[2:(length(all.edges[,1]) - 1),])
-  colnames(edges.df) <- c("receiver1", "receiver2")
+  edges.df <- data.frame(
+    receiver1=all.edges[2:(length(all.edges[,1]) - 1), 1],
+    receiver2=all.edges[2:(length(all.edges[,1]) - 1), 2],
+  )
   # create a dataframe containing the edges and their counts
   edges <- count(edges.df)
   return(edges)
@@ -110,7 +112,16 @@ detections2graph <- function(detectionsDF, receiversDF, transmitter.id, allow.lo
 # ==================================
 # Generate movement edges from a data frame containing detection intervals.
 # The movement edges is a datafame with columns: "receiver1", "receiver2" and "count"
-intervals2movementedges <- function(intervalsDF, transmitter.id, allow.loops=FALSE) {
+# Parameters:
+#    - `intervalsDF`: a dataframe with intervals. Expected columns
+#            are `Station.Name`, `Arrivalnum` and `Transmitter`. Other columns are ignored.
+#    - `transmitter.id`: id of the transmitter for which movement edges should be
+#            created.
+#    - `allow.loops`: whether edges where receiver1 = receiver 2 (loops) should be included
+#    - `unique.edges`: if TRUE, for every combination of receiver1 and receiver2, only one edge will be
+#            returned that connects the two receivers. If it is FALSE, every migration event from receiver1
+#            to receiver2 is reported as a separate edge.
+intervals2movementedges <- function(intervalsDF, transmitter.id, allow.loops=FALSE, unique.edges=TRUE) {
   # sort the intervals DF by transmitter and arrival time
   d <- intervalsDF[order(intervalsDF$Transmitter, intervalsDF$Arrivalnum), ]
   # add a flag when a new transmitter starts
@@ -140,10 +151,19 @@ intervals2movementedges <- function(intervalsDF, transmitter.id, allow.loops=FAL
         0)
     )
   }
-  edges.df <- data.frame(all.edges[2:(length(all.edges[,1]) - 1),])
-  colnames(edges.df) <- c("receiver1", "receiver2", "swimdistance")
+  edges.df <- data.frame(
+    receiver1=all.edges[2:(length(all.edges[,1]) -1), 1],
+    receiver2=all.edges[2:(length(all.edges[,1]) -1), 2],
+    swimdistance=all.edges[2:(length(all.edges[,1]) -1), 3]
+  )
   # create a dataframe containing the edges and their counts
-  edges <- count(edges.df)
+  if (unique.edges) {
+    # if unique.edges = TRUE, we will only return unique edges and add the count for every edge as a separate `freq` attribute
+    edges <- count(edges.df)
+    return(edges)
+  } else {
+    return(edges.df)
+  }
 }
 
 # ==================================
@@ -162,12 +182,16 @@ intervals2movementmatrix <- function(intervalsDF, transmitter.id, allow.loops=FA
 # represent movement between receivers.
 # Parameters:
 #    - `intervalsDF`: a dataframe with intervals. Expected columns
-#            are `Station.Name`, `Arrival_time`, `Departure_time`, `Transmitter`, `X`, `Y`,
+#            are `Station.Name`, `Arrivalnum`, `Departure_time`, `Transmitter`, `X`, `Y`,
 #            and `residencetime`. Other columns are ignored.
 #    - `transmitter.id`: id of the transmitter for which a movement graph should be
 #            created.
-intervals2graph <- function(intervalsDF, transmitter.id, allow.loops=FALSE) {
-  edges <- intervals2movementedges(intervalsDF, transmitter.id, allow.loops=allow.loops)
+#    - `allow.loops`: whether the resulting graph should include edges where receiver1 = receiver 2 (loops)
+#    - `unique.edges`: if TRUE, for every combination of receiver1 and receiver2, only one edge will be
+#            returned that connects the two receivers. If it is FALSE, every migration event from receiver1
+#            to receiver2 is reported as a separate edge.
+intervals2graph <- function(intervalsDF, transmitter.id, allow.loops=FALSE, unique.edges=TRUE) {
+  edges <- intervals2movementedges(intervalsDF, transmitter.id, allow.loops=allow.loops, unique.edges=unique.edges)
   # sort the intervals DF by transmitter and arrival time
   d <- intervalsDF[order(intervalsDF$Transmitter, intervalsDF$Arrivalnum), ]
   station.attr <- ddply(d[, c("Transmitter", "X", "Y", "Station.Name",
@@ -201,6 +225,40 @@ intervals2graph <- function(intervalsDF, transmitter.id, allow.loops=FALSE) {
   # create a graph with the edges and vertices
   g <- graph.data.frame(edges, vertices=vertices)
   return(g)
+}
+
+
+# ==================================
+# Get a dataframe with the total number of passages per station
+# Parameters:
+#    - indf: input data frame with interval data
+#    - transmitter: character with the transmitter id
+#
+# The result will be a dataframe with three columns `transmitter`, `station` and `count`
+vertex.count.df <- function(indf, transmitter) {
+  g <- intervals2graph(indf, transmitter, allow.loops = TRUE, unique.edges=FALSE) # when unique.edges is set to FALSE, V(g)$count corresponds to the actual number of passages
+  df <- data.frame(transmitter=rep(transmitter, length(V(g))), station=c(V(g)$name), count=c(V(g)$count))
+  return(df)
+}
+
+# ==================================
+# Get a matrix with a column for every transmitter and a row for every station.
+# Each cell in this matrix notes the number of passages for a given individual at
+# a station.
+passages.matrix <- function(indf) {
+  transmitters <- unique(indf$Transmitter)
+  outdf <- data.frame(transmitter=c(), station=c(), count=c())
+  for (transmitter in transmitters) {
+    tmpdf <- vertex.count.df(indf, transmitter)
+    outdf <- rbind(outdf, tmpdf)
+  }
+  m <- sparseMatrix(i=as.numeric(as.factor(outdf$station)),
+                    j=as.numeric(as.factor(outdf$transmitter)),
+                    x=outdf$count)
+  passagesDF <- as.data.frame(as.matrix(m))
+  row.names(passagesDF) <- levels(as.factor(outdf$station))
+  colnames(passagesDF) <- levels(as.factor(outdf$transmitter))
+  return(passagesDF)
 }
 
 # ==================================
