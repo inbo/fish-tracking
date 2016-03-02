@@ -263,6 +263,39 @@ passages.matrix <- function(indf) {
 }
 
 # ==================================
+# Get a dataframe with the total residence time per station
+# Parameters:
+#    - indf: input data frame with interval data
+#    - transmitter: character with the transmitter id
+#
+# The result will be a dataframe with three columns `transmitter`, `station` and `residence time`
+vertex.time.df <- function(indf, transmitter) {
+  g <- intervals2graph(indf, transmitter, allow.loops = TRUE, unique.edges=FALSE)
+  df <- data.frame(transmitter=rep(transmitter, length(V(g))), station=c(V(g)$name), time=c(V(g)$total_time))
+  return(df)
+}
+ 
+# ==================================
+# Get a matrix with a column for every transmitter and a row for every station.
+# Each cell in this matrix notes the total residence time for a given individual at
+# a station.
+time.matrix <- function(indf) {
+  transmitters <- unique(indf$Transmitter)
+  outdf <- data.frame(transmitter=c(), station=c(), time=c())
+  for (transmitter in transmitters) {
+    tmpdf <- vertex.time.df(indf, transmitter)
+    outdf <- rbind(outdf, tmpdf)
+  }
+  m <- sparseMatrix(i=as.numeric(as.factor(outdf$station)),
+                    j=as.numeric(as.factor(outdf$transmitter)),
+                    x=outdf$time)
+  passagesDF <- as.data.frame(as.matrix(m))
+  row.names(passagesDF) <- levels(as.factor(outdf$station))
+  colnames(passagesDF) <- levels(as.factor(outdf$transmitter))
+  return(passagesDF)
+}
+
+# ==================================
 plot.migration.detections <- function(graph) {
   plot(graph,
     layout=cbind(V(graph)$longitude, V(graph)$latitude),
