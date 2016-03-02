@@ -38,7 +38,7 @@ detections2movementedges <- function(detectionsDF, transmitter.id, allow.loops=F
   }
   edges.df <- data.frame(
     receiver1=all.edges[2:(length(all.edges[,1]) - 1), 1],
-    receiver2=all.edges[2:(length(all.edges[,1]) - 1), 2],
+    receiver2=all.edges[2:(length(all.edges[,1]) - 1), 2]
   )
   # create a dataframe containing the edges and their counts
   edges <- count(edges.df)

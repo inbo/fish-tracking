@@ -147,6 +147,7 @@ Now we will construct a graph from the intervals (these are aggregated detection
 Additionally to the previous section, the following additional attributes will be added to the vertices:
 
 - `total_time`: indicating the sum of all residence times of the animal at that station
+- `relative_time`: total number of seconds at the station, divided by total tracking time of the individual
 - `avg_time`: indicating the average residence time of the animal at that station
 - `last_departure`: the last time at which the animal left the station
 - `X`: longitude of the station
@@ -157,11 +158,12 @@ The function `intervals2graph` will construct the graph from a dataframe contain
 
 - `Transmitter`: id of the detected transmitter
 - `Station.Name`: name of the station
+- `residencetime`: duration of the interval at the station in seconds
+- `Arrivalnum`: numeric representation of the time the transmitter arrived at the station
+- `Departure_time`: time of departure in `yyyy-mm-dd hh:mm:ss` format
+- `seconds`: total tracking time of the transmitter in seconds
 - `X`: longitude of the station
 - `Y`: latitude of the station
-- `residencetime`: number of seconds the transmitter was at the station
-- `Arrival_time`: time at which transmitter arrived at the station
-- `Departure_time`: time at which transmitter left the station
 
 Here is an example:
 
@@ -173,9 +175,10 @@ intervals <- data.frame(
   X=c(1,2,1,2,3, 3),
   Y=c(1, 10, 1, 10, 20, 20),
   residencetime=c(10, 10, 20, 42, 21, 19),
-  Arrival_time=c("2014-01-02 01:00:00", "2014-01-02 01:10:00",
-              "2014-01-02 01:20:00", "2014-01-02 01:30:00",
-              "2014-01-02 01:40:00", "2014-01-02 02:23:12"),
+  seconds=c(160, 160, 160, 160, 160, 160),
+  Arrivalnum=c(1388621100, 1388621400,
+              1388622000, 1388622600,
+              1388623200, 1388625792),
   Departure_time=c("2014-01-02 01:05:00", "2014-01-02 01:15:00",
               "2014-01-02 01:25:00", "2014-01-02 01:35:00",
               "2014-01-02 01:45:00", "2014-01-02 02:25:43")
@@ -188,11 +191,47 @@ g.intervals <- intervals2graph(intervals, 1)
 ## and only the first element will be used
 ```
 
+You can view the different attributes of the graph:
+
+
+```r
+V(g.intervals)
+```
+
+```
+## Vertex sequence:
+## [1] "1" "2" "3"
+```
+
+```r
+V(g.intervals)$total_time
+```
+
+```
+## [1] 30 52 40
+```
+
+```r
+V(g.intervals)$relative_time
+```
+
+```
+## [1] 0.1875 0.3250 0.2500
+```
+
+```r
+V(g.intervals)$last_departure
+```
+
+```
+## [1] 1388625900 1388626500 1388629543
+```
+
 ```r
 plot(g.intervals)
 ```
 
-![](receiver_network_files/figure-html/unnamed-chunk-6-1.png) 
+![](receiver_network_files/figure-html/unnamed-chunk-7-1.png) 
 
 With `plot.migration.intervals` we can use the additional attributes to create a more pleasing plot. The vertices are colored by their last departure time. The earliest is colored yellow while the latest is colored blue.
 
@@ -201,7 +240,7 @@ With `plot.migration.intervals` we can use the additional attributes to create a
 plot.migration.intervals(g.intervals)
 ```
 
-![](receiver_network_files/figure-html/unnamed-chunk-7-1.png) 
+![](receiver_network_files/figure-html/unnamed-chunk-8-1.png) 
 
 You can also allow loops in the graph. These corresponds to times where animals where detected at the same receiver. By default, `intervals2graph` removes these edges, but by setting the `allow.loops` parameter to `TRUE`, you can include them.
 
@@ -219,7 +258,7 @@ g.intervals <- intervals2graph(intervals, 1, allow.loops=TRUE)
 plot.migration.intervals(g.intervals)
 ```
 
-![](receiver_network_files/figure-html/unnamed-chunk-8-1.png) 
+![](receiver_network_files/figure-html/unnamed-chunk-9-1.png) 
 
 ## Create a movement matrix
 
