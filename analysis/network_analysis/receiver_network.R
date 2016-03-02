@@ -183,7 +183,7 @@ intervals2movementmatrix <- function(intervalsDF, transmitter.id, allow.loops=FA
 # Parameters:
 #    - `intervalsDF`: a dataframe with intervals. Expected columns
 #            are `Station.Name`, `Arrivalnum`, `Departure_time`, `Transmitter`, `X`, `Y`,
-#            and `residencetime`. Other columns are ignored.
+#            `residencetime` and `seconds`. Other columns are ignored.
 #    - `transmitter.id`: id of the transmitter for which a movement graph should be
 #            created.
 #    - `allow.loops`: whether the resulting graph should include edges where receiver1 = receiver 2 (loops)
@@ -195,9 +195,10 @@ intervals2graph <- function(intervalsDF, transmitter.id, allow.loops=FALSE, uniq
   # sort the intervals DF by transmitter and arrival time
   d <- intervalsDF[order(intervalsDF$Transmitter, intervalsDF$Arrivalnum), ]
   station.attr <- ddply(d[, c("Transmitter", "X", "Y", "Station.Name",
-                                 "residencetime", "Departure_time")],
+                                 "residencetime", "Departure_time", "seconds")],
                            .(Transmitter, Station.Name, X, Y), # aggregate by transmitter and station
                            summarize, total_time=sum(residencetime), # add total residencetime
+                           relative_time=sum(residencetime) / mean(seconds),
                            avg_time=mean(residencetime), # add mean residencetime
                            last_departure=max(ymd_hms(Departure_time))
                         ) # add last departure time
