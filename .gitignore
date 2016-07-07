@@ -2,5 +2,5 @@
 .Rproj.user
 fish-tracking.Rproj
 calculate_distances.Rproj
-./analysis/calculate_distances/data/europe_water/Europe*
+analysis/receiver_distance_analysis/data/europe_water/Europe*
 
