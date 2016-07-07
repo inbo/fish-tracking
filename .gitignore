@@ -1,3 +1,6 @@
 .DS_Store
 .Rproj.user
 fish-tracking.Rproj
+calculate_distances.Rproj
+./analysis/calculate_distances/data/europe_water/Europe*
+
