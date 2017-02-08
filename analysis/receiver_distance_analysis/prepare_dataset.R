@@ -60,7 +60,7 @@ westerschelde <- load.shapefile("./data/westerschelde_water/seavox_sea_area_poly
                                 "seavox_sea_area_polygons_v13",
                                 coordinate.string)
 
-# SEA
+# SEA + missing parts Albert Canal
 sea <- load.shapefile("./data/PJ_manual_water/PJ_ontbrekende_stukken_reduced.shp",
                                 "PJ_ontbrekende_stukken_reduced",
                                 coordinate.string)
