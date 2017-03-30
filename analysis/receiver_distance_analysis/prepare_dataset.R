@@ -35,7 +35,7 @@ river.names <- c("Schelde", "Durme", "Rupel", "Netekanaal",
                  "Schelde-Rijnkanaal", "Berendrechtsluis", "Hansadok",
                  "Kanaaldok B2", "Schelde-Rijn Kanaal",
                  "Zandvlietsluis", "Ringvaart", "Tijarm",
-                 "Kanaal van Gent naar Oostende","Canal Albert")
+                 "Kanaal van Gent naar Oostende","Canal Albert","Demer","Dijle")
                 ## for future usage:
                 # "Meuse", "Juliana Kanaal", "Canal Albert", "Demer", "Dijle"
 
@@ -78,7 +78,7 @@ rm(rivers, nete, westerschelde, sea)
 # ----------------
 # LOAD RECEIVERS
 # ----------------
-locations.receivers <- load.receivers("./data/receivernetwork_AK_20170207.csv",
+locations.receivers <- load.receivers("./data/receivernetwork_20161129.csv",
                                       coordinate.string)
 
 # ------------------------
