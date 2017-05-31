@@ -29,6 +29,22 @@ Apart from individual scripts, you can also enlist to existing implementations/f
 * Link: https://github.com/inbo/inbo-rutils/blob/master/gis/guess_projection.R#L60
 
 
+### Eel Scheldt analysis
+
+* Purpose: Eel migration behaviour analysis in the Scheldt Estuary
+* Maintainer: Pieterjan Verhelst
+* Usage: Processing, explorative and analysis scripts for eel migration in the Scheldt Estuary
+* Link: https://github.com/PieterjanVerhelst/eel-scheldt-analysis
+
+
+### Eel Albert Canal analysis
+
+* Purpose: Eel migration behaviour analysis in the Albert Canal
+* Maintainer: Pieterjan Verhelst
+* Usage: Processing, explorative and analysis scripts for eel migration in the Albert Canal
+* Link: https://github.com/PieterjanVerhelst/eel-ak-analysis
+
+
 ### ...
 
 
