@@ -51,11 +51,11 @@ Apart from individual scripts, you can also enlist to existing implementations/f
 ## Just ideas, no implemention yet
 (In this section, provide some ideas, features,... that could eventually be useful to the user community)
 
-###Position calculation
+### Position calculation
 * Purpose: Calculate exact fish positions based on triangulation (difference in time of arrival)
 * Usage: Habitat preference, habitat use, geographic distribution
  
-###Swim speed
+### Swim speed
 * Purpose: calculate swimming speed and swimming distances
 * Maintainer: Pieterjan Verhelst?
  
