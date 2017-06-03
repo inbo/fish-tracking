@@ -43,6 +43,8 @@ Apart from individual scripts, you can also enlist to existing implementations/f
 * Maintainer: Pieterjan Verhelst
 * Usage: Processing, explorative and analysis scripts for eel migration in the Albert Canal
 * Link: https://github.com/PieterjanVerhelst/eel-ak-analysis
+* Issue: Script 'Migration_triplets.R' determines downstream migration Specifically, after chronologically ordering the data, a record was considered a migration record if the previous and next detection were at a receiver up- and downstream, respectively, or if the previous two detections were at two subsequent upstream located receivers. To integrate this in a package, it would be interesting to make the code work in the other direction, i.e. upstream migration.
+See issue https://github.com/PieterjanVerhelst/eel-ak-analysis/issues/6#issuecomment-305783874
 
 
 ### ...
