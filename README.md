@@ -47,7 +47,7 @@ Apart from individual scripts, you can also enlist to existing implementations/f
 See issue https://github.com/PieterjanVerhelst/eel-ak-analysis/issues/6#issuecomment-305783874
 
 
-### ...
+### ...(additional existing functionalities)
 
 
 ## Just ideas, no implemention yet
