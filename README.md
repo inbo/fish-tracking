@@ -33,7 +33,10 @@ Apart from individual scripts, you can also enlist to existing implementations/f
 
 * Purpose: Eel migration behaviour analysis in the Scheldt Estuary
 * Maintainer: Pieterjan Verhelst
-* Usage: Processing, explorative and analysis scripts for eel migration in the Scheldt Estuary
+* Usage: Processing, explorative and analysis scripts for eel migration in the Scheldt Estuary. Of specific interest to other users are:
+    - Tripletmethod
+    - Graph visualisation (more a visualisation as an analysis step)
+    - Swim speed
 * Link: https://github.com/PieterjanVerhelst/eel-scheldt-analysis
 
 
