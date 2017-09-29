@@ -65,3 +65,43 @@ lines(x = newdata$WindSpeed_scaled,
 
 dev.copy(tiff, 'Marginal_effect_WindSpeed.tiff')
 dev.off()
+
+# ----------------------------------------------------------------
+# Based on bootstrap -
+# see https://stat.ethz.ch/pipermail/r-help/2008-December/182806.html
+
+# DISCLAIMER: Geen garantie op juistheid/succes!
+
+# load the temporary implementation from email-list
+source('./pb.R')
+
+conf_nterv <- predict(nb2, newdata, MC = 2500,
+                      se = TRUE, type = "response")
+
+plot(x = newdata$WindSpeed_scaled,
+     y = conf_nterv[[1]],
+     xlab = "Wind Speed (scaled)",
+     ylab = "Predicted Counts",
+     type = "n")
+
+lines(x = newdata$WindSpeed_scaled,
+      y = conf_nterv[[1]],
+      lwd = 3)
+
+lines(x = newdata$WindSpeed_scaled,
+      y = conf_nterv[[1]],
+      lwd = 3,
+      lty = 2)
+
+lines(x = newdata$WindSpeed_scaled,
+      y = conf_nterv[[2]]$lower,
+      lwd = 3,
+      lty = 2)
+
+lines(x = newdata$WindSpeed_scaled,
+      y = conf_nterv[[2]]$upper,
+      lwd = 3,
+      lty = 2)
+
+
+
