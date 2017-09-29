@@ -2,11 +2,11 @@
 library(pscl)
 
 # Read scaled data set
-scaled <- read.csv("./scaled_data.csv")
+scaled <- read.table("./scaled_data.csv", sep = ",", quote = "\"", row.names = 1)
 
-nb2=zeroinfl (count_max ~ WindSpeed_scaled +  WindDir_scaled + Tilt_scaled * degree_scaled + Noise_scaled + CurrentSpeed_scaled + CurrentDir_scaled+ offset(log(maxi)),
-              data=scaled, dist = "negbin")
-summary (nb2)
+nb2 <- zeroinfl(count_max ~ WindSpeed_scaled +  WindDir_scaled + Tilt_scaled * degree_scaled + Noise_scaled + CurrentSpeed_scaled + CurrentDir_scaled + offset(log(maxi)),
+              data = scaled, dist = "negbin")
+summary(nb2)
 
 ## Test maringal effects = assess partial effects
 #here we use predict
