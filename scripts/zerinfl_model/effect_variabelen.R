@@ -40,7 +40,6 @@ summary(newdata)
 # although we ask for se (se.fit=TRUE), we don't get them...
 P1 <- predict(nb2, newdata = newdata,
               se.fit = TRUE, MC = 2500)
-P1 <- as.list(P1)
 newdata$P1 <- P1
 
 # Plot output
@@ -54,14 +53,14 @@ lines(x = newdata$WindSpeed_scaled,
       y = newdata$P1,
       lwd = 3)
 
-lines(x = newdata$CurrentSpeed_scaled,  #
-      y = exp(newdata$P1 + 1.96 * P1$se.fit),
-      lwd = 3,
-      lty = 2)
-lines(x = newdata$WindSpeed_scaled,
-      y = exp(newdata$P1 - 1.96 * P1$se.fit),
-      lwd = 3,
-      lty = 2)
+# lines(x = newdata$CurrentSpeed_scaled,  #
+#       y = exp(newdata$P1 + 1.96 * P1$se.fit),
+#       lwd = 3,
+#       lty = 2)
+# lines(x = newdata$WindSpeed_scaled,
+#       y = exp(newdata$P1 - 1.96 * P1$se.fit),
+#       lwd = 3,
+#       lty = 2)
 
 dev.copy(tiff, 'Marginal_effect_WindSpeed.tiff')
 dev.off()
