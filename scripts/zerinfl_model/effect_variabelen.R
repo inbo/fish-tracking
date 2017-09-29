@@ -2,6 +2,7 @@
 library(pscl)
 
 # Read scaled data set
+source('./clean_quote_datafile.R')
 clean_dataformat("./scaled_data.csv", "./scaled_data_quotes_clean.csv")
 scaled <- read.csv("./scaled_data_quotes_clean.csv", sep = ",")
 
