@@ -230,7 +230,7 @@ adapt.binarymask <- function(binary.mask, receivers){
 #'
 #' @examples
 control.mask <- function(binary.mask, receivers){
-    match_ids <- extract(binary.mask, receivers)
+    match_ids <- raster::extract(binary.mask, receivers)
     match_ids[is.na(match_ids)] <- 0
     matched.receivers <- receivers[as.logical(match_ids), ]
     # CHECK:
