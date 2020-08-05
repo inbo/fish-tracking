@@ -67,7 +67,7 @@ sea <- load.shapefile("./data/PJ_manual_water/PJ_ontbrekende_stukken_reduced.shp
 
 
 # RIVER FROME (UK)
-frome <- load.shapefile("./data/UK/Frome/WFD_River_Canal_and_Surface_Water_Transfer_Water_Bodies_Cycle_2.shp",
+frome <- load.shapefile("./data/UK/Frome/Statutory_Main_River_Map.shp",
                          "Statutory_Main_River_Map",
                          coordinate.string)
 
