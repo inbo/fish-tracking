@@ -82,10 +82,15 @@ study.area <- gUnion(study.area, sea)
 # clean workspace from individual shapefiles
 rm(rivers, nete, westerschelde, sea)
 
+# -----------------------
+# SET STUDY AREA
+# -----------------------
+study.area <- frome
+
 # ----------------
-# LOAD RECEIVERS
+# LOAD DETECTION STATION NETWORK
 # ----------------
-locations.receivers <- load.receivers("./data/receivernetwork_20160526.csv",
+locations.receivers <- load.receivers("./data/receivernetwork_frome_2014.csv",
                                       coordinate.string)
 
 # ------------------------
@@ -116,7 +121,7 @@ control.mask(study.area.binary.extended, locations.receivers)
 # Derive distances with gdistance
 # -------------------------------
 cst.dst.frame <- get.distance.matrix(study.area.binary.extended, locations.receivers)
-# write.csv(cst.dst.frame, "./results/cst_dist_receivers.csv")
+write.csv(cst.dst.frame, "./results/cst_dist_receivers.csv")
 
 
 # IDEA ...
