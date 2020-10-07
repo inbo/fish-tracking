@@ -85,12 +85,18 @@ rm(rivers, nete, westerschelde, sea)
 # -----------------------
 # SET STUDY AREA
 # -----------------------
-study.area <- study.area  # When the Belgian network is taken into account; sea 'Combine the shape files'
+#study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
 study.area <- frome
 
 # ----------------
 # LOAD DETECTION STATION NETWORK
 # ----------------
+
+# LifeWatch network
+#locations.receivers <- load.receivers("./data/receivernetwork_20160526.csv",
+#                                      coordinate.string)
+
+# Frome network
 locations.receivers <- load.receivers("./data/receivernetwork_frome_2014.csv",
                                       coordinate.string)
 
