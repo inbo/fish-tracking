@@ -85,6 +85,7 @@ rm(rivers, nete, westerschelde, sea)
 # -----------------------
 # SET STUDY AREA
 # -----------------------
+study.area <- study.area  # When the Belgian network is taken into account; sea 'Combine the shape files'
 study.area <- frome
 
 # ----------------
