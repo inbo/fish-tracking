@@ -129,7 +129,7 @@ get_rowcol <- function(ids, nrows){
 
 #' Extend small patches
 #'
-#' Change a Moore environment to 1 values around the provided cell ids
+#' Change a mooring environment to 1 values around the provided cell ids
 #' (support function for adapt.binarymask)
 #'
 #' @param inputmat RasterLayer to adjust the cells from
