@@ -113,7 +113,8 @@ study.area.binary <- shape.to.binarymask(study.area, nrows, ncols)
 # --------------------------------
 # ADJUST MASK TO CONTAIN RECEIVERS
 # --------------------------------
-study.area.binary.extended <- adapt.binarymask(study.area.binary, locations.receivers)
+study.area.binary.extended <- adapt.binarymask(study.area.binary,
+                                               locations.receivers)
 
 # write this to disk for loading in e.g. QGIS
 writeRaster(study.area.binary.extended, "./results/study_area_binary", "GTiff",
