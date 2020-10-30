@@ -224,10 +224,10 @@ adapt.binarymask <- function(binary.mask, receivers){
     # add locations itself to raster as well:
     locs2ras <- rasterize(receivers, binary.mask, 1.)
     locs2ras[is.na(locs2ras)] <- 0
-    study.area.binary <- max(binary.mask, locs2ras)
+    binary.mask <- max(binary.mask, locs2ras)
 
-    patch_count <- clump(study.area.binary)
-    patchCells <- zonal(study.area.binary, patch_count, "sum")
+    patch_count <- clump(binary.mask)
+    patchCells <- zonal(binary.mask, patch_count, "sum")
     patchCells <- patchCells[sort.list(patchCells[, 2]), ]
     n.patches <- nrow(patchCells)
 
@@ -237,21 +237,21 @@ adapt.binarymask <- function(binary.mask, receivers){
     while (!is.null(n.patches)) {
         # first row indices of the single patches extended
         ids <- which(as.matrix(patch_count) == patchCells[1, 1])
-        temp <- as.matrix(study.area.binary)
+        temp <- as.matrix(binary.mask)
         temp <- extend_patches(temp, ids)
-        study.area.binary <- raster(temp, template = study.area.binary)
+        binary.mask <- raster(temp, template = binary.mask)
 
         # patches definition etc
-        patch_count <- clump(study.area.binary)
+        patch_count <- clump(binary.mask)
         # derive surface (cell count) for each patch
-        patchCells <- zonal(study.area.binary, patch_count, "sum")
+        patchCells <- zonal(binary.mask, patch_count, "sum")
         # sort to make last row main one
         patchCells <- patchCells[sort.list(patchCells[, 2]), ]
         # check current number of patches
         n.patches <- nrow(patchCells)
         print(n.patches)
     }
-    return(study.area.binary)
+    return(binary.mask)
 }
 
 #' Check patch characteristics
