@@ -154,7 +154,6 @@ extend_patches <- function(inputmat, ids){
     for (i in 1:ncol(crdnts) ) {
         row = crdnts[1, i]
         col = crdnts[2, i]
-        # inputmat[(row - 1):(row + 1), (col - 1):(col + 1)] <- 1
 
         inputmat[row, col] <- 1
         if (col > 1) {
