@@ -148,10 +148,13 @@ get_rowcol <- function(ids, nrows){
 #' @examples
 extend_patches <- function(inputmat, ids){
     # inputmat -> matrix
+    ncols <- ncol(inputmat)
     nrows <- nrow(inputmat)
     crdnts <- sapply(ids, get_rowcol, nrows)
     for (i in 1:ncol(crdnts) ) {
-        inputmat[(crdnts[1, i] - 1):(crdnts[1, i] + 1), (crdnts[2, i] - 1):(crdnts[2, i] + 1)] <- 1
+        row = crdnts[1, i]
+        col = crdnts[2, i]
+        inputmat[(row - 1):(row + 1), (col - 1):(col + 1)] <- 1
     }
     return(inputmat)
 }
