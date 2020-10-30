@@ -141,18 +141,3 @@ write.csv(cst.dst.frame, "./results/cst_dist_receivers.csv")
 # commute.dst <- commuteDistance(tr_geocorrected, matched.receivers)
 # By running many paths and extracting average statistics about the distance a
 # more in-depth insight in travel distance could be achieved
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
