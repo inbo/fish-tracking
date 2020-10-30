@@ -7,6 +7,7 @@
 ## 2016-07-06
 
 library("sp")
+library("sf")
 library("rgdal")
 library("rgeos")
 library("raster")
@@ -19,7 +20,8 @@ library("assertthat")
 # --------------------
 
 # Define the projection for the analysis:
-coordinate.string <- CRS("+init=epsg:32631")
+# coordinate.string <- CRS("+init=epsg:32631")
+projection_code <- 32631
 
 # Load the functionalities from the functions file:
 source("receiver_distance_fun.R")
@@ -41,35 +43,35 @@ river.names <- c("Schelde", "Durme", "Rupel", "Netekanaal",
 
 rivers <- load.shapefile("./data/lowcountries_water/LowCountries_Water_2004.shp",
                          "LowCountries_Water_2004",
-                         coordinate.string,
+                         projection_code,
                          river.names)
 
 # NETE SECTION (precompiled as Europe entire file is very large)
 nete <- load.shapefile("./data/europe_water/nete.shp",
                        "nete",
-                       coordinate.string,
+                       projection_code,
                        subset.names = NULL)
 ## to restart from the entire Europe shapefile:
 ## nete <- load.shapefile("./data/europe_water/Europe_Water_2008.shp",
 ##                        "Europe_Water_2008",
-##                        coordinate.string,
+##                        projection_code,
 ##                        c("Nete", "Grote Nete"))
 
 # WESTERSCHELDE
 westerschelde <- load.shapefile("./data/westerschelde_water/seavox_sea_area_polygons_v13.shp",
                                 "seavox_sea_area_polygons_v13",
-                                coordinate.string)
+                                projection_code)
 
 # SEA
 sea <- load.shapefile("./data/PJ_manual_water/PJ_ontbrekende_stukken_reduced.shp",
                                 "PJ_ontbrekende_stukken_reduced",
-                                coordinate.string)
+                                projection_code)
 
 
 # RIVER FROME (UK)
 frome <- load.shapefile("./data/UK/Frome/Statutory_Main_River_Map.shp",
                          "Statutory_Main_River_Map",
-                         coordinate.string)
+                         projection_code)
 
 
 # -----------------------
@@ -98,7 +100,7 @@ study.area <- frome
 
 # Frome network
 locations.receivers <- load.receivers("./data/receivernetwork_frome_2014.csv",
-                                      coordinate.string)
+                                      projection_code)
 
 # ------------------------
 # CONVERT SHAPE TO RASTER
