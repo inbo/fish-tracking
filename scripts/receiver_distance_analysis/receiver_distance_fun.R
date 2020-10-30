@@ -38,10 +38,9 @@ library("assertthat")
 load.shapefile <- function(file, layer, projection, subset.names = NULL) {
     waterbody <- readOGR(dsn = file,
                       layer = layer)
+    waterbody.subset <- waterbody
     if (!is.null(subset.names)) {
         waterbody.subset <- subset(waterbody, NAME %in% subset.names)
-    } else {
-        waterbody.subset <- waterbody
     }
 
     waterbody.subset <- spTransform(waterbody.subset, projection)
