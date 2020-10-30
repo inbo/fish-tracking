@@ -130,7 +130,8 @@ control.mask(study.area.binary.extended, locations.receivers)
 # -------------------------------
 # Derive distances with gdistance
 # -------------------------------
-cst.dst.frame <- get.distance.matrix(study.area.binary.extended, locations.receivers)
+cst.dst.frame <- get.distance.matrix(study.area.binary.extended,
+                                     locations.receivers)
 write.csv(cst.dst.frame, "./results/cst_dist_receivers.csv")
 
 
