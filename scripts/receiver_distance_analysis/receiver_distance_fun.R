@@ -155,6 +155,34 @@ extend_patches <- function(inputmat, ids){
         row = crdnts[1, i]
         col = crdnts[2, i]
         inputmat[(row - 1):(row + 1), (col - 1):(col + 1)] <- 1
+
+        inputmat[row, col] <- 1
+        if (col > 1) {
+            inputmat[row , col - 1] <- 1
+        }
+        if (col < ncols) {
+            inputmat[row , col + 1] <- 1
+        }
+
+        if (row > 1) {
+            inputmat[row - 1, col] <- 1
+            if (col > 1) {
+                inputmat[row - 1, col - 1] <- 1
+            }
+            if (col < ncols) {
+                inputmat[row - 1, col + 1] <- 1
+            }
+        }
+
+        if (row < nrows) {
+            inputmat[row + 1, col] <- 1
+            if (col > 1) {
+                inputmat[row + 1, col - 1] <- 1
+            }
+            if (col < ncols) {
+                inputmat[row + 1, col + 1] <- 1
+            }
+        }
     }
     return(inputmat)
 }
