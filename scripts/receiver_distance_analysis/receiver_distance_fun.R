@@ -299,7 +299,7 @@ get.distance.matrix <- function(binary.mask, receivers){
 
     cst.dst <- costDistance(tr_geocorrected, as(receivers, "Spatial"))
     cst.dst.arr <- as.matrix(cst.dst)
-    receiver_names <- as.data.frame(receivers)$station_name
+    receiver_names <- receivers$station_name
     rownames(cst.dst.arr) <- receiver_names
     colnames(cst.dst.arr) <- receiver_names
     return(cst.dst.arr)
