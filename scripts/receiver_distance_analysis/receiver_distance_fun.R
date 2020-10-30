@@ -7,11 +7,11 @@
 ## 2016-07-06
 
 library("sp")
+library("sf")
 library("rgdal")
 library("rgeos")
 library("raster")
 library("gdistance")
-
 library("assertthat")
 
 ## --------------------------------------------
@@ -36,14 +36,14 @@ library("assertthat")
 #' nete <- load.shapefile("./data/europe_water/nete.shp", "nete",
 #'                        coordinate.string, subset.names = NULL)
 load.shapefile <- function(file, layer, projection, subset.names = NULL) {
-    waterbody <- readOGR(dsn = file,
+    waterbody <- st_read(dsn = file,
                       layer = layer)
     waterbody.subset <- waterbody
     if (!is.null(subset.names)) {
         waterbody.subset <- subset(waterbody, NAME %in% subset.names)
     }
 
-    waterbody.subset <- spTransform(waterbody.subset, projection)
+    waterbody.subset <- st_transform(waterbody.subset, projection)
     return(waterbody.subset)
 }
 
@@ -64,13 +64,21 @@ load.shapefile <- function(file, layer, projection, subset.names = NULL) {
 load.receivers <- function(file, projection){
     loc <- read.csv(file, header = TRUE, stringsAsFactors = FALSE)
 
-    # project coordinates
-    loc[, c("longitude", "latitude")] <- project(as.matrix(loc[, c("longitude", "latitude")]),
-                                                 as.character(projection))
+    # project coordinates ( in sp)
+    # loc[, c("longitude", "latitude")] <- project(as.matrix(loc[, c("longitude", "latitude")]),
+    #                                              as.character(projection))
+    # locations.receivers <- SpatialPointsDataFrame(coords = loc[, c("longitude","latitude")],
+    #                                               data = loc,
+    #                                               proj4string = projection)
 
-    locations.receivers <- SpatialPointsDataFrame(coords = loc[, c("longitude","latitude")],
-                                                  data = loc,
-                                                  proj4string = projection)
+    # project coordinates ( in sf)
+    locations.receivers <- st_as_sf(loc,
+                                    coords = c("longitude", "latitude"),
+                                    crs = 4326) # WGS84
+    locations.receivers <-
+        locations.receivers %>%
+        st_transform(projection)
+
     return(locations.receivers)
 }
 
