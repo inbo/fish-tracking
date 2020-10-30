@@ -122,8 +122,8 @@ writeRaster(study.area.binary.extended, "./results/study_area_binary", "GTiff",
 # --------------------------------
 # CONTROL MASK
 # --------------------------------
-# Control the mask characterstics and receiver location inside mask:
-# (if an error occurrs, this need to be checked before deriving distances again)
+# Control the mask characteristics and receiver location inside mask:
+# (if an error occurs, this need to be checked before deriving distances again)
 control.mask(study.area.binary.extended, locations.receivers)
 
 # -------------------------------
