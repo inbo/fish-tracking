@@ -62,7 +62,7 @@ westerschelde <- load.shapefile("./data/westerschelde_water/seavox_sea_area_poly
                                 "seavox_sea_area_polygons_v13",
                                 projection_code)
 
-# SEA
+# BELGIAN PART OF THE NORTH SEA
 sea <- load.shapefile("./data/PJ_manual_water/PJ_ontbrekende_stukken_reduced.shp",
                                 "PJ_ontbrekende_stukken_reduced",
                                 projection_code)
@@ -80,6 +80,21 @@ warnow <- load.shapefile("./data/European_waterways/Europe_Water_2008.shp",
                          projection_code,
                          river.names)
 
+# RIVER GUDENA (DENMARK)
+gudena <- load.shapefile("./data/Denmark/rivers.shp",
+                         "rivers",
+                         projection_code)
+
+gudena <- gudena[gudena$rivers_id == 12,]
+plot(gudena)
+
+# RIVER MONDEGO (PORTUGAL)
+mondego <- load.shapefile("./data/Portugal/Mondego.shp",
+                         "Mondego",
+                         projection_code)
+plot(mondego)
+
+
 
 # -----------------------
 # COMBINE THE SHAPE FILES
@@ -95,7 +110,7 @@ rm(rivers, nete, westerschelde, sea)
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- frome
+study.area <- gudena
 
 # ----------------
 # LOAD DETECTION STATION NETWORK
@@ -112,6 +127,15 @@ locations.receivers <- load.receivers("./data/receivernetwork_frome_2014.csv",
 # Warnow network
 locations.receivers <- load.receivers("./data/receivernetwork_2011_warnow.csv",
                                       projection_code)
+
+# Gudena network
+locations.receivers <- load.receivers("./data/receivernetwork_2004_gudena.csv",
+                                      projection_code)
+
+# Mondego network
+locations.receivers <- load.receivers("./data/receivernetwork_PTN-Silver-eel-Mondego.csv",
+                                      projection_code)
+
 
 # ------------------------
 # CONVERT SHAPE TO RASTER
@@ -143,7 +167,7 @@ control.mask(study.area.binary.extended, locations.receivers)
 # -------------------------------
 cst.dst.frame <- get.distance.matrix(study.area.binary.extended,
                                      locations.receivers)
-write.csv(cst.dst.frame, "./results/cst_dist_receivers.csv")
+write.csv(cst.dst.frame, "./results/distances.csv")
 
 
 # IDEA ...
