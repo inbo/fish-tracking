@@ -8,6 +8,7 @@ analysis/receiver_distance_analysis/data/europe_water/Europe*
 # ignore large files
 WFD_River_Canal_and_Surface_Water_Transfer_Water_Bodies_Cycle_2.shp
 European_waterways/
+Denmark/
 
 
 scripts/receiver_distance_analysis/.Rhistory
