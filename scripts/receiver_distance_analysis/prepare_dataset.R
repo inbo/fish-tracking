@@ -73,6 +73,13 @@ frome <- load.shapefile("./data/UK/Frome/Statutory_Main_River_Map.shp",
                          "Statutory_Main_River_Map",
                          projection_code)
 
+# RIVER WARNOW (GERMANY)
+river.names <- c("Unterwarnow", "Warnow")
+warnow <- load.shapefile("./data/European_waterways/Europe_Water_2008.shp",
+                         "Europe_Water_2008",
+                         projection_code,
+                         river.names)
+
 
 # -----------------------
 # COMBINE THE SHAPE FILES
@@ -100,6 +107,10 @@ study.area <- frome
 
 # Frome network
 locations.receivers <- load.receivers("./data/receivernetwork_frome_2014.csv",
+                                      projection_code)
+
+# Warnow network
+locations.receivers <- load.receivers("./data/receivernetwork_2011_warnow.csv",
                                       projection_code)
 
 # ------------------------
