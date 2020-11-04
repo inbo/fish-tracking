@@ -99,6 +99,14 @@ plot(mondego)
 # -----------------------
 # COMBINE THE SHAPE FILES
 # -----------------------
+
+# First convert to sp-objects
+rivers <- as(rivers, "Spatial")
+nete <- as(nete, "Spatial")
+westerschelde <- as(westerschelde, "Spatial")
+sea <- as(sea, "Spatial")
+
+# Union
 study.area <- gUnion(rivers, nete)
 study.area <- gUnion(study.area, westerschelde)
 study.area <- gUnion(study.area, sea)
@@ -117,8 +125,8 @@ study.area <- gudena
 # ----------------
 
 # LifeWatch network
-#locations.receivers <- load.receivers("./data/receivernetwork_20160526.csv",
-#                                      coordinate.string)
+locations.receivers <- load.receivers("./data/receivernetwork_20160526.csv",
+                                      projection_code)
 
 # Frome network
 locations.receivers <- load.receivers("./data/receivernetwork_frome_2014.csv",
