@@ -36,14 +36,15 @@ library("assertthat")
 #' nete <- load.shapefile("./data/europe_water/nete.shp", "nete",
 #'                        coordinate.string, subset.names = NULL)
 load.shapefile <- function(file, layer, projection, subset.names = NULL) {
-    waterbody <- st_read(dsn = file,
-                      layer = layer)
-    waterbody.subset <- waterbody
+    waterbody <- readOGR(dsn = file,
+                         layer = layer)
     if (!is.null(subset.names)) {
         waterbody.subset <- subset(waterbody, NAME %in% subset.names)
+    } else {
+        waterbody.subset <- waterbody
     }
 
-    waterbody.subset <- st_transform(waterbody.subset, projection)
+    waterbody.subset <- spTransform(waterbody.subset, projection)
     return(waterbody.subset)
 }
 
@@ -64,23 +65,16 @@ load.shapefile <- function(file, layer, projection, subset.names = NULL) {
 load.receivers <- function(file, projection){
     loc <- read.csv(file, header = TRUE, stringsAsFactors = FALSE)
 
-    # project coordinates ( in sp)
-    # loc[, c("longitude", "latitude")] <- project(as.matrix(loc[, c("longitude", "latitude")]),
-    #                                              as.character(projection))
-    # locations.receivers <- SpatialPointsDataFrame(coords = loc[, c("longitude","latitude")],
-    #                                               data = loc,
-    #                                               proj4string = projection)
+    # project coordinates
+    loc[, c("longitude", "latitude")] <- project(as.matrix(loc[, c("longitude", "latitude")]),
+                                                 as.character(projection))
 
-    # project coordinates ( in sf)
-    locations.receivers <- st_as_sf(loc,
-                                    coords = c("longitude", "latitude"),
-                                    crs = 4326) # WGS84
-    locations.receivers <-
-        locations.receivers %>%
-        st_transform(projection)
-
+    locations.receivers <- SpatialPointsDataFrame(coords = loc[, c("longitude","latitude")],
+                                                  data = loc,
+                                                  proj4string = projection)
     return(locations.receivers)
 }
+
 
 #' Vector to binary raster
 #'

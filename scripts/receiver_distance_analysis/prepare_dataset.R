@@ -7,7 +7,6 @@
 ## 2016-07-06
 
 library("sp")
-library("sf")
 library("rgdal")
 library("rgeos")
 library("raster")
@@ -20,8 +19,7 @@ library("assertthat")
 # --------------------
 
 # Define the projection for the analysis:
-# coordinate.string <- CRS("+init=epsg:32631")
-projection_code <- 32631
+coordinate.string <- CRS("+init=epsg:32631")
 
 # Load the functionalities from the functions file:
 source("receiver_distance_fun.R")
@@ -43,13 +41,13 @@ river.names <- c("Schelde", "Durme", "Rupel", "Netekanaal",
 
 rivers <- load.shapefile("./data/lowcountries_water/LowCountries_Water_2004.shp",
                          "LowCountries_Water_2004",
-                         projection_code,
+                         coordinate.string,
                          river.names)
 
 # NETE SECTION (precompiled as Europe entire file is very large)
 nete <- load.shapefile("./data/europe_water/nete.shp",
                        "nete",
-                       projection_code,
+                       coordinate.string,
                        subset.names = NULL)
 ## to restart from the entire Europe shapefile:
 ## nete <- load.shapefile("./data/europe_water/Europe_Water_2008.shp",
@@ -60,30 +58,30 @@ nete <- load.shapefile("./data/europe_water/nete.shp",
 # WESTERSCHELDE
 westerschelde <- load.shapefile("./data/westerschelde_water/seavox_sea_area_polygons_v13.shp",
                                 "seavox_sea_area_polygons_v13",
-                                projection_code)
+                                coordinate.string)
 
 # BELGIAN PART OF THE NORTH SEA
 sea <- load.shapefile("./data/PJ_manual_water/PJ_ontbrekende_stukken_reduced.shp",
                                 "PJ_ontbrekende_stukken_reduced",
-                                projection_code)
+                                coordinate.string)
 
 
 # RIVER FROME (UK)
 frome <- load.shapefile("./data/UK/Frome/Statutory_Main_River_Map.shp",
                          "Statutory_Main_River_Map",
-                         projection_code)
+                         coordinate.string)
 
 # RIVER WARNOW (GERMANY)
 river.names <- c("Unterwarnow", "Warnow")
 warnow <- load.shapefile("./data/European_waterways/Europe_Water_2008.shp",
                          "Europe_Water_2008",
-                         projection_code,
+                         coordinate.string,
                          river.names)
 
 # RIVER GUDENA (DENMARK)
 gudena <- load.shapefile("./data/Denmark/rivers.shp",
                          "rivers",
-                         projection_code)
+                         coordinate.string)
 
 gudena <- gudena[gudena$rivers_id == 12,]
 plot(gudena)
@@ -91,7 +89,7 @@ plot(gudena)
 # RIVER MONDEGO (PORTUGAL)
 mondego <- load.shapefile("./data/Portugal/Mondego.shp",
                          "Mondego",
-                         projection_code)
+                         coordinate.string)
 plot(mondego)
 
 
@@ -99,14 +97,6 @@ plot(mondego)
 # -----------------------
 # COMBINE THE SHAPE FILES
 # -----------------------
-
-# First convert to sp-objects
-rivers <- as(rivers, "Spatial")
-nete <- as(nete, "Spatial")
-westerschelde <- as(westerschelde, "Spatial")
-sea <- as(sea, "Spatial")
-
-# Union
 study.area <- gUnion(rivers, nete)
 study.area <- gUnion(study.area, westerschelde)
 study.area <- gUnion(study.area, sea)
@@ -126,23 +116,23 @@ study.area <- gudena
 
 # LifeWatch network
 locations.receivers <- load.receivers("./data/receivernetwork_20160526.csv",
-                                      projection_code)
+                                      coordinate.string)
 
 # Frome network
-locations.receivers <- load.receivers("./data/receivernetwork_frome_2014.csv",
-                                      projection_code)
+locations.receivers <- load.receivers("./data/receivernetwork_2014_frome.csv",
+                                      coordinate.string)
 
 # Warnow network
 locations.receivers <- load.receivers("./data/receivernetwork_2011_warnow.csv",
-                                      projection_code)
+                                      coordinate.string)
 
 # Gudena network
 locations.receivers <- load.receivers("./data/receivernetwork_2004_gudena.csv",
-                                      projection_code)
+                                      coordinate.string)
 
 # Mondego network
 locations.receivers <- load.receivers("./data/receivernetwork_PTN-Silver-eel-Mondego.csv",
-                                      projection_code)
+                                      coordinate.string)
 
 
 # ------------------------
