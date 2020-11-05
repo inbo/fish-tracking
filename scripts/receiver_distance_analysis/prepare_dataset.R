@@ -115,23 +115,23 @@ study.area <- gudena
 # ----------------
 
 # LifeWatch network
-locations.receivers <- load.receivers("./data/receivernetwork_20160526.csv",
+locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_20160526.csv",
                                       coordinate.string)
 
 # Frome network
-locations.receivers <- load.receivers("./data/receivernetwork_2014_frome.csv",
+locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2014_frome.csv",
                                       coordinate.string)
 
 # Warnow network
-locations.receivers <- load.receivers("./data/receivernetwork_2011_warnow.csv",
+locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2011_warnow.csv",
                                       coordinate.string)
 
 # Gudena network
-locations.receivers <- load.receivers("./data/receivernetwork_2004_gudena.csv",
+locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2004_gudena.csv",
                                       coordinate.string)
 
 # Mondego network
-locations.receivers <- load.receivers("./data/receivernetwork_PTN-Silver-eel-Mondego.csv",
+locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_PTN-Silver-eel-Mondego.csv",
                                       coordinate.string)
 
 
@@ -141,6 +141,8 @@ locations.receivers <- load.receivers("./data/receivernetwork_PTN-Silver-eel-Mon
 # for alternative resolutions, change the number of rows/columns
 nrows <- 2000
 ncols <- 4000
+# First time running the following function can give an error that can be ignored. The code will provide the output anyway. See stackoverflow link for more info about the bug.
+#https://stackoverflow.com/questions/61598340/why-does-rastertopoints-generate-an-error-on-first-call-but-not-second 
 study.area.binary <- shape.to.binarymask(study.area, nrows, ncols)
 
 # --------------------------------
