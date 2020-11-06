@@ -52,7 +52,7 @@ nete <- load.shapefile("./data/europe_water/nete.shp",
 ## to restart from the entire Europe shapefile:
 ## nete <- load.shapefile("./data/europe_water/Europe_Water_2008.shp",
 ##                        "Europe_Water_2008",
-##                        coordinate.string,
+##                        projection_code,
 ##                        c("Nete", "Grote Nete"))
 
 # WESTERSCHELDE
@@ -60,10 +60,39 @@ westerschelde <- load.shapefile("./data/westerschelde_water/seavox_sea_area_poly
                                 "seavox_sea_area_polygons_v13",
                                 coordinate.string)
 
-# SEA
+# BELGIAN PART OF THE NORTH SEA
 sea <- load.shapefile("./data/PJ_manual_water/PJ_ontbrekende_stukken_reduced.shp",
                                 "PJ_ontbrekende_stukken_reduced",
                                 coordinate.string)
+
+
+# RIVER FROME (UK)
+frome <- load.shapefile("./data/UK/Frome/Statutory_Main_River_Map.shp",
+                         "Statutory_Main_River_Map",
+                         coordinate.string)
+
+# RIVER WARNOW (GERMANY)
+river.names <- c("Unterwarnow", "Warnow")
+warnow <- load.shapefile("./data/European_waterways/Europe_Water_2008.shp",
+                         "Europe_Water_2008",
+                         coordinate.string,
+                         river.names)
+
+# RIVER GUDENA (DENMARK)
+gudena <- load.shapefile("./data/Denmark/rivers.shp",
+                         "rivers",
+                         coordinate.string)
+
+gudena <- gudena[gudena$rivers_id == 12,]
+plot(gudena)
+
+# RIVER MONDEGO (PORTUGAL)
+mondego <- load.shapefile("./data/Portugal/Mondego.shp",
+                         "Mondego",
+                         coordinate.string)
+plot(mondego)
+
+
 
 # -----------------------
 # COMBINE THE SHAPE FILES
@@ -75,11 +104,36 @@ study.area <- gUnion(study.area, sea)
 # clean workspace from individual shapefiles
 rm(rivers, nete, westerschelde, sea)
 
+# -----------------------
+# SET STUDY AREA
+# -----------------------
+#study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
+study.area <- gudena
+
 # ----------------
-# LOAD RECEIVERS
+# LOAD DETECTION STATION NETWORK
 # ----------------
-locations.receivers <- load.receivers("./data/receivernetwork_20160526.csv",
+
+# LifeWatch network
+locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_20160526.csv",
                                       coordinate.string)
+
+# Frome network
+locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2014_frome.csv",
+                                      coordinate.string)
+
+# Warnow network
+locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2011_warnow.csv",
+                                      coordinate.string)
+
+# Gudena network
+locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2004_gudena.csv",
+                                      coordinate.string)
+
+# Mondego network
+locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_PTN-Silver-eel-Mondego.csv",
+                                      coordinate.string)
+
 
 # ------------------------
 # CONVERT SHAPE TO RASTER
@@ -87,12 +141,15 @@ locations.receivers <- load.receivers("./data/receivernetwork_20160526.csv",
 # for alternative resolutions, change the number of rows/columns
 nrows <- 2000
 ncols <- 4000
+# First time running the following function can give an error that can be ignored. The code will provide the output anyway. See stackoverflow link for more info about the bug.
+#https://stackoverflow.com/questions/61598340/why-does-rastertopoints-generate-an-error-on-first-call-but-not-second 
 study.area.binary <- shape.to.binarymask(study.area, nrows, ncols)
 
 # --------------------------------
 # ADJUST MASK TO CONTAIN RECEIVERS
 # --------------------------------
-study.area.binary.extended <- adapt.binarymask(study.area.binary, locations.receivers)
+study.area.binary.extended <- adapt.binarymask(study.area.binary,
+                                               locations.receivers)
 
 # write this to disk for loading in e.g. QGIS
 writeRaster(study.area.binary.extended, "./results/study_area_binary", "GTiff",
@@ -101,15 +158,16 @@ writeRaster(study.area.binary.extended, "./results/study_area_binary", "GTiff",
 # --------------------------------
 # CONTROL MASK
 # --------------------------------
-# Control the mask characterstics and receiver location inside mask:
-# (if an error occurres, this need to be checked before deriving distances again)
+# Control the mask characteristics and receiver location inside mask:
+# (if an error occurs, this need to be checked before deriving distances again)
 control.mask(study.area.binary.extended, locations.receivers)
 
 # -------------------------------
 # Derive distances with gdistance
 # -------------------------------
-cst.dst.frame <- get.distance.matrix(study.area.binary.extended, locations.receivers)
-# write.csv(cst.dst.frame, "./results/cst_dist_receivers.csv")
+cst.dst.frame <- get.distance.matrix(study.area.binary.extended,
+                                     locations.receivers)
+write.csv(cst.dst.frame, "./results/distances.csv")
 
 
 # IDEA ...
@@ -118,18 +176,3 @@ cst.dst.frame <- get.distance.matrix(study.area.binary.extended, locations.recei
 # commute.dst <- commuteDistance(tr_geocorrected, matched.receivers)
 # By running many paths and extracting average statistics about the distance a
 # more in-depth insight in travel distance could be achieved
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

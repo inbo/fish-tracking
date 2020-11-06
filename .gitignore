@@ -1,24 +1,25 @@
 # History files
-.Rhistory
-.Rapp.history
+**/*.Rhistory
+**/*.Rapp.history
 
 # Session Data files
-.RData
+**/*.RData
 
 # User-specific files
-.Ruserdata
+**/*.Ruserdata
 
 # Example code in package build process
-*-Ex.R
+**/*-Ex.R
 
 # Output files from R CMD build
-/*.tar.gz
+**/*.tar.gz
 
 # Output files from R CMD check
-/*.Rcheck/
+**/*.Rcheck/
 
 # RStudio files
-.Rproj.user/
+**/*.Rproj.user/
+**/*.Rproj
 
 # produced vignettes
 vignettes/*.html
@@ -41,5 +42,8 @@ vignettes/*.pdf
 # Mac OS X
 .DS_Store
 
-# Data
-analysis/receiver_distance_analysis/data/europe_water/Europe*
+# ignore large files
+/scripts/receiver_distance_analysis/data/WFD_River_Canal_and_Surface_Water_Transfer_Water_Bodies_Cycle_2.shp
+/scripts/receiver_distance_analysis/data/European_waterways/
+/scripts/receiver_distance_analysis/data/Denmark/
+/scripts/receiver_distance_analysis/data/Portugal/

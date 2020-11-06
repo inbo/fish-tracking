@@ -7,11 +7,11 @@
 ## 2016-07-06
 
 library("sp")
+library("sf")
 library("rgdal")
 library("rgeos")
 library("raster")
 library("gdistance")
-
 library("assertthat")
 
 ## --------------------------------------------
@@ -37,7 +37,7 @@ library("assertthat")
 #'                        coordinate.string, subset.names = NULL)
 load.shapefile <- function(file, layer, projection, subset.names = NULL) {
     waterbody <- readOGR(dsn = file,
-                      layer = layer)
+                         layer = layer)
     if (!is.null(subset.names)) {
         waterbody.subset <- subset(waterbody, NAME %in% subset.names)
     } else {
@@ -75,6 +75,7 @@ load.receivers <- function(file, projection){
     return(locations.receivers)
 }
 
+
 #' Vector to binary raster
 #'
 #' Convert a vector to a raster binary image
@@ -89,7 +90,7 @@ load.receivers <- function(file, projection){
 #' @examples
 shape.to.binarymask <- function(shape.study.area, nrows, ncols){
     # convert to a binary raster image
-    r <- raster(nrow = nrows, ncol = ncols)
+    r <- raster(nrow = nrows, ncol = ncols, crs = shape.study.area@proj4string)
     extent(r) <- extent(shape.study.area)
     # we use getcover to make sure we have the entire river captured:
     study.area.binary <- rasterize(shape.study.area, r, 1., getCover = TRUE)
@@ -129,7 +130,7 @@ get_rowcol <- function(ids, nrows){
 
 #' Extend small patches
 #'
-#' Change a Moore environment to 1 values around the provided cell ids
+#' Change a mooring environment to 1 values around the provided cell ids
 #' (support function for adapt.binarymask)
 #'
 #' @param inputmat RasterLayer to adjust the cells from
@@ -141,10 +142,40 @@ get_rowcol <- function(ids, nrows){
 #' @examples
 extend_patches <- function(inputmat, ids){
     # inputmat -> matrix
+    ncols <- ncol(inputmat)
     nrows <- nrow(inputmat)
     crdnts <- sapply(ids, get_rowcol, nrows)
     for (i in 1:ncol(crdnts) ) {
-        inputmat[(crdnts[1, i] - 1):(crdnts[1, i] + 1), (crdnts[2, i] - 1):(crdnts[2, i] + 1)] <- 1
+        row = crdnts[1, i]
+        col = crdnts[2, i]
+
+        inputmat[row, col] <- 1
+        if (col > 1) {
+            inputmat[row , col - 1] <- 1
+        }
+        if (col < ncols) {
+            inputmat[row , col + 1] <- 1
+        }
+
+        if (row > 1) {
+            inputmat[row - 1, col] <- 1
+            if (col > 1) {
+                inputmat[row - 1, col - 1] <- 1
+            }
+            if (col < ncols) {
+                inputmat[row - 1, col + 1] <- 1
+            }
+        }
+
+        if (row < nrows) {
+            inputmat[row + 1, col] <- 1
+            if (col > 1) {
+                inputmat[row + 1, col - 1] <- 1
+            }
+            if (col < ncols) {
+                inputmat[row + 1, col + 1] <- 1
+            }
+        }
     }
     return(inputmat)
 }
@@ -186,10 +217,10 @@ adapt.binarymask <- function(binary.mask, receivers){
     # add locations itself to raster as well:
     locs2ras <- rasterize(receivers, binary.mask, 1.)
     locs2ras[is.na(locs2ras)] <- 0
-    study.area.binary <- max(binary.mask, locs2ras)
+    binary.mask <- max(binary.mask, locs2ras)
 
-    patch_count <- clump(study.area.binary)
-    patchCells <- zonal(study.area.binary, patch_count, "sum")
+    patch_count <- clump(binary.mask)
+    patchCells <- zonal(binary.mask, patch_count, "sum")
     patchCells <- patchCells[sort.list(patchCells[, 2]), ]
     n.patches <- nrow(patchCells)
 
@@ -199,21 +230,21 @@ adapt.binarymask <- function(binary.mask, receivers){
     while (!is.null(n.patches)) {
         # first row indices of the single patches extended
         ids <- which(as.matrix(patch_count) == patchCells[1, 1])
-        temp <- as.matrix(study.area.binary)
+        temp <- as.matrix(binary.mask)
         temp <- extend_patches(temp, ids)
-        study.area.binary <- raster(temp, template = study.area.binary)
+        binary.mask <- raster(temp, template = binary.mask)
 
         # patches definition etc
-        patch_count <- clump(study.area.binary)
+        patch_count <- clump(binary.mask)
         # derive surface (cell count) for each patch
-        patchCells <- zonal(study.area.binary, patch_count, "sum")
+        patchCells <- zonal(binary.mask, patch_count, "sum")
         # sort to make last row main one
         patchCells <- patchCells[sort.list(patchCells[, 2]), ]
         # check current number of patches
         n.patches <- nrow(patchCells)
         print(n.patches)
     }
-    return(study.area.binary)
+    return(binary.mask)
 }
 
 #' Check patch characteristics
@@ -261,7 +292,7 @@ get.distance.matrix <- function(binary.mask, receivers){
 
     cst.dst <- costDistance(tr_geocorrected, receivers)
     cst.dst.arr <- as.matrix(cst.dst)
-    receiver_names <- as.data.frame(receivers)$station_name
+    receiver_names <- receivers$station_name
     rownames(cst.dst.arr) <- receiver_names
     colnames(cst.dst.arr) <- receiver_names
     return(cst.dst.arr)
