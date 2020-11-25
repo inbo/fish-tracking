@@ -72,6 +72,12 @@ frome <- load.shapefile("./data/UK/Frome/Statutory_Main_River_Map.shp",
                          "Statutory_Main_River_Map",
                          coordinate.string)
 
+# RIVER STOUR (UK)
+stour <- load.shapefile("./data/UK/Stour/stour.shp",
+                        "stour",
+                        coordinate.string)
+
+
 # RIVER WARNOW (GERMANY)
 river.names <- c("Unterwarnow", "Warnow")
 warnow <- load.shapefile("./data/European_waterways/Europe_Water_2008.shp",
@@ -93,6 +99,22 @@ mondego <- load.shapefile("./data/Portugal/Mondego.shp",
                          coordinate.string)
 plot(mondego)
 
+# RIVERS SEMP PROJECT (LITHUANIA)
+curonian_lagoon <- load.shapefile("./data/Lithuania/curonian_lagoon.shp",
+                          "curonian_lagoon",
+                          coordinate.string)
+main <- load.shapefile("./data/Lithuania/Rivers.shp",
+                                  "Rivers",
+                                  coordinate.string)
+zeimena <- load.shapefile("./data/Lithuania/Zeimena.shp",
+                                  "Zeimena",
+                                  coordinate.string)
+
+semp <- gUnion(curonian_lagoon, main)
+semp <- gUnion(semp, zeimena)
+
+plot(semp)
+
 
 
 # -----------------------
@@ -109,7 +131,7 @@ rm(rivers, nete, westerschelde, sea)
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- warnow
+study.area <- stour
 
 # ----------------
 # LOAD DETECTION STATION NETWORK
@@ -121,6 +143,10 @@ locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2
 
 # Frome network
 locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2014_frome.csv",
+                                      coordinate.string)
+
+# Stour network
+locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2013_Stour.csv",
                                       coordinate.string)
 
 # Warnow network
@@ -135,6 +161,9 @@ locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2
 locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_PTN-Silver-eel-Mondego.csv",
                                       coordinate.string)
 
+# SEMP network
+locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_SEMP.csv",
+                                      coordinate.string)
 
 
 # ------------------------
@@ -178,7 +207,7 @@ control.mask(study.area.binary.extended, locations.receivers)
 # -------------------------------
 cst.dst.frame <- get.distance.matrix(study.area.binary.extended,
                                      locations.receivers)
-write.csv(cst.dst.frame, "./results/distances_2011_warnow.csv")
+write.csv(cst.dst.frame, "./results/distances_semp.csv")
 
 
 # IDEA ...
