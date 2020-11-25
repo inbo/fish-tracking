@@ -109,7 +109,7 @@ rm(rivers, nete, westerschelde, sea)
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- gudena
+study.area <- warnow
 
 # ----------------
 # LOAD DETECTION STATION NETWORK
@@ -178,7 +178,7 @@ control.mask(study.area.binary.extended, locations.receivers)
 # -------------------------------
 cst.dst.frame <- get.distance.matrix(study.area.binary.extended,
                                      locations.receivers)
-write.csv(cst.dst.frame, "./results/distances_2004_gudena.csv")
+write.csv(cst.dst.frame, "./results/distances_2011_warnow.csv")
 
 
 # IDEA ...
