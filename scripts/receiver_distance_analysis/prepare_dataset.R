@@ -13,6 +13,7 @@ library("raster")
 library("gdistance")
 
 library("assertthat")
+library(mapview)
 
 # --------------------
 # INTRODUCTION
@@ -83,7 +84,7 @@ gudena <- load.shapefile("./data/Denmark/rivers.shp",
                          "rivers",
                          coordinate.string)
 
-gudena <- gudena[gudena$rivers_id == 12,]
+gudena <- gudena[gudena$rivers_id %in% c(12,22),]
 plot(gudena)
 
 # RIVER MONDEGO (PORTUGAL)
@@ -108,7 +109,7 @@ rm(rivers, nete, westerschelde, sea)
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- gudena
+study.area <- frome
 
 # ----------------
 # LOAD DETECTION STATION NETWORK
@@ -133,6 +134,14 @@ locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2
 # Mondego network
 locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_PTN-Silver-eel-Mondego.csv",
                                       coordinate.string)
+
+
+
+# ------------------------
+# CREATE PLOT TO CHECK ALL NECESSARY WATERWAYS ARE INCLUDED
+# ------------------------
+mapView(study.area, map.types = "OpenTopoMap")
+
 
 
 # ------------------------
@@ -167,7 +176,7 @@ control.mask(study.area.binary.extended, locations.receivers)
 # -------------------------------
 cst.dst.frame <- get.distance.matrix(study.area.binary.extended,
                                      locations.receivers)
-write.csv(cst.dst.frame, "./results/distances.csv")
+write.csv(cst.dst.frame, "./results/distances_2004_gudena.csv")
 
 
 # IDEA ...
