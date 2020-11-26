@@ -29,7 +29,9 @@ source("receiver_distance_fun.R")
 # LOAD SHAPEFILES
 # --------------------
 
-# RIVER SECTION
+
+# 2015 PHD VERHELST EEL
+# river section
 river.names <- c("Schelde", "Durme", "Rupel", "Netekanaal",
                  "Albertkanaal", "Royerssluis", "Leopolddok",
                  "Amerikadok", "Vijfde Havendok", "Kanaaldok B3", "Delwaidedok",
@@ -45,7 +47,7 @@ rivers <- load.shapefile("./data/lowcountries_water/LowCountries_Water_2004.shp"
                          coordinate.string,
                          river.names)
 
-# NETE SECTION (precompiled as Europe entire file is very large)
+# Nete Section (precompiled as Europe entire file is very large)
 nete <- load.shapefile("./data/europe_water/nete.shp",
                        "nete",
                        coordinate.string,
@@ -56,15 +58,26 @@ nete <- load.shapefile("./data/europe_water/nete.shp",
 ##                        projection_code,
 ##                        c("Nete", "Grote Nete"))
 
-# WESTERSCHELDE
+# Westerschelde
 westerschelde <- load.shapefile("./data/westerschelde_water/seavox_sea_area_polygons_v13.shp",
                                 "seavox_sea_area_polygons_v13",
                                 coordinate.string)
 
-# BELGIAN PART OF THE NORTH SEA
+# Belgian part of the North Sea
 sea <- load.shapefile("./data/PJ_manual_water/PJ_ontbrekende_stukken_reduced.shp",
                                 "PJ_ontbrekende_stukken_reduced",
                                 coordinate.string)
+
+
+# Combine shapefiles
+study.area <- gUnion(rivers, nete)
+study.area <- gUnion(study.area, westerschelde)
+study.area <- gUnion(study.area, sea)
+
+# clean workspace from individual shapefiles
+rm(rivers, nete, westerschelde, sea)
+
+
 
 
 # RIVER FROME (UK)
@@ -117,15 +130,7 @@ plot(semp)
 
 
 
-# -----------------------
-# COMBINE THE SHAPE FILES
-# -----------------------
-study.area <- gUnion(rivers, nete)
-study.area <- gUnion(study.area, westerschelde)
-study.area <- gUnion(study.area, sea)
 
-# clean workspace from individual shapefiles
-rm(rivers, nete, westerschelde, sea)
 
 # -----------------------
 # SET STUDY AREA
@@ -139,6 +144,10 @@ study.area <- stour
 
 # LifeWatch network
 locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_20160526.csv",
+                                      coordinate.string)
+
+# PhD Verhelst eel
+locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2015_phd_verhelst_eel.csv",
                                       coordinate.string)
 
 # Frome network
@@ -207,7 +216,7 @@ control.mask(study.area.binary.extended, locations.receivers)
 # -------------------------------
 cst.dst.frame <- get.distance.matrix(study.area.binary.extended,
                                      locations.receivers)
-write.csv(cst.dst.frame, "./results/distances_semp.csv")
+write.csv(cst.dst.frame, "./results/distances_2015_phd_verhelst_eel.csv")
 
 
 # IDEA ...
