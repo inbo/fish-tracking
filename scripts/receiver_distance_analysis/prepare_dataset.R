@@ -142,6 +142,10 @@ study.area <- stour
 # LOAD DETECTION STATION NETWORK
 # ----------------
 
+# Twaite shad network (version 29/11/2020)
+locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_Alosa_fallax_29112020.csv",
+                                      coordinate.string)
+
 # LifeWatch network
 locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_20160526.csv",
                                       coordinate.string)
@@ -216,7 +220,7 @@ control.mask(study.area.binary.extended, locations.receivers)
 # -------------------------------
 cst.dst.frame <- get.distance.matrix(study.area.binary.extended,
                                      locations.receivers)
-write.csv(cst.dst.frame, "./results/distances_2015_phd_verhelst_eel.csv")
+write.csv(cst.dst.frame, "./results/distances_alosafallax_29112020.csv")
 
 
 # IDEA ...
