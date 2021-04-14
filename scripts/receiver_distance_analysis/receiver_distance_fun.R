@@ -105,6 +105,8 @@ shape.to.binarymask <- function(shape.study.area, receivers,  nrows, ncols){
     study.area.binary <- rasterize(shape.study.area, r, 1., getCover = TRUE)
     # make binary: set all non zero to 1
     study.area.binary[study.area.binary > 0] <- 1
+    # make binary: set NA to 0
+    study.area.binary[is.na(study.area.binary)] <- 0 
     return(study.area.binary)
 }
 
