@@ -230,7 +230,7 @@ adapt.binarymask <- function(binary.mask, receivers){
 
     patch_count <- clump(binary.mask)
     patchCells <- zonal(binary.mask, patch_count, "sum")
-    patchCells <- patchCells[sort.list(patchCells[, 2]), ]
+    patchCells <- patchCells[sort.list(patchCells[, 2]), , drop = FALSE]
     n.patches <- nrow(patchCells)
 
     # check current number of patches
@@ -248,7 +248,7 @@ adapt.binarymask <- function(binary.mask, receivers){
         # derive surface (cell count) for each patch
         patchCells <- zonal(binary.mask, patch_count, "sum")
         # sort to make last row main one
-        patchCells <- patchCells[sort.list(patchCells[, 2]), ]
+        patchCells <- patchCells[sort.list(patchCells[, 2]),, drop = FALSE]
         # check current number of patches
         n.patches <- nrow(patchCells)
         print(n.patches)
