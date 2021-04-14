@@ -236,7 +236,7 @@ adapt.binarymask <- function(binary.mask, receivers){
     n.patches <- nrow(patchCells)
 
     # check current number of patches
-    print(n.patches)
+    message(glue("Initial number of patches: {n.patches}"))
 
     while (n.patches > 1) {
         # first row indices of the single patches extended
@@ -253,7 +253,10 @@ adapt.binarymask <- function(binary.mask, receivers){
         patchCells <- patchCells[sort.list(patchCells[, 2]),, drop = FALSE]
         # check current number of patches
         n.patches <- nrow(patchCells)
-        print(n.patches)
+        message(glue("Number of patches: {n.patches}"))
+        if (n.patches == 1) {
+            message("Done: all receivers incldued")
+        }
     }
     return(binary.mask)
 }
