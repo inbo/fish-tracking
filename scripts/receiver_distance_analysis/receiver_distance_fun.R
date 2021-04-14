@@ -13,6 +13,8 @@ library("rgeos")
 library("raster")
 library("gdistance")
 library("assertthat")
+library("glue")
+library("tibble")
 
 ## --------------------------------------------
 ## General functionalities
