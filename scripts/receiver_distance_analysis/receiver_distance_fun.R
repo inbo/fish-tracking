@@ -88,13 +88,18 @@ load.receivers <- function(file, projection){
 #' @export
 #'
 #' @examples
-shape.to.binarymask <- function(shape.study.area, nrows, ncols){
+shape.to.binarymask <- function(shape.study.area, receivers,  nrows, ncols){
+    # get extents rivers and receivers
+    extent_river <- extent(shape.study.area)
+    extent_receivers <- extent(receivers)
+    # merge extents
+    extent_for_raster <- merge(extent_receivers, extent_river)
     # convert to a binary raster image
     r <- raster(nrow = nrows, ncol = ncols, crs = shape.study.area@proj4string)
-    extent(r) <- extent(shape.study.area)
+    extent(r) <- extent_for_raster
     # we use getcover to make sure we have the entire river captured:
     study.area.binary <- rasterize(shape.study.area, r, 1., getCover = TRUE)
-    # make binary
+    # make binary: set all non zero to 1
     study.area.binary[study.area.binary > 0] <- 1
     return(study.area.binary)
 }
