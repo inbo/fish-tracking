@@ -76,11 +76,15 @@ load.receivers <- function(file, projection){
 }
 
 
-#' Vector to binary raster
+#' Spatial objects to binary raster
 #'
-#' Convert a vector to a raster binary image
+#' Convert (river) shapes (polygons or lines) to a raster binary image. As
+#' receivers (points) could be out of the boundaries of the river shape, we need
+#' them to be sure to include them in the binary raster.
 #'
-#' @param shape.study.area SpatialPolygonsDataFrame to convert to raster
+#' @param shape.study.area SpatialPolygonsDataFrame or SpatialLinesDataFrame to
+#'   convert to raster
+#' @param receivers SpatialPointsDataFrame to convert to raster
 #' @param nrows number of rows to use in the raster
 #' @param ncols number of columns to use in the raster
 #'
