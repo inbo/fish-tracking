@@ -13,7 +13,7 @@ library("raster")
 library("gdistance")
 
 library("assertthat")
-library(mapview)
+library("mapview")
 
 # --------------------
 # INTRODUCTION
