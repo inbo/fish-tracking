@@ -236,7 +236,7 @@ adapt.binarymask <- function(binary.mask, receivers){
     # check current number of patches
     print(n.patches)
 
-    while (!is.null(n.patches)) {
+    while (n.patches > 1) {
         # first row indices of the single patches extended
         ids <- which(as.matrix(patch_count) == patchCells[1, 1])
         temp <- as.matrix(binary.mask)
