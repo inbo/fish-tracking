@@ -259,7 +259,7 @@ adapt.binarymask <- function(binary.mask, receivers){
         n.patches <- nrow(patchCells)
         message(glue("Number of patches: {n.patches}"))
         if (n.patches == 1) {
-            message("Done: all receivers incldued")
+            message("Done: all receivers included")
         }
     }
     return(binary.mask)
