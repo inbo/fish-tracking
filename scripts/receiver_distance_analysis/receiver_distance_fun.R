@@ -212,7 +212,9 @@ get_patches_info <- function(inputlayer){
 
 #' Extend binary mask
 #'
-#' Extend the binary mask to incorporate the receivers itself into the mask
+#' Extend the binary mask to incorporate the receivers itself into the mask.
+#' Receivers are in the mask if the number of clumps (patches) of connected
+#' cells is equal to one.
 #'
 #' @param binary.mask RasterLayer (0/1 values)
 #' @param receivers SpatialPointsDataFrame
