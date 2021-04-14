@@ -183,9 +183,8 @@ locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_S
 # CREATE PLOT TO CHECK ALL NECESSARY WATERWAYS ARE INCLUDED
 # ------------------------
 mapView(study.area, map.types = "OpenStreetMap") +
-mapView(locations.receivers, col.regions = "red", map.types = "OpenStreetMap")
-
-
+mapView(locations.receivers, col.regions = "red", map.types = "OpenStreetMap",
+        label = locations.receivers@data[["station_name"]])
 
 
 # ------------------------
