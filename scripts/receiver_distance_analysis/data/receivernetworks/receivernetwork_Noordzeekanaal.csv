@@ -1,32 +1,32 @@
 "animal_project_code","station_name","latitude","longitude"
-"Noordzeekanaal","Noordzeekanaal",52.465232,4.633992
-"Noordzeekanaal","Grote sluis NZK",52.467488,4.613347
+"Noordzeekanaal","Koog ad Zaan",52.463171,4.812326
 "Noordzeekanaal","Zaangemaal 1",52.440868,4.824139
 "Noordzeekanaal","Zaangemaal 2",52.440083,4.824859
 "Noordzeekanaal","Zaangemaal 3",52.437818,4.826197
-"Noordzeekanaal","Koog ad Zaan",52.463171,4.812326
-"Noordzeekanaal","Spuisluis Noordzee",52.470319,4.594701
-"Noordzeekanaal","Grote sluis Noordzee",52.469076,4.600854
-"Noordzeekanaal","Kleine sluis NZK",52.464559,4.592909
+"Noordzeekanaal","Noordzeekanaal",52.462798,4.633995
+"Noordzeekanaal","Grote sluis NZK",52.467488,4.613347
 "Noordzeekanaal","Middensluis NZK",52.465373,4.601803
-"Noordzeekanaal","bpns-Kilmore",51.3955,2.4965
-"Noordzeekanaal","Oranjesluis",52.38201,4.958877
-"Noordzeekanaal","ARK Noord",52.355706,4.97029
+"Noordzeekanaal","Kleine sluis NZK",52.464559,4.592909
+"Noordzeekanaal","Grote sluis Noordzee",52.466907,4.600546
+"Noordzeekanaal","Spuisluis Noordzee",52.470319,4.594701
 "Noordzeekanaal","Willem 2 sluis 2",52.383677,4.907053
+"Noordzeekanaal","Oranjesluis",52.380016,4.955998
+"Noordzeekanaal","ARK Noord",52.355706,4.97029
 "Noordzeekanaal","Kleine sluis Noordzee",52.463762,4.587267
+"Noordzeekanaal","bpns-Kilmore",51.3955,2.4965
 "Noordzeekanaal","Overtoom 1",52.430117,4.784283
 "Noordzeekanaal","Spuisluis NZK",52.470646,4.607811
 "Noordzeekanaal","Middensluis Noordzee",52.465373,4.592419
 "Noordzeekanaal","Kadoelen 5",52.411317,4.9304
-"Noordzeekanaal","Kadoelen 4",52.415583,4.92355
 "Noordzeekanaal","Kadoelen 2",52.417517,4.913867
 "Noordzeekanaal","Kadoelen 3",52.41495,4.918467
+"Noordzeekanaal","Kadoelen 4",52.415583,4.92355
 "Noordzeekanaal","Kadoelen 1",52.408503,4.908567
 "Noordzeekanaal","De Poel",52.443433,5.047922
 "Noordzeekanaal","bpns-WK14",51.3685,3.262
 "Noordzeekanaal","bpns-Whitley",51.1511666667,2.6603333333
-"Noordzeekanaal","Overtoom 3",52.4312,4.784414
 "Noordzeekanaal","Overtoom 2",52.430802,4.783545
+"Noordzeekanaal","Overtoom 3",52.4312,4.784414
 "Noordzeekanaal","bpns-O6",51.239667,2.9215
 "Noordzeekanaal","Spaarne gemaal",52.410548,4.673446
 "Noordzeekanaal","Spaarne sluis",52.412068,4.680792
@@ -39,42 +39,44 @@
 "Noordzeekanaal","Zwanenburg",52.369568,4.758351
 "Noordzeekanaal","bpns-WENDUINEBANKW",51.287167,2.879166667
 "Noordzeekanaal","PC4C-C05-2",51.667924,2.801819
-"Noordzeekanaal","Katwijk 1",52.210324,4.401197
 "Noordzeekanaal","Katwijk 2",52.207545,4.407171
+"Noordzeekanaal","Katwijk 1",52.210324,4.401197
 "Noordzeekanaal","Katwijk 3",52.199717,4.26933
 "Noordzeekanaal","ws-W6",51.41834,3.453181
 "Noordzeekanaal","ws-W7",51.410173,3.454515
 "Noordzeekanaal","bpns-Trapegeer",51.1403333333,2.573
 "Noordzeekanaal","bpns-W1",51.391333,3.303666667
-"Noordzeekanaal","Vinkeveen gemaal",52.220129,4.973093
 "Noordzeekanaal","Vinkeveen sluis",52.220603,4.972182
-"Noordzeekanaal","bpns-Belwindreefballs-CPOD",51.70442,2.812594
+"Noordzeekanaal","Vinkeveen gemaal",52.220129,4.973093
 "Noordzeekanaal","ARK Zuid",52.185058,4.996343
 "Noordzeekanaal","Berlagerbrug",52.346957,4.912993
-"Noordzeekanaal","Loosdrecht 1",52.231981,5.032877
-"Noordzeekanaal","Loosdrecht 3",52.256101,5.043167
 "Noordzeekanaal","Loosdrecht2a sluis",52.243116,5.048159
 "Noordzeekanaal","Loosdracht 2b gemaal",52.242178,5.047687
+"Noordzeekanaal","Loosdrecht 1",52.231981,5.032877
+"Noordzeekanaal","Loosdrecht 3",52.256101,5.043167
 "Noordzeekanaal","Muiden",52.32631,5.064354
-"Noordzeekanaal","ws-OGDL",51.46395,3.51263
 "Noordzeekanaal","ws-DL12",51.466175,3.502181
+"Noordzeekanaal","ws-OGDL",51.46395,3.51263
 "Noordzeekanaal","ws-TRAWL",51.437785,3.470347
 "Noordzeekanaal","Lelystad",52.532761,5.433627
 "Noordzeekanaal","Enkhuizen",52.702266,5.298687
 "Noordzeekanaal","bpns-nieuwpoortbank",51.1695,2.6015
 "Noordzeekanaal","bpns-WK12",51.461167,3.107
 "Noordzeekanaal","ws-STEEN",51.403409,3.465898
-"Noordzeekanaal","rel_noordzeekanaal1",NA,NA
-"Noordzeekanaal","rel_noordzeekanaal2",NA,NA
-"Noordzeekanaal","rel_noordzeekanaal3",NA,NA
-"Noordzeekanaal","rel_noordzeekanaal4",NA,NA
-"Noordzeekanaal","rel_noordzeekanaal5",NA,NA
-"Noordzeekanaal","rel_noordzeekanaal6",NA,NA
-"Noordzeekanaal","rel_noordzeekanaal7",NA,NA
-"Noordzeekanaal","rel_noordzeekanaal8",NA,NA
-"Noordzeekanaal","rel_noordzeekanaal9",NA,NA
-"Noordzeekanaal","rel_noordzeekanaal10",NA,NA
-"Noordzeekanaal","rel_noordzeekanaal11",NA,NA
-"Noordzeekanaal","rel_noordzeekanaal12",NA,NA
-"Noordzeekanaal","rel_noordzeekanaal13",NA,NA
-"Noordzeekanaal","rel_noordzeekanaal14",NA,NA
+"Noordzeekanaal","rel_noordzeekanaal10",52.219452,4.96083
+"Noordzeekanaal","rel_noordzeekanaal11",52.220457,4.973436
+"Noordzeekanaal","rel_noordzeekanaal5",52.442922,4.789876
+"Noordzeekanaal","rel_noordzeekanaal6",52.397264,4.677708
+"Noordzeekanaal","rel_noordzeekanaal12",52.236496,5.058484
+"Noordzeekanaal","rel_noordzeekanaal13",52.244517,5.047218
+"Noordzeekanaal","rel_noordzeekanaal2",52.409056,4.927359
+"Noordzeekanaal","rel_noordzeekanaal3",52.411463,4.911775
+"Noordzeekanaal","rel_noordzeekanaal7",52.385734,4.749574
+"Noordzeekanaal","rel_noordzeekanaal1",52.452208,4.678779
+"Noordzeekanaal","rel_noordzeekanaal8",52.204831,4.400155
+"Noordzeekanaal","rel_noordzeekanaal14",52.470893,4.820397
+"Noordzeekanaal","rel_noordzeekanaal15",52.451725,4.818485
+"Noordzeekanaal","rel_noordzeekanaal9",52.205318,4.403105
+"Noordzeekanaal","rel_noordzeekanaal4",52.416521,4.913081
+"Noordzeekanaal","rel_noordzeekanaal16",52.434968,5.090042
+"Noordzeekanaal","rel_noordzeekanaal17",52.641481,5.20226
