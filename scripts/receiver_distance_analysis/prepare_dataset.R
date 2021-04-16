@@ -31,6 +31,22 @@ source("receiver_distance_fun.R")
 
 
 # 2015 PHD VERHELST EEL
+vhag <- load.shapefile("./data/Belgium_Netherlands/Vhag.shp",
+                       "Vhag",
+                       coordinate.string)
+plot(vhag)
+
+ws_bpns <- load.shapefile("./data/Belgium_Netherlands/ws_bpns.shp",
+                       "ws_bpns",
+                       coordinate.string)
+plot(ws_bpns)
+
+# Combine shapefiles
+study.area <- gUnion(vhag, ws_bpns)
+
+
+
+#### Chunk underneath becomes redundant when above code works ####
 # river section
 river.names <- c("Schelde", "Durme", "Rupel", "Netekanaal",
                  "Albertkanaal", "Royerssluis", "Leopolddok",
@@ -46,6 +62,9 @@ rivers <- load.shapefile("./data/lowcountries_water/LowCountries_Water_2004.shp"
                          "LowCountries_Water_2004",
                          coordinate.string,
                          river.names)
+
+
+
 
 # Nete Section (precompiled as Europe entire file is very large)
 nete <- load.shapefile("./data/europe_water/nete.shp",
@@ -77,26 +96,31 @@ study.area <- gUnion(study.area, sea)
 # clean workspace from individual shapefiles
 rm(rivers, nete, westerschelde, sea)
 
+#### ####
 
 
 
 # RIVER FROME (UK)
-frome <- load.shapefile("./data/UK/Frome/Statutory_Main_River_Map.shp",
-                         "Statutory_Main_River_Map",
+frome <- load.shapefile("./data/UK/Frome/frome.shp",
+                         "frome",
                          coordinate.string)
+plot(frome)
 
 # RIVER STOUR (UK)
 stour <- load.shapefile("./data/UK/Stour/stour.shp",
                         "stour",
                         coordinate.string)
 
+# RIVER NENE (UK)
+nene <- load.shapefile("./data/UK/Nene/nene.shp",
+                        "nene",
+                        coordinate.string)
+
 
 # RIVER WARNOW (GERMANY)
-river.names <- c("Unterwarnow", "Warnow")
-warnow <- load.shapefile("./data/European_waterways/Europe_Water_2008.shp",
-                         "Europe_Water_2008",
-                         coordinate.string,
-                         river.names)
+warnow <- load.shapefile("./data/Germany/warnow.shp",
+                         "warnow",
+                         coordinate.string)
 
 # RIVER GUDENA (DENMARK)
 gudena <- load.shapefile("./data/Denmark/rivers.shp",
@@ -129,45 +153,66 @@ semp <- gUnion(semp, zeimena)
 plot(semp)
 
 
+# EMMN project - Alta fjord Norway
+emmn <- load.shapefile("./data/Norway/alta.shp",
+                          "alta",
+                          coordinate.string)
 
+plot(emmn)
+
+
+# ESGL & 2011_loire project
+esgl <- load.shapefile("./data/France/loire_final.shp",
+                       "loire_final",
+                       coordinate.string)
+
+plot(esgl)
+
+
+# 2017_fremur project
+fremur <- load.shapefile("./data/France/fremur.shp",
+                       "fremur",
+                       coordinate.string)
+
+plot(fremur)
 
 
 # -----------------------
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- stour
+study.area <- nene
 
 # ----------------
 # LOAD DETECTION STATION NETWORK
 # ----------------
 
-# Twaite shad network (version 29/11/2020)
-locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_Alosa_fallax_29112020.csv",
-                                      coordinate.string)
-
 # LifeWatch network
-locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_20160526.csv",
-                                      coordinate.string)
+#locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_20160526.csv",
+#                                      coordinate.string)
 
 # PhD Verhelst eel
 locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2015_phd_verhelst_eel.csv",
                                       coordinate.string)
 
 # Frome network
-locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2014_frome.csv",
+locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2014_Frome.csv",
                                       coordinate.string)
 
 # Stour network
 locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2013_Stour.csv",
                                       coordinate.string)
 
+# Nene network
+locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2014_Nene.csv",
+                                      coordinate.string)
+
 # Warnow network
-locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2011_warnow.csv",
+locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2011_Warnow.csv",
                                       coordinate.string)
 
 # Gudena network
-locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2004_gudena.csv",
+locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2004_Gudena.csv",
                                       coordinate.string)
 
 # Mondego network
@@ -177,6 +222,23 @@ locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_P
 # SEMP network
 locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_SEMP.csv",
                                       coordinate.string)
+
+# EMMN network
+locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_EMMN.csv",
+                                      coordinate.string)
+
+# ESGL network
+locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_ESGL.csv",
+                                      coordinate.string)
+
+# 2011_loire network
+locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2011_loire.csv",
+                                      coordinate.string)
+
+# 2017_fremur network
+locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2017_Fremur.csv",
+                                      coordinate.string)
+
 
 
 # ------------------------
@@ -222,7 +284,7 @@ control.mask(study.area.binary.extended, locations.receivers)
 # -------------------------------
 cst.dst.frame <- get.distance.matrix(study.area.binary.extended,
                                      locations.receivers)
-write.csv(cst.dst.frame, "./results/distances_alosafallax_29112020.csv")
+write.csv(cst.dst.frame, "./results/distancematrix_2014_nene.csv")
 
 
 # IDEA ...
