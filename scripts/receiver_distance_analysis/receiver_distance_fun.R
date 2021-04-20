@@ -14,7 +14,6 @@ library("raster")
 library("gdistance")
 library("assertthat")
 library("glue")
-library("tibble")
 
 ## --------------------------------------------
 ## General functionalities
@@ -313,7 +312,7 @@ get.distance.matrix <- function(binary.mask, receivers){
     receiver_names <- receivers$station_name
     rownames(cst.dst.arr) <- receiver_names
     colnames(cst.dst.arr) <- receiver_names
-    return(as_tibble(cst.dst.arr))
+    return(as.data.frame(cst.dst.arr))
 }
 
 
