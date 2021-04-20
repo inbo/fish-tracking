@@ -2,9 +2,9 @@
 ## Derive distance matrix for a given set of receivers within the boundaries
 ## af the provided water bodies - support functions
 ##
-## Van Hoey S.
-## Lifewatch INBO
-## 2016-07-06
+## Van Hoey S., Oldoni D.
+## Oscibio - INBO (LifeWatch project)
+## 2016-2020
 
 library("sp")
 library("sf")
