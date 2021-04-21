@@ -199,18 +199,19 @@ extend_patches <- function(inputmat, ids){
 #'
 #' @param inputlayer RasterLayer for which to extract the patch information
 #'
-#' @return vector with zone id and the sum of cells for each zone
+#' @return vector with zone id and the number of cells for each zone
 #' @export
 #'
 #' @examples
 #' get_patches_info(study.area.binary)
-get_patches_info <- function(inputlayer){
-    patch_count <- clump(inputlayer)
+get_patches_info <- function(binary.raster){
+    # detect clumps (patches) of connected cells
+    patch_count <- clump(binary.raster)
     # derive surface (cell count) for each patch
-    patchCells <- zonal(inputlayer, patch_count, "sum")
-    # sort to make last row main one
-    patchCells <- patchCells[sort.list(patchCells[, 2]), ]
-    return(patchCells)
+    patch_cells <- zonal(binary.raster, patch_count, "sum")
+    # sort to make last row main one and return
+    patch_cells[sort.list(patch_cells[, 2]),, drop = FALSE]
+}
 }
 
 #' Extend binary mask
