@@ -107,7 +107,7 @@ shape.to.binarymask <- function(shape.study.area, receivers,  nrows, ncols){
     # make binary: set all non zero to 1
     study.area.binary[study.area.binary > 0] <- 1
     # make binary: set NA to 0
-    study.area.binary[is.na(study.area.binary)] <- 0 
+    study.area.binary[is.na(study.area.binary)] <- 0
     return(study.area.binary)
 }
 
@@ -212,6 +212,39 @@ get_patches_info <- function(binary.raster){
     # sort to make last row main one and return
     patch_cells[sort.list(patch_cells[, 2]),, drop = FALSE]
 }
+
+#' Check patch characteristics
+#'
+#' Control the charactersitics of the binary mask: 1. patch of connected cells
+#' 2. all receivers are within the patch
+#'
+#' @param binary.mask RasterLayer with the patch(es) of waterbodies
+#' @param receivers SpatialPointsDataFrame with receiver location info
+#' @param n_patches.mask number of patches of waterbodies (before extension to
+#'   include receivers)
+#'
+#' @return TRUE if both tests are valid
+#' @export
+#'
+#' @examples
+control.mask <- function(binary.mask, receivers, n_patches.mask){
+    match_ids <- raster::extract(binary.mask, receivers)
+    match_ids[is.na(match_ids)] <- 0
+    matched.receivers <- receivers[as.logical(match_ids), ]
+    # CHECK:
+    assert_that(length(receivers) == length(matched.receivers))
+
+    # Check number of clumps of binary.mask
+    clumps_binary.mask <- clump(binary.mask)
+    # at least one clump is present
+    assert_that(cellStats(clumps_binary.mask, stat = 'min', na.rm = TRUE) == 1,
+                msg = "At least one clump (patch) must be present")
+    # number of clumps should be the same as the initial number of clumps before
+    # adding receivers (typically 1 if all river bodies are connected)
+    assert_that(
+        cellStats(clumps_binary.mask, stat = 'max', na.rm = TRUE) == n_patches.mask,
+        msg = "Number of clumps (patches) not equal to initial number of patches"
+    )
 }
 
 #' Extend binary mask
@@ -229,68 +262,55 @@ get_patches_info <- function(binary.raster){
 #' @examples
 adapt.binarymask <- function(binary.mask, receivers){
 
+    # get initial number of patches  and their respective sizes (start point)
+    # if the entire study area is connected then we have one patch
+    patchCells <- get_patches_info(binary.mask)
+    n_patches.mask <- nrow(patchCells)
+
     # add locations itself to raster as well:
     locs2ras <- rasterize(receivers, binary.mask, 1.)
     locs2ras[is.na(locs2ras)] <- 0
     binary.mask <- max(binary.mask, locs2ras)
 
-    patch_count <- clump(binary.mask)
-    patchCells <- zonal(binary.mask, patch_count, "sum")
-    patchCells <- patchCells[sort.list(patchCells[, 2]), , drop = FALSE]
+    # extract the information about the patches and their respective sizes
+    # detect initial clumps (patches) of connected cells
+    patchCount <- clump(binary.mask)
+    # derive surface (cell count) for each patch of mask
+    patchCells <- zonal(binary.mask, patchCount, "sum")
+    # sort to make last row main one and return
+    patchCells <- patchCells[sort.list(patchCells[, 2]),, drop = FALSE]
+    # check initial number of patches
     n.patches <- nrow(patchCells)
+    n.patches <- nrow(patchCells)
+    message(glue("Number of patches after adding receivers: {n.patches}"))
 
-    # check current number of patches
-    message(glue("Initial number of patches: {n.patches}"))
-
-    while (n.patches > 1) {
-        # first row indices of the single patches extended
-        ids <- which(as.matrix(patch_count) == patchCells[1, 1])
+    if (n.patches == n_patches.mask) {
+        message("No binary mask extension needed.")
+    }
+    while (n.patches > n_patches.mask) {
+        # first row indexes of the single patches extended
+        ids <- which(as.matrix(patchCount) == patchCells[1, 1])
         temp <- as.matrix(binary.mask)
         temp <- extend_patches(temp, ids)
         binary.mask <- raster(temp, template = binary.mask)
 
-        # patches definition etc
-        patch_count <- clump(binary.mask)
+        # detect clumps (patches) of connected cells
+        patchCount <- clump(binary.mask)
         # derive surface (cell count) for each patch
-        patchCells <- zonal(binary.mask, patch_count, "sum")
-        # sort to make last row main one
+        patchCells <- zonal(binary.mask, patchCount, "sum")
+        # sort to make last row main one and return
         patchCells <- patchCells[sort.list(patchCells[, 2]),, drop = FALSE]
-        # check current number of patches
+        # get current number of patches
         n.patches <- nrow(patchCells)
         message(glue("Number of patches: {n.patches}"))
-        if (n.patches == 1) {
+        if (n.patches == n_patches.mask) {
             message("Done: all receivers included")
         }
     }
+    # Control the mask characteristics and receiver location inside mask:
+    # (if an error occurs, this need to be checked before deriving distances)
+    control.mask(binary.mask, receivers, n_patches.mask)
     return(binary.mask)
-}
-
-#' Check patch characteristics
-#'
-#' Control the charactersitics of the binary mask:
-#' 1. patch of connected cells
-#' 2. all receivers are within the patch
-#'
-#' @param binary.mask RasterLayer with the patch of waterbodies
-#' @param receivers SpatialPointsDataFrame with receiver location info
-#'
-#' @return TRUE is both tests are valid
-#' @export
-#'
-#' @examples
-control.mask <- function(binary.mask, receivers){
-    match_ids <- raster::extract(binary.mask, receivers)
-    match_ids[is.na(match_ids)] <- 0
-    matched.receivers <- receivers[as.logical(match_ids), ]
-    # CHECK:
-    assert_that(length(receivers) == length(matched.receivers))
-
-    # Check if area is one big environment without islands
-    temp <- clump(binary.mask)
-    # a single clump is what we want: min and max should be both == 1
-    # CHECK:
-    assert_that(cellStats(temp, stat = 'min', na.rm = TRUE) == 1)
-    assert_that(cellStats(temp, stat = 'max', na.rm = TRUE) == 1)
 }
 
 #' Get distance matrix
