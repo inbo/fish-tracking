@@ -269,6 +269,12 @@ study.area.binary <- shape.to.binarymask(study.area,
                                          nrows,
                                          ncols)
 
+# get initial number of patches  and their respective sizes (start point)
+# if the entire study area is connected then we have one patch
+study.area_patchCells <- get_patches_info(study.area.binary)
+n_patches.study.area.binary <- nrow(study.area_patchCells)
+message(glue("Number of patches of binary.mask: {n_patches.study.area.binary}"))
+
 # --------------------------------
 # ADJUST MASK TO CONTAIN RECEIVERS
 # --------------------------------
