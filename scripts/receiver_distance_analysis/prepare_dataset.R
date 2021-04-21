@@ -288,8 +288,11 @@ writeRaster(study.area.binary.extended, "./results/study_area_binary", "GTiff",
 # -------------------------------
 # Derive distances with gdistance
 # -------------------------------
-cst.dst.frame <- get.distance.matrix(study.area.binary.extended,
-                                     locations.receivers)
+cst.dst.frame_corrected <- get.distance.matrix(study.area.binary.extended,
+                                               locations.receivers)
+# inspect distance output
+cst.dst.frame_corrected
+# save distances
 write.csv(cst.dst.frame, "./results/distancematrix_2014_nene.csv")
 
 
