@@ -252,11 +252,18 @@ mapView(locations.receivers, col.regions = "red", map.types = "OpenStreetMap",
 # ------------------------
 # CONVERT SHAPE TO RASTER
 # ------------------------
-# for alternative resolutions, change the number of rows/columns
-nrows <- 2000
-ncols <- 4000
+res <- 20 # pixel is a square:  res x res (in meters)
+
+x_size <- study.area@bbox[1,2] - study.area@bbox[1,1]
+y_size <- study.area@bbox[2,2] - study.area@bbox[2,1]
+
+nrows <- round(y_size / res)
+ncols <- round(x_size / res)
+
+message(glue("Pixel resolution: {res}m"))
+message(glue("Number of rows,cols: ({nrows},{ncols})"))
 # First time running the following function can give an error that can be ignored. The code will provide the output anyway. See stackoverflow link for more info about the bug.
-#https://stackoverflow.com/questions/61598340/why-does-rastertopoints-generate-an-error-on-first-call-but-not-second 
+#https://stackoverflow.com/questions/61598340/why-does-rastertopoints-generate-an-error-on-first-call-but-not-second
 study.area.binary <- shape.to.binarymask(study.area,
                                          locations.receivers,
                                          nrows,
