@@ -2,9 +2,9 @@
 ## Derive distance matrix for a given set of receivers within the boundaries
 ## af the provided water bodies - execution
 ##
-## Van Hoey S.
-## Lifewatch INBO
-## 2016-07-06
+## Van Hoey S., Oldoni D.
+## Oscibio - INBO (LifeWatch project)
+## 2016-2020
 
 library("sf")
 library("sp")
@@ -12,7 +12,7 @@ library("rgdal")
 library("rgeos")
 library("raster")
 library("gdistance")
-library(geosphere)
+library("geosphere")
 
 library("assertthat")
 library("mapview")
@@ -253,8 +253,8 @@ locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2
 # easier to get coordinates out of sf than sp objects
 study.area_sf <- st_as_sf(study.area)
 
-# calculate nearest point to line+polygon
-dist_receiver_river <- geosphere::dist2Line(
+# calculate nearest point to line+polygon (transform to CRS 4326 first)
+dist_receiver_river <- dist2Line(
   p = spTransform(locations.receivers, CRS("+init=epsg:4326"))@coords,
   line = st_coordinates(st_transform(study.area_sf, crs = 4326))[,1:2]
 )
@@ -263,18 +263,26 @@ projections.locations.receivers <- st_as_sf(
   as.data.frame(dist_receiver_river),
   coords = c("lon", "lat"),
   crs = 4326)
+
+# add columns with receivers info to projections
 projections.locations.receivers$animal_project_code <- locations.receivers@data$animal_project_code
 projections.locations.receivers$station_name <- locations.receivers@data$station_name
+# transform sf to sp object
 projections.locations.receivers <- as_Spatial(projections.locations.receivers)
 
+# transform back to original CRS (32631)
+projections.locations.receivers <- spTransform(projections.locations.receivers,
+                                               coordinate.string)
 # ------------------------
 # CREATE PLOT TO CHECK ALL NECESSARY WATERWAYS ARE INCLUDED
 # ------------------------
 mapView(study.area, map.types = "OpenStreetMap") +
 mapView(locations.receivers, col.regions = "red", map.types = "OpenStreetMap",
         label = locations.receivers@data[["station_name"]]) +
-  mapView(projections.locations.receivers, col.regions = "white", map.types = "OpenStreetMap")
-
+  mapView(projections.locations.receivers,
+          col.regions = "white",
+          map.types = "OpenStreetMap",
+          label = projections.locations.receivers@data[["station_name"]])
 
 # ------------------------
 # CONVERT SHAPE TO RASTER
@@ -291,16 +299,12 @@ message(glue("Pixel resolution: {res}m"))
 message(glue("Number of rows,cols: ({nrows},{ncols})"))
 # First time running the following function can give an error that can be ignored. The code will provide the output anyway. See stackoverflow link for more info about the bug.
 #https://stackoverflow.com/questions/61598340/why-does-rastertopoints-generate-an-error-on-first-call-but-not-second
-study.area.binary <- shape.to.binarymask(study.area,
-                                         locations.receivers,
-                                         nrows,
-                                         ncols)
-
-# get initial number of patches  and their respective sizes (start point)
-# if the entire study area is connected then we have one patch
-study.area_patchCells <- get_patches_info(study.area.binary)
-n_patches.study.area.binary <- nrow(study.area_patchCells)
-message(glue("Number of patches of binary.mask: {n_patches.study.area.binary}"))
+study.area.binary <- shape.to.binarymask(
+  shape.study.area = study.area,
+  receivers = projections.locations.receivers,
+  nrows = nrows,
+  ncols = ncols
+)
 
 # --------------------------------
 # ADJUST MASK TO CONTAIN RECEIVERS

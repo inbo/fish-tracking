@@ -266,7 +266,10 @@ adapt.binarymask <- function(binary.mask, receivers){
     # if the entire study area is connected then we have one patch
     patchCells <- get_patches_info(binary.mask)
     n_patches.mask <- nrow(patchCells)
-
+    message(glue("Number of patches of binary.mask (river body): {n_patches.mask}"))
+    if (n_patches.mask > 1) {
+        message("The binary.mask (river body) is not connected. Extension needed")
+    }
     # add locations itself to raster as well:
     locs2ras <- rasterize(receivers, binary.mask, 1.)
     locs2ras[is.na(locs2ras)] <- 0
