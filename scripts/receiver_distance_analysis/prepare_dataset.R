@@ -6,11 +6,13 @@
 ## Lifewatch INBO
 ## 2016-07-06
 
+library("sf")
 library("sp")
 library("rgdal")
 library("rgeos")
 library("raster")
 library("gdistance")
+library(geosphere)
 
 library("assertthat")
 library("mapview")
@@ -239,14 +241,39 @@ locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2
 locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2017_Fremur.csv",
                                       coordinate.string)
 
+# ----------------
+# PROJECT RECEIVERS ON WATER SHAPEFILE
+# ----------------
 
+# Sometimes the receivers position is way too far from river shapefile and so
+# the distance among receiver can be misleading. We find the nearest point to
+# location receivers on the river shapefile
+# matrix distances with points
+
+# easier to get coordinates out of sf than sp objects
+study.area_sf <- st_as_sf(study.area)
+
+# calculate nearest point to line+polygon
+dist_receiver_river <- geosphere::dist2Line(
+  p = spTransform(locations.receivers, CRS("+init=epsg:4326"))@coords,
+  line = st_coordinates(st_transform(study.area_sf, crs = 4326))[,1:2]
+)
+
+projections.locations.receivers <- st_as_sf(
+  as.data.frame(dist_receiver_river),
+  coords = c("lon", "lat"),
+  crs = 4326)
+projections.locations.receivers$animal_project_code <- locations.receivers@data$animal_project_code
+projections.locations.receivers$station_name <- locations.receivers@data$station_name
+projections.locations.receivers <- as_Spatial(projections.locations.receivers)
 
 # ------------------------
 # CREATE PLOT TO CHECK ALL NECESSARY WATERWAYS ARE INCLUDED
 # ------------------------
 mapView(study.area, map.types = "OpenStreetMap") +
 mapView(locations.receivers, col.regions = "red", map.types = "OpenStreetMap",
-        label = locations.receivers@data[["station_name"]])
+        label = locations.receivers@data[["station_name"]]) +
+  mapView(projections.locations.receivers, col.regions = "white", map.types = "OpenStreetMap")
 
 
 # ------------------------
@@ -278,8 +305,9 @@ message(glue("Number of patches of binary.mask: {n_patches.study.area.binary}"))
 # --------------------------------
 # ADJUST MASK TO CONTAIN RECEIVERS
 # --------------------------------
-study.area.binary.extended <- adapt.binarymask(study.area.binary,
-                                               locations.receivers)
+#
+study.area.binary.extended <- adapt.binarymask(binary.mask = study.area.binary,
+                                               receivers = projections.locations.receivers)
 
 # write this to disk for loading in e.g. QGIS
 writeRaster(study.area.binary.extended, "./results/study_area_binary", "GTiff",
