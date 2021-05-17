@@ -6,13 +6,11 @@
 ## Oscibio - INBO (LifeWatch project)
 ## 2016-2020
 
-library("sf")
 library("sp")
 library("rgdal")
 library("rgeos")
 library("raster")
 library("gdistance")
-library("geosphere")
 
 library("assertthat")
 library("mapview")
