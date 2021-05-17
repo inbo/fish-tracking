@@ -246,14 +246,15 @@ locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2
 # ----------------
 
 # Sometimes the receivers position is way too far from river shapefile and so
-# the distance among receiver can be misleading. We find the nearest point to
-# location receivers on the river shapefile
-# matrix distances with points
+# the distance among receivers can be misleading. We find the nearest point to
+# location receivers on the river shapefile (orthogonal projection)
 
-# easier to get coordinates out of sf than sp objects
+# transform to sf because it is much easier to get coordinates out of sf than sp
+# objects
 study.area_sf <- st_as_sf(study.area)
 
-# calculate nearest point to line+polygon (transform to CRS 4326 first)
+# calculate nearest point to line/polygon (transform to CRS 4326 first)
+# this is done using crs 4326
 dist_receiver_river <- dist2Line(
   p = spTransform(locations.receivers, CRS("+init=epsg:4326"))@coords,
   line = st_coordinates(st_transform(study.area_sf, crs = 4326))[,1:2]
