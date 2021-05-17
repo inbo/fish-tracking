@@ -8,6 +8,7 @@
 
 library("sp")
 library("sf")
+library("geosphere")
 library("rgdal")
 library("rgeos")
 library("raster")
@@ -76,6 +77,50 @@ load.receivers <- function(file, projection){
     return(locations.receivers)
 }
 
+#' Find the receiver projection on river body shapefile
+#'
+#' @param shape.study.area a shapefile (sp object), lines or polygons, of the
+#'   river body
+#' @param receivers SpatialPointsDataFrame
+#' @param projection a projection string, the CRS of both river body and
+#'   receivers
+#'
+#' @return SpatialPointsDataFrame
+#' @export
+#'
+#' @examples
+#' find.projections.receivers(shape.study.area = study.area,
+#'   receivers = locations.receivers,
+#'   projection = coordinate.string)
+find.projections.receivers <- function(shape.study.area,
+                                       receivers,
+                                       projection) {
+    # transform to sf because it is much easier to get coordinates out of sf than sp
+    # objects
+    shape.study.area_sf <- st_as_sf(shape.study.area)
+
+    # calculate nearest point to line/polygon (transform to CRS 4326 first)
+    # this is done using crs 4326
+    dist_receiver_river <- dist2Line(
+        p = spTransform(receivers, CRS("+init=epsg:4326"))@coords,
+        line = st_coordinates(st_transform(shape.study.area_sf, crs = 4326))[,1:2]
+    )
+
+    projections.receivers <- st_as_sf(
+        as.data.frame(dist_receiver_river),
+        coords = c("lon", "lat"),
+        crs = 4326)
+
+    # add columns with receivers info to projections
+    projections.receivers$animal_project_code <- receivers@data$animal_project_code
+    projections.receivers$station_name <- receivers@data$station_name
+    # transform sf to sp object
+    projections.receivers <- as_Spatial(projections.receivers)
+
+    # transform back to original projection
+    projections.receivers <- spTransform(projections.receivers, projection)
+    return(projections.receivers)
+}
 
 #' Spatial objects to binary raster
 #'
