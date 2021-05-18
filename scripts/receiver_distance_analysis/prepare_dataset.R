@@ -293,6 +293,9 @@ study.area.binary.extended <- adapt.binarymask(binary.mask = study.area.binary,
 writeRaster(study.area.binary.extended, "./results/study_area_binary", "GTiff",
             overwrite = TRUE)
 
+# remove sutdy.area.binary raster (not needed anymore) to free some memory
+remove(study.area.binary)
+
 # -------------------------------
 # Derive distances with gdistance
 # -------------------------------
