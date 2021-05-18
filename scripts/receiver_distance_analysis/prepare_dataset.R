@@ -7,12 +7,8 @@
 ## 2016-2020
 
 library("sp")
-library("rgdal")
 library("rgeos")
 library("raster")
-library("gdistance")
-
-library("assertthat")
 library("mapview")
 
 # --------------------
