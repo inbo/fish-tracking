@@ -97,13 +97,13 @@ find.projections.receivers <- function(shape.study.area,
                                        projection) {
     # transform to sf because it is much easier to get coordinates out of sf than sp
     # objects
-    shape.study.area_sf <- st_as_sf(shape.study.area)
+    shape.study.area <- st_as_sf(shape.study.area)
 
     # calculate nearest point to line/polygon (transform to CRS 4326 first)
     # this is done using crs 4326
     dist_receiver_river <- dist2Line(
         p = spTransform(receivers, CRS("+init=epsg:4326"))@coords,
-        line = st_coordinates(st_transform(shape.study.area_sf, crs = 4326))[,1:2]
+        line = st_coordinates(st_transform(shape.study.area, crs = 4326))[,1:2]
     )
 
     projections.receivers <- st_as_sf(
