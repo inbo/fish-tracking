@@ -299,8 +299,10 @@ remove(study.area.binary)
 # -------------------------------
 # Derive distances with gdistance
 # -------------------------------
-cst.dst.frame_corrected <- get.distance.matrix(study.area.binary.extended,
-                                               locations.receivers)
+cst.dst.frame_corrected <- get.distance.matrix(
+  binary.mask = study.area.binary.extended,
+  receivers = projections.locations.receivers
+)
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
