@@ -117,9 +117,8 @@ find.projections.receivers <- function(shape.study.area,
     # transform sf to sp object
     projections.receivers <- as_Spatial(projections.receivers)
 
-    # transform back to original projection
-    projections.receivers <- spTransform(projections.receivers, projection)
-    return(projections.receivers)
+    # transform back to original CRS and return
+    spTransform(projections.receivers, projection)
 }
 
 #' Spatial objects to binary raster
