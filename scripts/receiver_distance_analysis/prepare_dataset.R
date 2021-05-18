@@ -177,7 +177,7 @@ plot(fremur)
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- gudena
+study.area <- esgl
 
 # ----------------
 # LOAD DETECTION STATION NETWORK
@@ -263,7 +263,7 @@ mapView(locations.receivers, col.regions = "red", map.types = "OpenStreetMap",
 # ------------------------
 # CONVERT SHAPE TO RASTER
 # ------------------------
-res <- 50 # pixel is a square:  res x res (in meters)
+res <- 20 # pixel is a square:  res x res (in meters)
 
 x_size <- study.area@bbox[1,2] - study.area@bbox[1,1]
 y_size <- study.area@bbox[2,2] - study.area@bbox[2,1]
@@ -306,7 +306,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distancematrix_2004_gudena.csv")
+write.csv(cst.dst.frame_corrected, "./results/distancematrix_2011_loire.csv")
 
 
 # IDEA ...
