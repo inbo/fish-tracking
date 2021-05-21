@@ -2,17 +2,19 @@
 ## Derive distance matrix for a given set of receivers within the boundaries
 ## af the provided water bodies - support functions
 ##
-## Van Hoey S.
-## Lifewatch INBO
-## 2016-07-06
+## Van Hoey S., Oldoni D.
+## Oscibio - INBO (LifeWatch project)
+## 2016-2020
 
 library("sp")
 library("sf")
+library("geosphere")
 library("rgdal")
 library("rgeos")
 library("raster")
 library("gdistance")
 library("assertthat")
+library("glue")
 
 ## --------------------------------------------
 ## General functionalities
@@ -75,12 +77,128 @@ load.receivers <- function(file, projection){
     return(locations.receivers)
 }
 
+#' Find the receiver projection on river body shapefile
+#'
+#' @param shape.study.area a shapefile (sp object), lines or polygons, of the
+#'   river body
+#' @param receivers SpatialPointsDataFrame
+#' @param projection a projection string, the CRS of both river body and
+#'   receivers
+#'
+#' @return SpatialPointsDataFrame
+#' @export
+#'
+#' @examples
+#' find.projections.receivers(shape.study.area = study.area,
+#'   receivers = locations.receivers,
+#'   projection = coordinate.string)
+find.projections.receivers <- function(shape.study.area,
+                                       receivers,
+                                       projection) {
 
-#' Vector to binary raster
+    # transform to crs 4326
+    receivers <- spTransform(receivers, CRS("+init=epsg:4326"))
+    shape.study.area <- spTransform(shape.study.area, CRS("+init=epsg:4326"))
+
+    # transform to sf because it is much easier to complete some tasks
+    # afterwards
+    shape.study.area <- st_as_sf(shape.study.area)
+
+    receivers_sf <- st_as_sf(receivers)
+    remove(receivers)
+
+    # calculate nearest point to line/polygon (transform to CRS 4326 first)
+    # this is done using crs 4326
+    dist_receiver_river <- dist2Line(
+        p = st_coordinates(receivers_sf),
+        line = st_coordinates(shape.study.area)[,1:2]
+    )
+
+    # create projection receivers as sf dataframe
+    projections.receivers <- st_as_sf(
+        as.data.frame(dist_receiver_river),
+        coords = c("lon", "lat"),
+        crs = 4326)
+
+    # remove distance column from projections
+    projections.receivers$distance <- NULL
+
+    # add columns with receivers info to projections
+    if ("animal_project_code" %in% names(receivers_sf)) {
+        projections.receivers$animal_project_code <- receivers_sf$animal_project_code
+    }
+    if ("station_name" %in% names(receivers_sf)) {
+        projections.receivers$station_name <- receivers_sf$station_name
+    }
+    coords_projections <- st_coordinates(projections.receivers)
+    if ("latitude" %in% names(receivers_sf)) {
+        projections.receivers$latitude <- coords_projections[, "Y"]
+    }
+    if ("longitude" %in% names(receivers_sf)) {
+        projections.receivers$longitude <- coords_projections[, "X"]
+    }
+    # Do receivers and their projections the same number of columns?
+    assert_that(ncol(receivers_sf) == ncol(projections.receivers))
+    # Are all columns in receivers in projections.receivers as well?
+    assert_that(all(names(receivers_sf) %in% names(projections.receivers)))
+
+    # set order columns projections equal to order of cols of receivers
+    projections.receivers <- projections.receivers[, names(receivers_sf)]
+
+
+    # intersect receivers and river body study area
+    # intersection has to be done in a planar projection
+    receivers_sf <- st_transform(receivers_sf, crs = projection)
+    shape.study.area <-  st_transform(shape.study.area, crs = projection)
+    projections.receivers <- st_transform(projections.receivers, crs = projection)
+
+    receivers_are_included <- st_intersects(receivers_sf, shape.study.area)
+
+    # check validity of intersection result
+    assert_that(length(receivers_are_included) ==
+                    nrow(receivers_sf),
+                msg = "Result of intersection not equal to number of receivers")
+
+    # are the receivers IN the river body?
+    for (i in 1:nrow(receivers_are_included)) {
+        if (length(receivers_are_included[[i]]) != 0) {
+            # receiver is IN the river body
+            projections.receivers[i,] <- receivers_sf[i,]
+            if ("station_name" %in% names(receivers_sf)) {
+                station_name <- projections.receivers[i,]$station_name
+                msg <- glue("Receiver station {station_name} is in the water",
+                            " body. No projection needed")
+            } else {
+                msg <- glue("Receiver station {i} is in the water body.",
+                            " No projection needed")
+            }
+        } else {
+            # receiver is NOT IN the river body
+            if ("station_name" %in% names(receivers_sf)) {
+                station_name <- projections.receivers[i,]$station_name
+                msg <- glue("Receiver station {station_name} is not in the",
+                            " water body and will be projected on it.")
+            }  else {
+                msg <- glue("Receiver station {i} is not in the water body",
+                            " and will be projected on it.")
+            }
+        }
+        message(msg)
+    }
+
+    # return sp
+    projections.receivers <- as_Spatial(projections.receivers)
+}
+
+#' Spatial objects to binary raster
 #'
-#' Convert a vector to a raster binary image
+#' Convert (river) shapes (polygons or lines) to a raster binary image. As
+#' receivers (points) could be out of the boundaries of the river shape, we need
+#' them to be sure to include them in the binary raster.
 #'
-#' @param shape.study.area SpatialPolygonsDataFrame to convert to raster
+#' @param shape.study.area SpatialPolygonsDataFrame or SpatialLinesDataFrame to
+#'   convert to raster
+#' @param receivers SpatialPointsDataFrame to convert to raster
 #' @param nrows number of rows to use in the raster
 #' @param ncols number of columns to use in the raster
 #'
@@ -88,14 +206,21 @@ load.receivers <- function(file, projection){
 #' @export
 #'
 #' @examples
-shape.to.binarymask <- function(shape.study.area, nrows, ncols){
+shape.to.binarymask <- function(shape.study.area, receivers,  nrows, ncols){
+    # get extents rivers and receivers
+    extent_river <- extent(shape.study.area)
+    extent_receivers <- extent(receivers)
+    # merge extents
+    extent_for_raster <- merge(extent_receivers, extent_river)
     # convert to a binary raster image
     r <- raster(nrow = nrows, ncol = ncols, crs = shape.study.area@proj4string)
-    extent(r) <- extent(shape.study.area)
+    extent(r) <- extent_for_raster
     # we use getcover to make sure we have the entire river captured:
     study.area.binary <- rasterize(shape.study.area, r, 1., getCover = TRUE)
-    # make binary
+    # make binary: set all non zero to 1
     study.area.binary[study.area.binary > 0] <- 1
+    # make binary: set NA to 0
+    study.area.binary[is.na(study.area.binary)] <- 0
     return(study.area.binary)
 }
 
@@ -187,23 +312,59 @@ extend_patches <- function(inputmat, ids){
 #'
 #' @param inputlayer RasterLayer for which to extract the patch information
 #'
-#' @return vector with zone id and the sum of cells for each zone
+#' @return vector with zone id and the number of cells for each zone
 #' @export
 #'
 #' @examples
 #' get_patches_info(study.area.binary)
-get_patches_info <- function(inputlayer){
-    patch_count <- clump(inputlayer)
+get_patches_info <- function(binary.raster){
+    # detect clumps (patches) of connected cells
+    patch_count <- clump(binary.raster)
     # derive surface (cell count) for each patch
-    patchCells <- zonal(inputlayer, patch_count, "sum")
-    # sort to make last row main one
-    patchCells <- patchCells[sort.list(patchCells[, 2]), ]
-    return(patchCells)
+    patch_cells <- zonal(binary.raster, patch_count, "sum")
+    # sort to make last row main one and return
+    patch_cells[sort.list(patch_cells[, 2]),, drop = FALSE]
+}
+
+#' Check patch characteristics
+#'
+#' Control the charactersitics of the binary mask: 1. patch of connected cells
+#' 2. all receivers are within the patch
+#'
+#' @param binary.mask RasterLayer with the patch(es) of waterbodies
+#' @param receivers SpatialPointsDataFrame with receiver location info
+#' @param n_patches.mask number of patches of waterbodies (before extension to
+#'   include receivers)
+#'
+#' @return TRUE if both tests are valid
+#' @export
+#'
+#' @examples
+control.mask <- function(binary.mask, receivers, n_patches.mask){
+    match_ids <- raster::extract(binary.mask, receivers)
+    match_ids[is.na(match_ids)] <- 0
+    matched.receivers <- receivers[as.logical(match_ids), ]
+    # CHECK:
+    assert_that(length(receivers) == length(matched.receivers))
+
+    # Check number of clumps of binary.mask
+    clumps_binary.mask <- clump(binary.mask)
+    # at least one clump is present
+    assert_that(cellStats(clumps_binary.mask, stat = 'min', na.rm = TRUE) == 1,
+                msg = "At least one clump (patch) must be present")
+    # number of clumps should be the same as the initial number of clumps before
+    # adding receivers (typically 1 if all river bodies are connected)
+    assert_that(
+        cellStats(clumps_binary.mask, stat = 'max', na.rm = TRUE) == n_patches.mask,
+        msg = "Number of clumps (patches) not equal to initial number of patches"
+    )
 }
 
 #' Extend binary mask
 #'
-#' Extend the binary mask to incorporate the receivers itself into the mask
+#' Extend the binary mask to incorporate the receivers itself into the mask.
+#' Receivers are in the mask if the number of clumps (patches) of connected
+#' cells is equal to one.
 #'
 #' @param binary.mask RasterLayer (0/1 values)
 #' @param receivers SpatialPointsDataFrame
@@ -214,65 +375,58 @@ get_patches_info <- function(inputlayer){
 #' @examples
 adapt.binarymask <- function(binary.mask, receivers){
 
+    # get initial number of patches  and their respective sizes (start point)
+    # if the entire study area is connected then we have one patch
+    patchCells <- get_patches_info(binary.mask)
+    n_patches.mask <- nrow(patchCells)
+    message(glue("Number of patches of binary.mask (river body): {n_patches.mask}"))
+    if (n_patches.mask > 1) {
+        message("The binary.mask (river body) is not connected. Extension needed")
+    }
     # add locations itself to raster as well:
     locs2ras <- rasterize(receivers, binary.mask, 1.)
     locs2ras[is.na(locs2ras)] <- 0
     binary.mask <- max(binary.mask, locs2ras)
 
-    patch_count <- clump(binary.mask)
-    patchCells <- zonal(binary.mask, patch_count, "sum")
-    patchCells <- patchCells[sort.list(patchCells[, 2]), ]
+    # extract the information about the patches and their respective sizes
+    # detect initial clumps (patches) of connected cells
+    patchCount <- clump(binary.mask)
+    # derive surface (cell count) for each patch of mask
+    patchCells <- zonal(binary.mask, patchCount, "sum")
+    # sort to make last row main one and return
+    patchCells <- patchCells[sort.list(patchCells[, 2]),, drop = FALSE]
+    # check initial number of patches
     n.patches <- nrow(patchCells)
+    n.patches <- nrow(patchCells)
+    message(glue("Number of patches after adding receivers: {n.patches}"))
 
-    # check current number of patches
-    print(n.patches)
-
-    while (!is.null(n.patches)) {
-        # first row indices of the single patches extended
-        ids <- which(as.matrix(patch_count) == patchCells[1, 1])
+    if (n.patches == n_patches.mask) {
+        message("No binary mask extension needed.")
+    }
+    while (n.patches > n_patches.mask) {
+        # first row indexes of the single patches extended
+        ids <- which(as.matrix(patchCount) == patchCells[1, 1])
         temp <- as.matrix(binary.mask)
         temp <- extend_patches(temp, ids)
         binary.mask <- raster(temp, template = binary.mask)
 
-        # patches definition etc
-        patch_count <- clump(binary.mask)
+        # detect clumps (patches) of connected cells
+        patchCount <- clump(binary.mask)
         # derive surface (cell count) for each patch
-        patchCells <- zonal(binary.mask, patch_count, "sum")
-        # sort to make last row main one
-        patchCells <- patchCells[sort.list(patchCells[, 2]), ]
-        # check current number of patches
+        patchCells <- zonal(binary.mask, patchCount, "sum")
+        # sort to make last row main one and return
+        patchCells <- patchCells[sort.list(patchCells[, 2]),, drop = FALSE]
+        # get current number of patches
         n.patches <- nrow(patchCells)
-        print(n.patches)
+        message(glue("Number of patches: {n.patches}"))
+        if (n.patches == n_patches.mask) {
+            message("Done: all receivers included")
+        }
     }
+    # Control the mask characteristics and receiver location inside mask:
+    # (if an error occurs, this need to be checked before deriving distances)
+    control.mask(binary.mask, receivers, n_patches.mask)
     return(binary.mask)
-}
-
-#' Check patch characteristics
-#'
-#' Control the charactersitics of the binary mask:
-#' 1. patch of connected cells
-#' 2. all receivers are within the patch
-#'
-#' @param binary.mask RasterLayer with the patch of waterbodies
-#' @param receivers SpatialPointsDataFrame with receiver location info
-#'
-#' @return TRUE is both tests are valid
-#' @export
-#'
-#' @examples
-control.mask <- function(binary.mask, receivers){
-    match_ids <- raster::extract(binary.mask, receivers)
-    match_ids[is.na(match_ids)] <- 0
-    matched.receivers <- receivers[as.logical(match_ids), ]
-    # CHECK:
-    assert_that(length(receivers) == length(matched.receivers))
-
-    # Check if area is one big environment without islands
-    temp <- clump(binary.mask)
-    # a single clump is what we want: min and max should be both == 1
-    # CHECK:
-    assert_that(cellStats(temp, stat = 'min', na.rm = TRUE) == 1)
-    assert_that(cellStats(temp, stat = 'max', na.rm = TRUE) == 1)
 }
 
 #' Get distance matrix
@@ -295,7 +449,7 @@ get.distance.matrix <- function(binary.mask, receivers){
     receiver_names <- receivers$station_name
     rownames(cst.dst.arr) <- receiver_names
     colnames(cst.dst.arr) <- receiver_names
-    return(cst.dst.arr)
+    return(as.data.frame(cst.dst.arr))
 }
 
 
