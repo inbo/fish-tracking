@@ -242,6 +242,7 @@ locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2
 # Sometimes the receivers position is way too far from river shapefile and so
 # the distance among receivers can be misleading. We find the nearest point to
 # location receivers on the river shapefile (orthogonal projection)
+# Receivers inside the river body will not be projected
 
 projections.locations.receivers <- find.projections.receivers(
   shape.study.area = study.area,
