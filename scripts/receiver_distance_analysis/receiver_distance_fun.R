@@ -95,30 +95,99 @@ load.receivers <- function(file, projection){
 find.projections.receivers <- function(shape.study.area,
                                        receivers,
                                        projection) {
-    # transform to sf because it is much easier to get coordinates out of sf than sp
-    # objects
+
+    # transform to crs 4326
+    receivers <- spTransform(receivers, CRS("+init=epsg:4326"))
+    shape.study.area <- spTransform(shape.study.area, CRS("+init=epsg:4326"))
+
+    # transform to sf because it is much easier to complete some tasks
+    # afterwards
     shape.study.area <- st_as_sf(shape.study.area)
+
+    receivers_sf <- st_as_sf(receivers)
+    remove(receivers)
 
     # calculate nearest point to line/polygon (transform to CRS 4326 first)
     # this is done using crs 4326
     dist_receiver_river <- dist2Line(
-        p = spTransform(receivers, CRS("+init=epsg:4326"))@coords,
-        line = st_coordinates(st_transform(shape.study.area, crs = 4326))[,1:2]
+        p = st_coordinates(receivers_sf),
+        line = st_coordinates(shape.study.area)[,1:2]
     )
 
+    # create projection receivers as sf dataframe
     projections.receivers <- st_as_sf(
         as.data.frame(dist_receiver_river),
         coords = c("lon", "lat"),
         crs = 4326)
 
-    # add columns with receivers info to projections
-    projections.receivers$animal_project_code <- receivers@data$animal_project_code
-    projections.receivers$station_name <- receivers@data$station_name
-    # transform sf to sp object
-    projections.receivers <- as_Spatial(projections.receivers)
+    # remove distance column from projections
+    projections.receivers$distance <- NULL
 
-    # transform back to original CRS and return
-    spTransform(projections.receivers, projection)
+    # add columns with receivers info to projections
+    if ("animal_project_code" %in% names(receivers_sf)) {
+        projections.receivers$animal_project_code <- receivers_sf$animal_project_code
+    }
+    if ("station_name" %in% names(receivers_sf)) {
+        projections.receivers$station_name <- receivers_sf$station_name
+    }
+    coords_projections <- st_coordinates(projections.receivers)
+    if ("latitude" %in% names(receivers_sf)) {
+        projections.receivers$latitude <- coords_projections[, "Y"]
+    }
+    if ("longitude" %in% names(receivers_sf)) {
+        projections.receivers$longitude <- coords_projections[, "X"]
+    }
+    # Do receivers and their projections the same number of columns?
+    assert_that(ncol(receivers_sf) == ncol(projections.receivers))
+    # Are all columns in receivers in projections.receivers as well?
+    assert_that(all(names(receivers_sf) %in% names(projections.receivers)))
+
+    # set order columns projections equal to order of cols of receivers
+    projections.receivers <- projections.receivers[, names(receivers_sf)]
+
+
+    # intersect receivers and river body study area
+    # intersection has to be done in a planar projection
+    receivers_sf <- st_transform(receivers_sf, crs = projection)
+    shape.study.area <-  st_transform(shape.study.area, crs = projection)
+    projections.receivers <- st_transform(projections.receivers, crs = projection)
+
+    receivers_are_included <- st_intersects(receivers_sf, shape.study.area)
+
+    # check validity of intersection result
+    assert_that(length(receivers_are_included) ==
+                    nrow(receivers_sf),
+                msg = "Result of intersection not equal to number of receivers")
+
+    # are the receivers IN the river body?
+    for (i in 1:nrow(receivers_are_included)) {
+        if (length(receivers_are_included[[i]]) != 0) {
+            # receiver is IN the river body
+            projections.receivers[i,] <- receivers_sf[i,]
+            if ("station_name" %in% names(receivers_sf)) {
+                station_name <- projections.receivers[i,]$station_name
+                msg <- glue("Receiver station {station_name} is in the water",
+                            " body. No projection needed")
+            } else {
+                msg <- glue("Receiver station {i} is in the water body.",
+                            " No projection needed")
+            }
+        } else {
+            # receiver is NOT IN the river body
+            if ("station_name" %in% names(receivers_sf)) {
+                station_name <- projections.receivers[i,]$station_name
+                msg <- glue("Receiver station {station_name} is not in the",
+                            " water body and will be projected on it.")
+            }  else {
+                msg <- glue("Receiver station {i} is not in the water body",
+                            " and will be projected on it.")
+            }
+        }
+        message(msg)
+    }
+
+    # return sp
+    projections.receivers <- as_Spatial(projections.receivers)
 }
 
 #' Spatial objects to binary raster
