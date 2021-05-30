@@ -177,7 +177,7 @@ plot(fremur)
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- nene
+study.area <- gudena
 
 # ----------------
 # LOAD DETECTION STATION NETWORK
@@ -307,7 +307,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distancematrix_2014_nene.csv")
+write.csv(cst.dst.frame_corrected, "./results/distancematrix_2004_gudena.csv")
 
 
 # IDEA ...
