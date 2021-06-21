@@ -27,10 +27,10 @@ source("receiver_distance_fun.R")
 
 
 # 2015 PHD VERHELST EEL
-vhag <- load.shapefile("./data/Belgium_Netherlands/Vhag.shp",
-                       "Vhag",
+pbarn_freshwater <- load.shapefile("./data/Belgium_Netherlands/pbarn_freshwater.shp",
+                       "pbarn_freshwater",
                        coordinate.string)
-plot(vhag)
+plot(pbarn_freshwater)
 
 ws_bpns <- load.shapefile("./data/Belgium_Netherlands/ws_bpns.shp",
                        "ws_bpns",
@@ -38,9 +38,9 @@ ws_bpns <- load.shapefile("./data/Belgium_Netherlands/ws_bpns.shp",
 plot(ws_bpns)
 
 # Combine shapefiles
-study.area <- gUnion(vhag, ws_bpns)
+study.area <- gUnion(pbarn_freshwater, ws_bpns)
 
-
+plot(study.area)
 
 #### Chunk underneath becomes redundant when above code works ####
 # river section
