@@ -173,11 +173,20 @@ fremur <- load.shapefile("./data/France/fremur.shp",
 plot(fremur)
 
 
+
+# 2019_Grotenete
+grotenete <- load.shapefile("./data/Belgium_Netherlands/grotenete_zeeschelde.shp",
+                                   "grotenete_zeeschelde",
+                                   coordinate.string)
+plot(grotenete)
+
+
+
 # -----------------------
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- pbarn_freshwater
+study.area <- grotenete
 
 # ----------------
 # LOAD DETECTION STATION NETWORK
@@ -318,7 +327,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distancematrix_michimit.csv")
+write.csv(cst.dst.frame_corrected, "./results/distancematrix_2019_grotenete.csv")
 
 
 # IDEA ...
