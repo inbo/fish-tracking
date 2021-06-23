@@ -177,7 +177,7 @@ plot(fremur)
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- gudena
+study.area <- pbarn_freshwater
 
 # ----------------
 # LOAD DETECTION STATION NETWORK
@@ -235,6 +235,10 @@ locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2
 locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2017_Fremur.csv",
                                       coordinate.string)
 
+# 2019_Grotenete network
+locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2019_Grotenete_2.csv",
+                                      coordinate.string)
+
 # ----------------
 # PROJECT RECEIVERS ON WATER SHAPEFILE
 # ----------------
@@ -264,7 +268,7 @@ mapView(locations.receivers, col.regions = "red", map.types = "OpenStreetMap",
 # ------------------------
 # CONVERT SHAPE TO RASTER
 # ------------------------
-res <- 20 # pixel is a square:  res x res (in meters)
+res <- 50 # pixel is a square:  res x res (in meters)
 
 x_size <- study.area@bbox[1,2] - study.area@bbox[1,1]
 y_size <- study.area@bbox[2,2] - study.area@bbox[2,1]
@@ -307,7 +311,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distancematrix_2004_gudena.csv")
+write.csv(cst.dst.frame_corrected, "./results/distancematrix_2019_grotenete.csv")
 
 
 # IDEA ...
