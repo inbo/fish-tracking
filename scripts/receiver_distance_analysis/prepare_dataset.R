@@ -38,7 +38,7 @@ ws_bpns <- load.shapefile("./data/Belgium_Netherlands/ws_bpns.shp",
 plot(ws_bpns)
 
 # Validate waterbodies
-pbarn_freshwater <- validate_waterbody(pbarn_freshwater)
+vhag <- validate_waterbody(vhag)
 ws_bpns <- validate_waterbody(ws_bpns)
 
 # Combine shapefiles
