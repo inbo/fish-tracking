@@ -37,6 +37,10 @@ ws_bpns <- load.shapefile("./data/Belgium_Netherlands/ws_bpns.shp",
                        coordinate.string)
 plot(ws_bpns)
 
+# Validate waterbodies
+pbarn_freshwater <- validate_waterbody(pbarn_freshwater)
+ws_bpns <- validate_waterbody(ws_bpns)
+
 # Combine shapefiles
 study.area <- gUnion(vhag, ws_bpns)
 
@@ -83,6 +87,11 @@ sea <- load.shapefile("./data/PJ_manual_water/PJ_ontbrekende_stukken_reduced.shp
                                 "PJ_ontbrekende_stukken_reduced",
                                 coordinate.string)
 
+# Validate waterbodies
+rivers <- validate_waterbody(rivers)
+nete <- validate_waterbody(nete)
+westerschelde <- validate_waterbody(westerschelde)
+sea <- validate_waterbody(sea)
 
 # Combine shapefiles
 study.area <- gUnion(rivers, nete)
@@ -143,6 +152,12 @@ zeimena <- load.shapefile("./data/Lithuania/Zeimena.shp",
                                   "Zeimena",
                                   coordinate.string)
 
+# Validate waterbodies
+curonian_lagoon <- validate_waterbody(curonian_lagoon)
+main <- validate_waterbody(main)
+zeimena <- validate_waterbody(zeimena)
+
+# Combine shapefiles
 semp <- gUnion(curonian_lagoon, main)
 semp <- gUnion(semp, zeimena)
 

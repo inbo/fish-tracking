@@ -77,6 +77,45 @@ load.receivers <- function(file, projection){
     return(locations.receivers)
 }
 
+#' Validate waterbody shapefile 
+#' 
+#' This step is a wrapper around sf functions `st_is_valid()` and
+#' `st_make_valid()`. It checkse whether a geometry is valid, or makes an
+#' invalid geometry valid
+#' @param sp_waterbody a spatial object, typically a SpatialPolygonDataFrame or a SpatialLinesDataFrame
+#' @return the validated version of the input spatial object
+#' @export
+#' @examples
+#' /dontrun{
+#' ws_bpns <- load.shapefile("./data/Belgium_Netherlands/ws_bpns.shp",
+#'   "ws_bpns",
+#'   coordinate.string
+#' )
+#' ws_bpns_validated <- validate_waterbody(ws_bpns)
+#' 
+#' vhag <- load.shapefile("./data/Belgium_Netherlands/Vhag.shp",
+#'   "Vhag",
+#'   coordinate.string
+#' )
+#' vhag_validated <- validate_waterbody(vhag)
+#' }
+validate_waterbody <- function(sp_waterbody) {
+    # transform to sf data.frame
+    sf_waterbody <- st_as_sf(sp_waterbody)
+    if (isFALSE(st_is_valid(sf_waterbody))) {
+        message("Waterbody is an invalid shapefile. Make it valid first.")
+        sf_waterbody <- st_make_valid(sf_waterbody)
+        valid_shape <- st_is_valid(sf_waterbody)
+        message(glue("Validation succeded."))
+        # transform back to SpatialPolygonsDataFrame (sp)
+        sp_waterbody <- as_Spatial(sf_waterbody)
+    } else {
+        message("Waterbody is a valid shapefile.")
+    }
+    remove(sf_waterbody)
+    return(sp_waterbody)
+}
+
 #' Find the receiver projection on river body shapefile
 #'
 #' @param shape.study.area a shapefile (sp object), lines or polygons, of the
