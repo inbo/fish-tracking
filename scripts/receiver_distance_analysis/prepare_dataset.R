@@ -44,11 +44,14 @@ ws_bpns <- validate_waterbody(ws_bpns)
 
 # Combine shapefiles
 pbarn_freshwater$origin_shapefile = "pbarn_freshwater"
-
 ws_bpns$origin_shapefile = "ws_bpns_sf"
+
+ws_bpns <- 
+  ws_bpns %>%
+  dplyr::select(Id, origin_shapefile, geometry)
 pbarn_freshwater <- 
   pbarn_freshwater %>% 
-  dplyr::select(Id = OIDN, origin_shapefile)
+  dplyr::select(Id = OIDN, origin_shapefile, geometry)
 
 study.area <- rbind(pbarn_freshwater, ws_bpns)
 
