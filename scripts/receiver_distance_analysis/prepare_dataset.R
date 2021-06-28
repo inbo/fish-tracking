@@ -197,11 +197,18 @@ plot(grotenete)
 
 
 
+# Michimit
+michimit <- load.shapefile("./data/Belgium_Netherlands/michimit_rivers.shp",
+                            "michimit_rivers",
+                            coordinate.string)
+plot(michimit)
+
+
 # -----------------------
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- grotenete
+study.area <- michimit
 
 # ----------------
 # LOAD DETECTION STATION NETWORK
