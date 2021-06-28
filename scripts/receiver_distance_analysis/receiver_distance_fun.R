@@ -73,7 +73,7 @@ load.shapefile <- function(file,
 #' @param file filename of CSV containing receiver info
 #' @param projection projection defined as a EPSG number, e.g. 4326
 #' @param original_projection projection used in the csv file, defined as a EPSG number, e.g. 4326. Default: 4326
-#' @return a simple feature (sf) data.frame with points (recievers)
+#' @return a simple feature (sf) data.frame with points (receivers)
 #' @export
 #'
 #' @examples
@@ -125,19 +125,25 @@ validate_waterbody <- function(waterbody) {
 
 #' Find the receiver projection on river body shapefile
 #'
-#' @param shape.study.area a shapefile (sp object), lines or polygons, of the
-#'   river body
-#' @param receivers SpatialPointsDataFrame
-#' @param projection a projection string, the CRS of both river body and
+#' @param shape.study.area a simple feature (sf) data.frame, with polygons or
+#'   lines as geometry
+#' @param receivers a simple feature (sf) data.frame with points (receivers)
+#' @param projection a EPSG number, the CRS of both river body and
 #'   receivers
-#'
-#' @return SpatialPointsDataFrame
+#' @param shape.study.area2 a simple feature (sf) data.frame, with polygons or
+#'   lines as geometry. This is needed if the study area is a combination of
+#'   lines and polygons. Default: `NULL`
+#' @param shape.study.area_merged a simple feature (sf) data.frame, with the
+#'   combinations of polygons and lines as geometry (done via  `rbind` before).
+#'   Default: `NULL`
+#' @return a simple feature (sf) data.frame with the projected points
+#'   (projection of the receivers)
 #' @export
 #'
 #' @examples
 #' find.projections.receivers(shape.study.area = study.area,
 #'   receivers = locations.receivers,
-#'   projection = coordinate.string)
+#'   projection = 32631)
 find.projections.receivers <- function(shape.study.area,
                                        receivers,
                                        projection,
@@ -148,10 +154,7 @@ find.projections.receivers <- function(shape.study.area,
                     (!is.null(shape.study.area2) & !is.null(shape.study.area_merged)),
                 msg = "Second shape study area and merged shape study area must be both provided or both NULL")
     
-    # transform to crs 4326
-    # receivers <- spTransform(receivers, CRS("+init=epsg:4326"))
-    # shape.study.area <- spTransform(shape.study.area, CRS("+init=epsg:4326"))
-
+    # transform to 4326 if not yet
     receivers <- st_transform(receivers, 4326)
     shape.study.area <- st_transform(shape.study.area, 4326)
     
@@ -401,7 +404,7 @@ get_patches_info <- function(binary.raster){
 #' 2. all receivers are within the patch
 #'
 #' @param binary.mask RasterLayer with the patch(es) of waterbodies
-#' @param receivers SpatialPointsDataFrame with receiver location info
+#' @param receivers a simple feature (sf) data.frame (points)
 #' @param n_patches.mask number of patches of waterbodies (before extension to
 #'   include receivers)
 #'
@@ -410,6 +413,8 @@ get_patches_info <- function(binary.raster){
 #'
 #' @examples
 control.mask <- function(binary.mask, receivers, n_patches.mask){
+    # convert to sp
+    receivers<- as_Spatial(receivers)
     match_ids <- raster::extract(binary.mask, receivers)
     match_ids[is.na(match_ids)] <- 0
     matched.receivers <- receivers[as.logical(match_ids), ]
@@ -436,7 +441,7 @@ control.mask <- function(binary.mask, receivers, n_patches.mask){
 #' cells is equal to one.
 #'
 #' @param binary.mask RasterLayer (0/1 values)
-#' @param receivers SpatialPointsDataFrame
+#' @param receivers a simple feature (sf) data.frame (points)
 #'
 #' @return RasterLayer
 #' @export
@@ -453,7 +458,7 @@ adapt.binarymask <- function(binary.mask, receivers){
         message("The binary.mask (river body) is not connected. Extension needed")
     }
     # add locations itself to raster as well:
-    locs2ras <- rasterize(receivers, binary.mask, 1.)
+    locs2ras <- rasterize(as_Spatial(receivers), binary.mask, 1.)
     locs2ras[is.na(locs2ras)] <- 0
     binary.mask <- max(binary.mask, locs2ras)
 
@@ -503,7 +508,7 @@ adapt.binarymask <- function(binary.mask, receivers){
 #' Calculate the cost distance matrix of the receivers
 #'
 #' @param binary.mask RasterLayer with the patch of waterbodies
-#' @param receivers SpatialPointsDataFrame with receiver location info
+#' @param receivers a simple feature (sf) data.frame (points)
 #'
 #' @return data.frame
 #' @export
@@ -513,7 +518,7 @@ get.distance.matrix <- function(binary.mask, receivers){
     tr <- transition(binary.mask, max, directions = 8)
     tr_geocorrected <- geoCorrection(tr, type = "c")
 
-    cst.dst <- costDistance(tr_geocorrected, receivers)
+    cst.dst <- costDistance(tr_geocorrected, as_Spatial(receivers))
     cst.dst.arr <- as.matrix(cst.dst)
     receiver_names <- receivers$station_name
     rownames(cst.dst.arr) <- receiver_names
