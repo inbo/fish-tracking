@@ -206,7 +206,7 @@ plot(grotenete)
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- study.area
+study.area <- michimit
 
 # ----------------
 # LOAD DETECTION STATION NETWORK
