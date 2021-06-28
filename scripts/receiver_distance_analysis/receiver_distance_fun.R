@@ -15,6 +15,7 @@ library("raster")
 library("gdistance")
 library("assertthat")
 library("glue")
+library("rlang")
 
 ## --------------------------------------------
 ## General functionalities
@@ -26,28 +27,43 @@ library("glue")
 #' transform to the given projection
 #'
 #' @param file filename of the shapefile (absolute or relative path)
-#' @param layer layer of the shapefile to select (check e.g. in qgis in the properties of the file)
-#' @param subset.names list of names to subselect from NAME column
-#' @param projection proj4string like string defining the projection, or
-#' define the projection with the EPSG code: e.g. CRS("+init=epsg:32631")
-#'
-#' @return SpatialPolygonsDataFrame
+#' @param layer layer of the shapefile to select (check e.g. in qgis in the
+#'   properties of the file)
+#' @param projection projection defined as a EPSG number, e.g. 4326
+#' @param subset.names list of names to filter from a column, whose name is defined in `name_col`. Default: `NULL`
+#' @param name_col character with column name to use for filtering based on
+#'   `subset.names`. Default: `NULL`
+#' @return a simple feature (sf) data.frame
 #' @export
 #'
 #' @examples
-#' nete <- load.shapefile("./data/europe_water/nete.shp", "nete",
-#'                        coordinate.string, subset.names = NULL)
-load.shapefile <- function(file, layer, projection, subset.names = NULL) {
-    waterbody <- readOGR(dsn = file,
-                         layer = layer)
+#' crs_system <- 32631
+#' nete <- load.shapefile("./data/europe_water/nete.shp", "nete", crs_cystem)
+#' river.names <- c("Schelde", "Durme", "Rupel", "Netekanaal")
+#' rivers <- load.shapefile(
+#'   file = "./data/lowcountries_water/LowCountries_Water_2004.shp",
+#'   layer = "LowCountries_Water_2004",
+#'   crs_cystem,
+#'   subset.names = river.names,
+#'   name_col = "NAME")
+load.shapefile <- function(file,
+                           layer,
+                           projection, 
+                           subset.names = NULL,
+                           name_col = NULL) {
+    assert_that((is.null(subset.names) & is.null(name_col)) |
+                    (!is.null(subset.names) & !is.null(name_col)),
+                msg = "subset.names and name_col must be both provided or both NULL (default)")
+    waterbody <- st_read(dsn = file, layer = layer)
     if (!is.null(subset.names)) {
-        waterbody.subset <- subset(waterbody, NAME %in% subset.names)
+        waterbody.subset <- waterbody %>%
+            dplyr::filter(!!sym(name_col) %in% subset.names)
     } else {
         waterbody.subset <- waterbody
     }
 
-    waterbody.subset <- spTransform(waterbody.subset, projection)
-    return(waterbody.subset)
+    waterbody.subset <- st_transform(waterbody.subset, projection)
+    return(st_as_sf(waterbody.subset))
 }
 
 #' Load receiver info
@@ -55,26 +71,22 @@ load.shapefile <- function(file, layer, projection, subset.names = NULL) {
 #' Load the receivers information and transform to chosen projection
 #'
 #' @param file filename of CSV containing receiver info
-#' @param projection proj4string like string defining the projection, or
-#' define the projection with the EPSG code: e.g. CRS("+init=epsg:32631")
-#'
-#' @return SpatialPointsDataFrame
+#' @param projection projection defined as a EPSG number, e.g. 4326
+#' @param original_projection projection used in the csv file, defined as a EPSG number, e.g. 4326. Default: 4326
+#' @return a simple feature (sf) data.frame with points (recievers)
 #' @export
 #'
 #' @examples
+#' crs_system <- 32631
 #' locations.receivers <- load.receivers("./data/receivernetwork_20160526.csv",
-#'                                       coordinate.string)
-load.receivers <- function(file, projection){
+#'                                       crs_system)
+load.receivers <- function(file, projection, original_projection = 4326){
     loc <- read.csv(file, header = TRUE, stringsAsFactors = FALSE)
-
-    # project coordinates
-    loc[, c("longitude", "latitude")] <- project(as.matrix(loc[, c("longitude", "latitude")]),
-                                                 as.character(projection))
-
-    locations.receivers <- SpatialPointsDataFrame(coords = loc[, c("longitude","latitude")],
-                                                  data = loc,
-                                                  proj4string = projection)
-    return(locations.receivers)
+    locations.receivers <- st_as_sf(loc,
+                                   coords = c("longitude","latitude"),
+                                   crs = original_projection)
+    locations.receivers %>%
+        st_transform(projection)
 }
 
 #' Validate waterbody shapefile 
@@ -82,38 +94,33 @@ load.receivers <- function(file, projection){
 #' This step is a wrapper around sf functions `st_is_valid()` and
 #' `st_make_valid()`. It checkse whether a geometry is valid, or makes an
 #' invalid geometry valid
-#' @param sp_waterbody a spatial object, typically a SpatialPolygonDataFrame or a SpatialLinesDataFrame
-#' @return the validated version of the input spatial object
+#' @param waterbody a simple feature (sf) data.frame , with polygons or lines as
+#'   geometry
+#' @return the validated version of input `waterbody`
 #' @export
 #' @examples
 #' /dontrun{
+#' crs_system <- 32631
 #' ws_bpns <- load.shapefile("./data/Belgium_Netherlands/ws_bpns.shp",
-#'   "ws_bpns",
-#'   coordinate.string
+#'   "ws_bpns", crs_system
 #' )
 #' ws_bpns_validated <- validate_waterbody(ws_bpns)
 #' 
 #' vhag <- load.shapefile("./data/Belgium_Netherlands/Vhag.shp",
 #'   "Vhag",
-#'   coordinate.string
+#'   crs_system
 #' )
 #' vhag_validated <- validate_waterbody(vhag)
 #' }
-validate_waterbody <- function(sp_waterbody) {
-    # transform to sf data.frame
-    sf_waterbody <- st_as_sf(sp_waterbody)
-    if (isFALSE(st_is_valid(sf_waterbody))) {
+validate_waterbody <- function(waterbody) {
+    if (!all((st_is_valid(waterbody)))) {
         message("Waterbody is an invalid shapefile. Make it valid first.")
-        sf_waterbody <- st_make_valid(sf_waterbody)
-        valid_shape <- st_is_valid(sf_waterbody)
+        waterbody <- st_make_valid(waterbody)
         message(glue("Validation succeded."))
-        # transform back to SpatialPolygonsDataFrame (sp)
-        sp_waterbody <- as_Spatial(sf_waterbody)
     } else {
         message("Waterbody is a valid shapefile.")
     }
-    remove(sf_waterbody)
-    return(sp_waterbody)
+    return(waterbody)
 }
 
 #' Find the receiver projection on river body shapefile
@@ -133,25 +140,47 @@ validate_waterbody <- function(sp_waterbody) {
 #'   projection = coordinate.string)
 find.projections.receivers <- function(shape.study.area,
                                        receivers,
-                                       projection) {
-
+                                       projection,
+                                       shape.study.area2 = NULL,
+                                       shape.study.area_merged = NULL) {
+    
+    assert_that((is.null(shape.study.area2) & is.null(shape.study.area_merged)) |
+                    (!is.null(shape.study.area2) & !is.null(shape.study.area_merged)),
+                msg = "Second shape study area and merged shape study area must be both provided or both NULL")
+    
     # transform to crs 4326
-    receivers <- spTransform(receivers, CRS("+init=epsg:4326"))
-    shape.study.area <- spTransform(shape.study.area, CRS("+init=epsg:4326"))
+    # receivers <- spTransform(receivers, CRS("+init=epsg:4326"))
+    # shape.study.area <- spTransform(shape.study.area, CRS("+init=epsg:4326"))
 
+    receivers <- st_transform(receivers, 4326)
+    shape.study.area <- st_transform(shape.study.area, 4326)
+    
+    if (!is.null(shape.study.area2)) {
+        shape.study.area2 <- st_transform(shape.study.area2, 4326)
+    }
+    
     # transform to sf because it is much easier to complete some tasks
     # afterwards
-    shape.study.area <- st_as_sf(shape.study.area)
+    # shape.study.area <- st_as_sf(shape.study.area)
 
-    receivers_sf <- st_as_sf(receivers)
-    remove(receivers)
+    # receivers_sf <- st_as_sf(receivers)
+    # remove(receivers)
 
     # calculate nearest point to line/polygon (transform to CRS 4326 first)
     # this is done using crs 4326
+    shape.study.area_coords <- st_coordinates(shape.study.area)[,1:2]
+    
+    if (!is.null(shape.study.area2)) {
+        shape.study.area2_coords <- st_coordinates(shape.study.area2)[,1:2]
+        # combine coordinates
+        shape.study.area_coords <- rbind(shape.study.area_coords,
+                                         shape.study.area2_coords)
+    }
+    
+
     dist_receiver_river <- dist2Line(
-        p = st_coordinates(receivers_sf),
-        line = st_coordinates(shape.study.area)[,1:2]
-    )
+        p = st_coordinates(receivers),
+        line = shape.study.area_coords)
 
     # create projection receivers as sf dataframe
     projections.receivers <- st_as_sf(
@@ -163,47 +192,47 @@ find.projections.receivers <- function(shape.study.area,
     projections.receivers$distance <- NULL
 
     # add columns with receivers info to projections
-    if ("animal_project_code" %in% names(receivers_sf)) {
-        projections.receivers$animal_project_code <- receivers_sf$animal_project_code
+    if ("animal_project_code" %in% names(receivers)) {
+        projections.receivers$animal_project_code <- receivers$animal_project_code
     }
-    if ("station_name" %in% names(receivers_sf)) {
-        projections.receivers$station_name <- receivers_sf$station_name
+    if ("station_name" %in% names(receivers)) {
+        projections.receivers$station_name <- receivers$station_name
     }
     coords_projections <- st_coordinates(projections.receivers)
-    if ("latitude" %in% names(receivers_sf)) {
+    if ("latitude" %in% names(receivers)) {
         projections.receivers$latitude <- coords_projections[, "Y"]
     }
-    if ("longitude" %in% names(receivers_sf)) {
+    if ("longitude" %in% names(receivers)) {
         projections.receivers$longitude <- coords_projections[, "X"]
     }
     # Do receivers and their projections the same number of columns?
-    assert_that(ncol(receivers_sf) == ncol(projections.receivers))
+    assert_that(ncol(receivers) == ncol(projections.receivers))
     # Are all columns in receivers in projections.receivers as well?
-    assert_that(all(names(receivers_sf) %in% names(projections.receivers)))
+    assert_that(all(names(receivers) %in% names(projections.receivers)))
 
     # set order columns projections equal to order of cols of receivers
-    projections.receivers <- projections.receivers[, names(receivers_sf)]
+    projections.receivers <- projections.receivers[, names(receivers)]
 
 
     # intersect receivers and river body study area
     # intersection has to be done in a planar projection
-    receivers_sf <- st_transform(receivers_sf, crs = projection)
-    shape.study.area <-  st_transform(shape.study.area, crs = projection)
+    receivers <- st_transform(receivers, crs = projection)
+    shape.study.area_merged <-  st_transform(shape.study.area_merged, crs = projection)
     projections.receivers <- st_transform(projections.receivers, crs = projection)
 
-    receivers_are_included <- st_intersects(receivers_sf, shape.study.area)
+    receivers_are_included <- st_intersects(receivers, shape.study.area_merged)
 
     # check validity of intersection result
     assert_that(length(receivers_are_included) ==
-                    nrow(receivers_sf),
+                    nrow(receivers),
                 msg = "Result of intersection not equal to number of receivers")
 
     # are the receivers IN the river body?
     for (i in 1:nrow(receivers_are_included)) {
         if (length(receivers_are_included[[i]]) != 0) {
             # receiver is IN the river body
-            projections.receivers[i,] <- receivers_sf[i,]
-            if ("station_name" %in% names(receivers_sf)) {
+            projections.receivers[i,] <- receivers[i,]
+            if ("station_name" %in% names(receivers)) {
                 station_name <- projections.receivers[i,]$station_name
                 msg <- glue("Receiver station {station_name} is in the water",
                             " body. No projection needed")
@@ -213,7 +242,7 @@ find.projections.receivers <- function(shape.study.area,
             }
         } else {
             # receiver is NOT IN the river body
-            if ("station_name" %in% names(receivers_sf)) {
+            if ("station_name" %in% names(receivers)) {
                 station_name <- projections.receivers[i,]$station_name
                 msg <- glue("Receiver station {station_name} is not in the",
                             " water body and will be projected on it.")
@@ -226,18 +255,19 @@ find.projections.receivers <- function(shape.study.area,
     }
 
     # return sp
-    projections.receivers <- as_Spatial(projections.receivers)
+    # projections.receivers <- as_Spatial(projections.receivers)
+    return(projections.receivers)
 }
 
-#' Spatial objects to binary raster
+#' Simple feature (sf) data.frame to binary raster
 #'
-#' Convert (river) shapes (polygons or lines) to a raster binary image. As
-#' receivers (points) could be out of the boundaries of the river shape, we need
-#' them to be sure to include them in the binary raster.
+#' Convert (river) simple features (polygons or lines) to a raster binary image.
+#' As receivers (points) could be out of the boundaries of the river shape, we
+#' need them to be sure to include them in the binary raster.
 #'
-#' @param shape.study.area SpatialPolygonsDataFrame or SpatialLinesDataFrame to
-#'   convert to raster
-#' @param receivers SpatialPointsDataFrame to convert to raster
+#' @param shape.study.area a simple feature (sf) data.frame to convert to
+#'   raster. Geometry column can be polygons or lines
+#' @param receivers a simple feature (sf) data.frame (points)
 #' @param nrows number of rows to use in the raster
 #' @param ncols number of columns to use in the raster
 #'
@@ -252,10 +282,10 @@ shape.to.binarymask <- function(shape.study.area, receivers,  nrows, ncols){
     # merge extents
     extent_for_raster <- merge(extent_receivers, extent_river)
     # convert to a binary raster image
-    r <- raster(nrow = nrows, ncol = ncols, crs = shape.study.area@proj4string)
+    r <- raster(nrow = nrows, ncol = ncols, crs = st_crs(shape.study.area))
     extent(r) <- extent_for_raster
     # we use getcover to make sure we have the entire river captured:
-    study.area.binary <- rasterize(shape.study.area, r, 1., getCover = TRUE)
+    study.area.binary <- rasterize(as_Spatial(shape.study.area), r, 1., getCover = TRUE)
     # make binary: set all non zero to 1
     study.area.binary[study.area.binary > 0] <- 1
     # make binary: set NA to 0
