@@ -412,7 +412,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distancematrix_michimit.csv")
+write.csv(cst.dst.frame_corrected, "./results/distances_2015_phd_verhelst_eel.csv")
 
 
 # IDEA ...
