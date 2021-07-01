@@ -377,8 +377,7 @@ study.area.binary <- shape.to.binarymask(
   shape.study.area2 = ws_bpns,
   shape.study.area_merged = study.area,
   receivers = projections.locations.receivers,
-  resolution = res
-  )
+  resolution = res)
 
 
 # --------------------------------
