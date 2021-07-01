@@ -360,25 +360,26 @@ leaflet(pbarn_freshwater %>% st_transform(crs = 4326)) %>%
 # ------------------------
 # CONVERT SHAPE TO RASTER
 # ------------------------
-res <- 50 # pixel is a square:  res x res (in meters)
+res <- 1000 # pixel is a square:  res x res (in meters)
 
-bbox <- st_bbox(study.area)
-x_size <- bbox[3] - bbox[1]
-y_size <- bbox[4] - bbox[2]
-
-nrows <- round(y_size / res)
-ncols <- round(x_size / res)
-
-message(glue("Pixel resolution: {res}m"))
-message(glue("Number of rows,cols: ({nrows},{ncols})"))
 # First time running the following function can give an error that can be ignored. The code will provide the output anyway. See stackoverflow link for more info about the bug.
 #https://stackoverflow.com/questions/61598340/why-does-rastertopoints-generate-an-error-on-first-call-but-not-second
+
+# for a homogenous study area
 study.area.binary <- shape.to.binarymask(
   shape.study.area = study.area,
   receivers = projections.locations.receivers,
-  nrows = nrows,
-  ncols = ncols
-)
+  resolution = res)
+
+# for a study area which is a combination of polygons and lines
+study.area.binary <- shape.to.binarymask(
+  shape.study.area = pbarn_freshwater,
+  shape.study.area2 = ws_bpns,
+  shape.study.area_merged = study.area,
+  receivers = projections.locations.receivers,
+  resolution = res
+  )
+
 
 # --------------------------------
 # ADJUST MASK TO CONTAIN RECEIVERS

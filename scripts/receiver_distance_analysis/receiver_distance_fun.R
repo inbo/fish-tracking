@@ -271,28 +271,88 @@ find.projections.receivers <- function(shape.study.area,
 #' @param shape.study.area a simple feature (sf) data.frame to convert to
 #'   raster. Geometry column can be polygons or lines
 #' @param receivers a simple feature (sf) data.frame (points)
-#' @param nrows number of rows to use in the raster
-#' @param ncols number of columns to use in the raster
-#'
-#' @return RasterLayer
+#' @param resolution pixel side in meters (numeric)
+#' @param shape.study.area2 a simple feature (sf) data.frame, with polygons or
+#'   lines as geometry. This is needed if the study area is a combination of
+#'   lines and polygons. Default: `NULL`
+#' @param shape.study.area_merged a simple feature (sf) data.frame, with the
+#'   combinations of polygons and lines as geometry (done via  `rbind` in a
+#'   previous step). Default: `NULL`
+#' @return a RasterLayer
 #' @export
 #'
 #' @examples
-shape.to.binarymask <- function(shape.study.area, receivers,  nrows, ncols){
-    # get extents rivers and receivers
-    extent_river <- extent(shape.study.area)
+shape.to.binarymask <- function(shape.study.area, receivers,  resolution,
+                                shape.study.area2 = NULL,
+                                shape.study.area_merged = NULL){
+    # checks
+    assert_that((is.null(shape.study.area2) & is.null(shape.study.area_merged)) |
+                    (!is.null(shape.study.area2) & !is.null(shape.study.area_merged)),
+                msg = "Second shape study area and merged shape study area must be both provided or both NULL")
+    if (!is.null(shape.study.area2)) {
+        assert_that(
+            st_crs(shape.study.area) == st_crs(shape.study.area2) & 
+                st_crs(shape.study.area) == st_crs(shape.study.area_merged),
+            msg = "Shape study area must have the same CRS")
+    }
+    
+    # get extent of the total shape study area
+    if (is.null(shape.study.area_merged)) {
+        extent_river <- extent(shape.study.area)
+        bbox <- st_bbox(shape.study.area)
+    } else {
+        extent_river <- extent(shape.study.area_merged)
+    }
+    
+    # get extent receivers and merge it with extent rivers
     extent_receivers <- extent(receivers)
-    # merge extents
     extent_for_raster <- merge(extent_receivers, extent_river)
-    # convert to a binary raster image
-    r <- raster(nrow = nrows, ncol = ncols, crs = st_crs(shape.study.area))
-    extent(r) <- extent_for_raster
-    # we use getcover to make sure we have the entire river captured:
-    study.area.binary <- rasterize(as_Spatial(shape.study.area), r, 1., getCover = TRUE)
+    
+    # calculate number of rows, columns and actual resolution
+    x_size <- extent_for_raster[2] - extent_for_raster[1]
+    y_size <- extent_for_raster[4] - extent_for_raster[3]
+    nrows <- round(y_size / resolution)
+    ncols <- round(x_size / resolution)
+    
+    # create a template  raster for the total study area to get the right extent
+    # and origin
+    r <- raster(extent_for_raster,
+                nrow = nrows,
+                ncols = ncols,
+                crs = as_Spatial(shape.study.area[1,])@proj4string)
+    # get actual resolution
+    res_r <- res(r)
+    message(paste("Actual pixel resolution (x,y):",
+                  paste0(res_r, collapse = ","),
+                  "(meters)"))
+    
+    # we use getcover to make sure we have the entire study area captured
+    message("Rasterizing the shape study area...")
+    study.area.binary <- rasterize(x = shape.study.area,
+                                   y = r, 1., getCover = TRUE)
+    origin(study.area.binary) <- origin(r)
+    message("Rasterizing the shape study area completed")
     # make binary: set all non zero to 1
     study.area.binary[study.area.binary > 0] <- 1
     # make binary: set NA to 0
     study.area.binary[is.na(study.area.binary)] <- 0
+    if (!is.null(shape.study.area2)) {
+        # convert to a binary raster image
+        message("Rasterizing the second shape study area...")
+        study.area.binary2 <- rasterize(x = shape.study.area2,
+                                       y = r, 1., getCover = TRUE)
+        origin(study.area.binary2) <- origin(r)
+        message("Rasterizing the second shape study area completed")
+        # make binary: set all non zero to 1
+        study.area.binary2[study.area.binary2 > 0] <- 1
+        # make binary: set NA to 0
+        study.area.binary2[is.na(study.area.binary2)] <- 0
+        # put the binary rasters of the two study areas together
+        message("Combine the two shape study areas")
+        study.area.binary <- mosaic(study.area.binary,
+                                    study.area.binary2,
+                                    fun = max)
+    }
     return(study.area.binary)
 }
 
@@ -413,8 +473,6 @@ get_patches_info <- function(binary.raster){
 #'
 #' @examples
 control.mask <- function(binary.mask, receivers, n_patches.mask){
-    # convert to sp
-    receivers<- as_Spatial(receivers)
     match_ids <- raster::extract(binary.mask, receivers)
     match_ids[is.na(match_ids)] <- 0
     matched.receivers <- receivers[as.logical(match_ids), ]
@@ -458,7 +516,7 @@ adapt.binarymask <- function(binary.mask, receivers){
         message("The binary.mask (river body) is not connected. Extension needed")
     }
     # add locations itself to raster as well:
-    locs2ras <- rasterize(as_Spatial(receivers), binary.mask, 1.)
+    locs2ras <- rasterize(receivers, binary.mask, 1.)
     locs2ras[is.na(locs2ras)] <- 0
     binary.mask <- max(binary.mask, locs2ras)
 
