@@ -326,7 +326,7 @@ projections.locations.receivers <- find.projections.receivers(
 
 # for homogeneous study areas
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = frome,
+  shape.study.area = study.area,
   receivers = locations.receivers,
   projection = coordinate_epsg
 )
