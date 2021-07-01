@@ -315,12 +315,20 @@ locations.receivers <- load.receivers(
 # location receivers on the river shapefile (orthogonal projection)
 # Receivers inside the river body will not be projected
 
+# for study area combined by two study areas made of polygons and lines 
 projections.locations.receivers <- find.projections.receivers(
   shape.study.area = pbarn_freshwater,
   receivers = locations.receivers,
   projection = coordinate_epsg,
   shape.study.area2 = ws_bpns, 
   shape.study.area_merged = study.area
+)
+
+# for homogeneous study areas
+projections.locations.receivers <- find.projections.receivers(
+  shape.study.area = frome,
+  receivers = locations.receivers,
+  projection = coordinate_epsg
 )
 
 # ------------------------
