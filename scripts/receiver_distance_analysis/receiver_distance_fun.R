@@ -220,10 +220,13 @@ find.projections.receivers <- function(shape.study.area,
     # intersect receivers and river body study area
     # intersection has to be done in a planar projection
     receivers <- st_transform(receivers, crs = projection)
-    shape.study.area_merged <-  st_transform(shape.study.area_merged, crs = projection)
+    if (!is.null(shape.study.area_merged)) {
+        shape.study.area <- shape.study.area_merged
+    }
+    shape.study.area <-  st_transform(shape.study.area, crs = projection)
     projections.receivers <- st_transform(projections.receivers, crs = projection)
 
-    receivers_are_included <- st_intersects(receivers, shape.study.area_merged)
+    receivers_are_included <- st_intersects(receivers, shape.study.area)
 
     # check validity of intersection result
     assert_that(length(receivers_are_included) ==
