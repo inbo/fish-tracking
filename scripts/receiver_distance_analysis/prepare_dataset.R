@@ -247,7 +247,7 @@ plot(superpolder)
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- mondego
+study.area <- frome
 
 # ----------------
 # LOAD DETECTION STATION NETWORK
@@ -376,7 +376,7 @@ projections.locations.receivers <- find.projections.receivers(
 
 # for homogeneous study areas
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = mondego,
+  shape.study.area = frome,
   receivers = locations.receivers,
   projection = coordinate_epsg
 )
@@ -462,7 +462,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distancematrix_mondego.csv")
+write.csv(cst.dst.frame_corrected, "./results/distancematrix_2014_frome.csv")
 
 
 # IDEA ...
