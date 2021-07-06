@@ -235,12 +235,19 @@ grotenete <- load.shapefile("./data/Belgium_Netherlands/grotenete_zeeschelde.shp
 plot(grotenete)
 
 
+# DAK SUPERPOLDER
+superpolder <- load.shapefile("./data/Belgium_Netherlands/superpolder.shp",
+                            "superpolder",
+                            coordinate_epsg)
+plot(superpolder)
+
+
 
 # -----------------------
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- esgl
+study.area <- fremur
 
 # ----------------
 # LOAD DETECTION STATION NETWORK
@@ -334,6 +341,12 @@ locations.receivers <- load.receivers(
   coordinate_epsg
 )
 
+# 2019_Grotenete network
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_DAK_SUPERPOLDER.csv",
+  coordinate_epsg
+)
+
 
 # Michimit network
 locations.receivers <- load.receivers(
@@ -363,7 +376,7 @@ projections.locations.receivers <- find.projections.receivers(
 
 # for homogeneous study areas
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = esgl,
+  shape.study.area = fremur,
   receivers = locations.receivers,
   projection = coordinate_epsg
 )
@@ -449,7 +462,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distances_2011_loire.csv")
+write.csv(cst.dst.frame_corrected, "./results/distancematrix_2017_fremur.csv")
 
 
 # IDEA ...
