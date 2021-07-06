@@ -242,12 +242,20 @@ superpolder <- load.shapefile("./data/Belgium_Netherlands/superpolder.shp",
 plot(superpolder)
 
 
+# NOORDZEEKANAAL
+noordzeekanaal <- load.shapefile("./data/Belgium_Netherlands/noordzeekanaal_polygons.shp",
+                              "noordzeekanaal_polygons",
+                              coordinate_epsg)
+plot(noordzeekanaal)
+
+
+
 
 # -----------------------
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- semp
+study.area <- noordzeekanaal
 
 # ----------------
 # LOAD DETECTION STATION NETWORK
@@ -341,9 +349,15 @@ locations.receivers <- load.receivers(
   coordinate_epsg
 )
 
-# 2019_Grotenete network
+# DAK_superpolder network
 locations.receivers <- load.receivers(
   "./data/receivernetworks/receivernetwork_DAK_SUPERPOLDER.csv",
+  coordinate_epsg
+)
+
+# Noordzeekanaal network
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_Noordzeekanaal.csv",
   coordinate_epsg
 )
 
@@ -376,7 +390,7 @@ projections.locations.receivers <- find.projections.receivers(
 
 # for homogeneous study areas
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = semp,
+  shape.study.area = noordzeekanaal,
   receivers = locations.receivers,
   projection = coordinate_epsg
 )
@@ -462,7 +476,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distancematrix_2014_nene.csv")
+write.csv(cst.dst.frame_corrected, "./results/distancematrix_noordzeekanaal.csv")
 
 
 # IDEA ...
