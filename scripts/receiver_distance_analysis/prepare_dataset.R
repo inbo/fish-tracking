@@ -240,7 +240,7 @@ plot(grotenete)
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- warnow
+study.area <- esgl
 
 # ----------------
 # LOAD DETECTION STATION NETWORK
@@ -363,7 +363,7 @@ projections.locations.receivers <- find.projections.receivers(
 
 # for homogeneous study areas
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = warnow,
+  shape.study.area = esgl,
   receivers = locations.receivers,
   projection = coordinate_epsg
 )
@@ -449,7 +449,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distances_2011_warnow.csv")
+write.csv(cst.dst.frame_corrected, "./results/distances_2011_loire.csv")
 
 
 # IDEA ...
