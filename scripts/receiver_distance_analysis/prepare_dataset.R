@@ -111,6 +111,37 @@ study.area <- st_as_sf(study.area)
 #### ####
 
 
+# 2012 LEOPOLDKANAAL
+leopoldkanaal <- load.shapefile("./data/Belgium_Netherlands/leopoldkanaal.shp",
+                                   "leopoldkanaal",
+                                   coordinate_epsg)
+plot(leopoldkanaal$geometry)
+
+ws_bpns <- load.shapefile("./data/Belgium_Netherlands/ws_bpns.shp",
+                          "ws_bpns",
+                          coordinate_epsg)
+plot(ws_bpns$geometry)
+
+# Validate waterbodies
+leopoldkanaal <- validate_waterbody(leopoldkanaal)
+ws_bpns <- validate_waterbody(ws_bpns)
+
+# Combine shapefiles
+leopoldkanaal$origin_shapefile = "leopoldkanaal"
+ws_bpns$origin_shapefile = "ws_bpns_sf"
+
+ws_bpns <- 
+  ws_bpns %>%
+  dplyr::select(Id, origin_shapefile, geometry)
+leopoldkanaal <- 
+  leopoldkanaal %>% 
+  dplyr::select(Id = OIDN, origin_shapefile, geometry)
+
+study.area <- rbind(leopoldkanaal, ws_bpns)
+
+plot(study.area)
+
+
 
 # RIVER FROME (UK)
 frome <- load.shapefile("./data/UK/Frome/frome.shp",
@@ -225,6 +256,12 @@ locations.receivers <- load.receivers(
   projection = coordinate_epsg
 )
 
+# 2012 Leopoldkanaal
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_2012_leopoldkanaal.csv",
+  projection = coordinate_epsg
+)
+
 # Frome network
 locations.receivers <- load.receivers(
   "./data/receivernetworks/receivernetwork_2014_Frome.csv",
@@ -317,7 +354,7 @@ locations.receivers <- load.receivers(
 
 # for study area combined by two study areas made of polygons and lines 
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = zeeschelde_dijle,
+  shape.study.area = leopoldkanaal,
   receivers = locations.receivers,
   projection = coordinate_epsg,
   shape.study.area2 = ws_bpns, 
@@ -344,7 +381,7 @@ mapView(locations.receivers, col.regions = "red", map.types = "OpenStreetMap",
           label = projections.locations.receivers$station_name)
 
 # for study.area with mixed polygons and lines
-leaflet(zeeschelde_dijle %>% st_transform(crs = 4326)) %>%
+leaflet(leopoldkanaal %>% st_transform(crs = 4326)) %>%
   addTiles(group = "OSM (default)") %>%
   addPolylines() %>%
   addPolygons(data = ws_bpns %>% st_transform(4326)) %>%
@@ -381,7 +418,7 @@ study.area.binary <- shape.to.binarymask(
 
 # for a study area which is a combination of polygons and lines
 study.area.binary <- shape.to.binarymask(
-  shape.study.area = zeeschelde_dijle,
+  shape.study.area = leopoldkanaal,
   shape.study.area2 = ws_bpns,
   shape.study.area_merged = study.area,
   receivers = projections.locations.receivers,
@@ -399,7 +436,7 @@ study.area.binary.extended <- adapt.binarymask(binary.mask = study.area.binary,
 writeRaster(study.area.binary.extended, "./results/study_area_binary", "GTiff",
             overwrite = TRUE)
 
-# remove sutdy.area.binary raster (not needed anymore) to free some memory
+# remove study.area.binary raster (not needed anymore) to free some memory
 remove(study.area.binary)
 
 # -------------------------------
@@ -412,7 +449,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distances_2015_phd_verhelst_eel.csv")
+write.csv(cst.dst.frame_corrected, "./results/distances_2012_leopoldkanaal.csv")
 
 
 # IDEA ...
