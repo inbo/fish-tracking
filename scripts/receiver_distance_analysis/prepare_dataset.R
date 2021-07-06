@@ -28,10 +28,10 @@ source("receiver_distance_fun.R")
 
 
 # 2015 PHD VERHELST EEL
-pbarn_freshwater <- load.shapefile("./data/Belgium_Netherlands/pbarn_freshwater.shp",
-                       "pbarn_freshwater",
+zeeschelde_dijle <- load.shapefile("./data/Belgium_Netherlands/zeeschelde_dijle.shp",
+                       "zeeschelde_dijle",
                        coordinate_epsg)
-plot(pbarn_freshwater$geometry)
+plot(zeeschelde_dijle$geometry)
 
 ws_bpns <- load.shapefile("./data/Belgium_Netherlands/ws_bpns.shp",
                        "ws_bpns",
@@ -39,21 +39,21 @@ ws_bpns <- load.shapefile("./data/Belgium_Netherlands/ws_bpns.shp",
 plot(ws_bpns$geometry)
 
 # Validate waterbodies
-pbarn_freshwater <- validate_waterbody(pbarn_freshwater)
+zeeschelde_dijle <- validate_waterbody(zeeschelde_dijle)
 ws_bpns <- validate_waterbody(ws_bpns)
 
 # Combine shapefiles
-pbarn_freshwater$origin_shapefile = "pbarn_freshwater"
+zeeschelde_dijle$origin_shapefile = "zeeschelde_dijle"
 ws_bpns$origin_shapefile = "ws_bpns_sf"
 
 ws_bpns <- 
   ws_bpns %>%
   dplyr::select(Id, origin_shapefile, geometry)
-pbarn_freshwater <- 
-  pbarn_freshwater %>% 
+zeeschelde_dijle <- 
+  zeeschelde_dijle %>% 
   dplyr::select(Id = OIDN, origin_shapefile, geometry)
 
-study.area <- rbind(pbarn_freshwater, ws_bpns)
+study.area <- rbind(zeeschelde_dijle, ws_bpns)
 
 plot(study.area)
 
@@ -317,7 +317,7 @@ locations.receivers <- load.receivers(
 
 # for study area combined by two study areas made of polygons and lines 
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = pbarn_freshwater,
+  shape.study.area = zeeschelde_dijle,
   receivers = locations.receivers,
   projection = coordinate_epsg,
   shape.study.area2 = ws_bpns, 
@@ -344,7 +344,7 @@ mapView(locations.receivers, col.regions = "red", map.types = "OpenStreetMap",
           label = projections.locations.receivers$station_name)
 
 # for study.area with mixed polygons and lines
-leaflet(pbarn_freshwater %>% st_transform(crs = 4326)) %>%
+leaflet(zeeschelde_dijle %>% st_transform(crs = 4326)) %>%
   addTiles(group = "OSM (default)") %>%
   addPolylines() %>%
   addPolygons(data = ws_bpns %>% st_transform(4326)) %>%
@@ -368,7 +368,7 @@ leaflet(pbarn_freshwater %>% st_transform(crs = 4326)) %>%
 # ------------------------
 # CONVERT SHAPE TO RASTER
 # ------------------------
-res <- 1000 # pixel is a square:  res x res (in meters)
+res <- 50 # pixel is a square:  res x res (in meters)
 
 # First time running the following function can give an error that can be ignored. The code will provide the output anyway. See stackoverflow link for more info about the bug.
 #https://stackoverflow.com/questions/61598340/why-does-rastertopoints-generate-an-error-on-first-call-but-not-second
@@ -381,7 +381,7 @@ study.area.binary <- shape.to.binarymask(
 
 # for a study area which is a combination of polygons and lines
 study.area.binary <- shape.to.binarymask(
-  shape.study.area = pbarn_freshwater,
+  shape.study.area = zeeschelde_dijle,
   shape.study.area2 = ws_bpns,
   shape.study.area_merged = study.area,
   receivers = projections.locations.receivers,
