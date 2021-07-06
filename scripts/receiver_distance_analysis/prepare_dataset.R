@@ -449,7 +449,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distances_semp.csv")
+write.csv(cst.dst.frame_corrected, "./results/distances_2012_leopoldkanaal.csv")
 
 
 # IDEA ...
