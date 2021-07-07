@@ -275,23 +275,37 @@ plot(noordzeekanaal)
 
 
 # 2013 ALBERTKANAAL
-meuse <- load.shapefile("./data/Belgium_Netherlands/meuse.shp",
-                        "meuse",
-                        coordinate_epsg)
+albertkanaal_zeeschelde <- load.shapefile("./data/Belgium_Netherlands/albertkanaal_zeeschelde.shp",
+                                   "albertkanaal_zeeschelde",
+                                   coordinate_epsg)
+plot(albertkanaal_zeeschelde$geometry)
+
+meuse <- load.shapefile("./data/Belgium_Netherlands/meuse_total.shp",
+                                   "meuse_total",
+                                   coordinate_epsg)
 plot(meuse$geometry)
 
 
-coastal_meuse <- load.shapefile("./data/Belgium_Netherlands/coastal_meuse.shp",
-                                "coastal_meuse",
-                                coordinate_epsg)
-plot(coastal_meuse$geometry)
-
-meuse_merge <- gUnion(as_Spatial(meuse), as_Spatial(coastal_meuse))
-plot(meuse_merge)
+# Validate waterbodies
+albertkanaal_zeeschelde <- validate_waterbody(albertkanaal_zeeschelde)
+meuse <- validate_waterbody(meuse)
 
 
+# Combine shapefiles
+albertkanaal_zeeschelde$origin_shapefile = "albertkanaal_zeeschelde"
+meuse$origin_shapefile = "meuse_sf"
+meuse <- dplyr::rename(meuse, Id = ID)
 
+meuse <- 
+  meuse %>%
+  dplyr::select(Id, origin_shapefile, geometry)
+albertkanaal_zeeschelde <- 
+  albertkanaal_zeeschelde %>% 
+  dplyr::select(Id = OIDN, origin_shapefile, geometry)
 
+study.area <- rbind(albertkanaal_zeeschelde, meuse)
+
+plot(study.area)
 
 
 
@@ -408,6 +422,12 @@ locations.receivers <- load.receivers(
   coordinate_epsg
 )
 
+# 2013_Albertkanaal network
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_2013_albertkanaal.csv",
+  coordinate_epsg
+)
+
 
 # Michimit network
 locations.receivers <- load.receivers(
@@ -428,10 +448,10 @@ locations.receivers <- load.receivers(
 
 # for study area combined by two study areas made of polygons and lines 
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = zeeschelde_dijle,
+  shape.study.area = albertkanaal_zeeschelde,
   receivers = locations.receivers,
   projection = coordinate_epsg,
-  shape.study.area2 = ws_bpns, 
+  shape.study.area2 = meuse, 
   shape.study.area_merged = study.area
 )
 
@@ -455,10 +475,10 @@ mapView(locations.receivers, col.regions = "red", map.types = "OpenStreetMap",
           label = projections.locations.receivers$station_name)
 
 # for study.area with mixed polygons and lines
-leaflet(zeeschelde_dijle %>% st_transform(crs = 4326)) %>%
+leaflet(albertkanaal_zeeschelde %>% st_transform(crs = 4326)) %>%
   addTiles(group = "OSM (default)") %>%
   addPolylines() %>%
-  addPolygons(data = ws_bpns %>% st_transform(4326)) %>%
+  addPolygons(data = meuse %>% st_transform(4326)) %>%
   addCircleMarkers(data = locations.receivers %>% st_transform(4326),
                    radius = 3,
                    color = "red",
