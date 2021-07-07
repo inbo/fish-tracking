@@ -180,27 +180,10 @@ mondego <- load.shapefile("./data/Portugal/Mondego.shp",
 plot(mondego)
 
 # RIVERS SEMP PROJECT (LITHUANIA)
-curonian_lagoon <- load.shapefile("./data/Lithuania/curonian_lagoon.shp",
-                          "curonian_lagoon",
+semp <- load.shapefile("./data/Lithuania/semp_rivers.shp",
+                          "semp_rivers",
                           coordinate_epsg)
-main <- load.shapefile("./data/Lithuania/Rivers.shp",
-                                  "Rivers",
-                                  coordinate_epsg)
-zeimena <- load.shapefile("./data/Lithuania/Zeimena.shp",
-                                  "Zeimena",
-                                  coordinate_epsg)
-
-# Validate waterbodies
-curonian_lagoon <- validate_waterbody(curonian_lagoon)
-main <- validate_waterbody(main)
-zeimena <- validate_waterbody(zeimena)
-
-#' Combine shapefiles - Same geometry? Use gUnion()
-semp <- gUnion(as_Spatial(curonian_lagoon), as_Spatial(main))
-semp <- gUnion(semp, as_Spatial(zeimena))
-semp <- st_as_sf(semp)
-
-plot(semp)
+plot(semp$geometry)
 
 
 # EMMN project - Alta fjord Norway
@@ -316,7 +299,7 @@ plot(study.area)
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- stour
+study.area <- semp
 
 # ----------------
 # LOAD DETECTION STATION NETWORK
@@ -457,7 +440,7 @@ projections.locations.receivers <- find.projections.receivers(
 
 # for homogeneous study areas
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = stour,
+  shape.study.area = semp,
   receivers = locations.receivers,
   projection = coordinate_epsg
 )
@@ -512,8 +495,8 @@ study.area.binary <- shape.to.binarymask(
 
 # for a study area which is a combination of polygons and lines
 study.area.binary <- shape.to.binarymask(
-  shape.study.area = zeeschelde_dijle,
-  shape.study.area2 = ws_bpns,
+  shape.study.area = albertkanaal_zeeschelde,
+  shape.study.area2 = meuse,
   shape.study.area_merged = study.area,
   receivers = projections.locations.receivers,
   resolution = res)
@@ -543,7 +526,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distancematrix_2015_phd_verhelst_eel.csv")
+write.csv(cst.dst.frame_corrected, "./results/distancematrix_semp.csv")
 
 
 # IDEA ...
