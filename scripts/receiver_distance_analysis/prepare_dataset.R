@@ -234,6 +234,30 @@ grotenete <- load.shapefile("./data/Belgium_Netherlands/grotenete_zeeschelde.shp
                                    coordinate_epsg)
 plot(grotenete)
 
+ws_bpns <- load.shapefile("./data/Belgium_Netherlands/ws_bpns.shp",
+                          "ws_bpns",
+                          coordinate_epsg)
+plot(ws_bpns$geometry)
+
+# Validate waterbodies
+grotenete <- validate_waterbody(grotenete)
+ws_bpns <- validate_waterbody(ws_bpns)
+
+# Combine shapefiles
+grotenete$origin_shapefile = "grotenete"
+ws_bpns$origin_shapefile = "ws_bpns_sf"
+
+ws_bpns <- 
+  ws_bpns %>%
+  dplyr::select(Id, origin_shapefile, geometry)
+grotenete <- 
+  grotenete %>% 
+  dplyr::select(Id = OIDN, origin_shapefile, geometry)
+
+study.area <- rbind(grotenete, ws_bpns)
+
+plot(study.area)
+
 
 # DAK SUPERPOLDER
 superpolder <- load.shapefile("./data/Belgium_Netherlands/superpolder.shp",
@@ -247,6 +271,29 @@ noordzeekanaal <- load.shapefile("./data/Belgium_Netherlands/noordzeekanaal_poly
                               "noordzeekanaal_polygons",
                               coordinate_epsg)
 plot(noordzeekanaal)
+
+
+
+# 2013 ALBERTKANAAL
+meuse <- load.shapefile("./data/Belgium_Netherlands/meuse.shp",
+                        "meuse",
+                        coordinate_epsg)
+plot(meuse$geometry)
+
+
+coastal_meuse <- load.shapefile("./data/Belgium_Netherlands/coastal_meuse.shp",
+                                "coastal_meuse",
+                                coordinate_epsg)
+plot(coastal_meuse$geometry)
+
+meuse_merge <- gUnion(as_Spatial(meuse), as_Spatial(coastal_meuse))
+plot(meuse_merge)
+
+
+
+
+
+
 
 
 
