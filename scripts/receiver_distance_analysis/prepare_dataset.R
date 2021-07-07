@@ -255,7 +255,7 @@ plot(noordzeekanaal)
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- noordzeekanaal
+study.area <- stour
 
 # ----------------
 # LOAD DETECTION STATION NETWORK
@@ -390,7 +390,7 @@ projections.locations.receivers <- find.projections.receivers(
 
 # for homogeneous study areas
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = noordzeekanaal,
+  shape.study.area = stour,
   receivers = locations.receivers,
   projection = coordinate_epsg
 )
