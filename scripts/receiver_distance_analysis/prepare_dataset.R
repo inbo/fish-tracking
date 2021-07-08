@@ -471,10 +471,10 @@ locations.receivers <- load.receivers(
 
 # for study area combined by two study areas made of polygons and lines 
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = albertkanaal_zeeschelde,
+  shape.study.area = zeeschelde_dijle,
   receivers = locations.receivers,
   projection = coordinate_epsg,
-  shape.study.area2 = meuse, 
+  shape.study.area2 = markiezaatsmeer, 
   shape.study.area_merged = study.area
 )
 
@@ -498,10 +498,10 @@ mapView(locations.receivers, col.regions = "red", map.types = "OpenStreetMap",
           label = projections.locations.receivers$station_name)
 
 # for study.area with mixed polygons and lines
-leaflet(albertkanaal_zeeschelde %>% st_transform(crs = 4326)) %>%
+leaflet(zeeschelde_dijle %>% st_transform(crs = 4326)) %>%
   addTiles(group = "OSM (default)") %>%
   addPolylines() %>%
-  addPolygons(data = meuse %>% st_transform(4326)) %>%
+  addPolygons(data = markiezaatsmeer %>% st_transform(4326)) %>%
   addCircleMarkers(data = locations.receivers %>% st_transform(4326),
                    radius = 3,
                    color = "red",
@@ -535,8 +535,8 @@ study.area.binary <- shape.to.binarymask(
 
 # for a study area which is a combination of polygons and lines
 study.area.binary <- shape.to.binarymask(
-  shape.study.area = albertkanaal_zeeschelde,
-  shape.study.area2 = meuse,
+  shape.study.area = zeeschelde_dijle,
+  shape.study.area2 = markiezaatsmeer,
   shape.study.area_merged = study.area,
   receivers = projections.locations.receivers,
   resolution = res)
@@ -566,7 +566,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distancematrix_semp.csv")
+write.csv(cst.dst.frame_corrected, "./results/distancematrix_dak_markiezaatsmeer.csv")
 
 
 # IDEA ...
