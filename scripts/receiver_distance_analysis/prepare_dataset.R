@@ -248,6 +248,40 @@ superpolder <- load.shapefile("./data/Belgium_Netherlands/superpolder.shp",
                             coordinate_epsg)
 plot(superpolder)
 
+# DAK MARKIEZAATSMEER
+zeeschelde_dijle <- load.shapefile("./data/Belgium_Netherlands/zeeschelde_dijle.shp",
+                                          "zeeschelde_dijle",
+                                          coordinate_epsg)
+plot(zeeschelde_dijle$geometry)
+
+markiezaatsmeer <- load.shapefile("./data/Belgium_Netherlands/markiezaatsmeer_westerschelde.shp",
+                        "markiezaatsmeer_westerschelde",
+                        coordinate_epsg)
+plot(markiezaatsmeer$geometry)
+
+
+# Validate waterbodies
+zeeschelde_dijle <- validate_waterbody(zeeschelde_dijle)
+markiezaatsmeer <- validate_waterbody(markiezaatsmeer)
+
+
+# Combine shapefiles
+zeeschelde_dijle$origin_shapefile = "zeeschelde_dijle"
+markiezaatsmeer$origin_shapefile = "markiezaatsmeer_sf"
+markiezaatsmeer <- dplyr::rename(markiezaatsmeer, Id = ID)
+
+markiezaatsmeer <- 
+  markiezaatsmeer %>%
+  dplyr::select(Id, origin_shapefile, geometry)
+zeeschelde_dijle <- 
+  zeeschelde_dijle %>% 
+  dplyr::select(Id = OIDN, origin_shapefile, geometry)
+
+study.area <- rbind(zeeschelde_dijle, markiezaatsmeer)
+
+plot(study.area)
+
+
 
 # NOORDZEEKANAAL
 noordzeekanaal <- load.shapefile("./data/Belgium_Netherlands/noordzeekanaal_polygons.shp",
@@ -396,6 +430,12 @@ locations.receivers <- load.receivers(
 # DAK_superpolder network
 locations.receivers <- load.receivers(
   "./data/receivernetworks/receivernetwork_DAK_SUPERPOLDER.csv",
+  coordinate_epsg
+)
+
+# DAK_markiezaatsmeer network
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_DAK_MARKIEZAAT.csv",
   coordinate_epsg
 )
 
