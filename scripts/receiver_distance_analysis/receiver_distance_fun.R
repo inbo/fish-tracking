@@ -516,7 +516,16 @@ adapt.binarymask <- function(binary.mask, receivers){
     n_patches.mask <- nrow(patchCells)
     message(glue("Number of patches of binary.mask (river body): {n_patches.mask}"))
     if (n_patches.mask > 1) {
-        message("The binary.mask (river body) is not connected. Extension needed")
+        msg <- message(
+            glue("River body is disconnected. If there are receivers", 
+                 "placed in different patches, infinite loops and memory size", 
+                 "isues will occur while calculating their distance.",
+                 .sep = " ")
+        )
+        continue <- tolower(readline("Do you want to continue? (Y/n) "))
+        if (!continue %in% c("y", "")) {
+            return(invisible(NULL))
+        }
     }
     # add locations itself to raster as well:
     locs2ras <- rasterize(receivers, binary.mask, 1.)
