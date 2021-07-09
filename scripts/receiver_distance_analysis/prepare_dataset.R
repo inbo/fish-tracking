@@ -6,7 +6,7 @@
 ## Oscibio - INBO (LifeWatch project)
 ## 2016-2020
 
-library("sp")
+library("sf")
 library("rgeos")
 library("raster")
 library("mapview")
@@ -96,7 +96,8 @@ sea <- load.shapefile("./data/PJ_manual_water/PJ_ontbrekende_stukken_reduced.shp
                                 "PJ_ontbrekende_stukken_reduced",
                                 coordinate_epsg)
 
-# Validate waterbodies
+#' Validate waterbodies before combining them together, 
+#' otherwise just validate the study.area
 rivers <- validate_waterbody(rivers)
 nete <- validate_waterbody(nete)
 westerschelde <- validate_waterbody(westerschelde)
@@ -148,6 +149,9 @@ frome <- load.shapefile("./data/UK/Frome/frome.shp",
                          "frome",
                          coordinate_epsg)
 plot(frome)
+# Validate waterbodies
+frome <- validate_waterbody(frome)
+
 
 # RIVER STOUR (UK)
 stour <- load.shapefile("./data/UK/Stour/stour.shp",
@@ -334,6 +338,9 @@ plot(study.area)
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
 study.area <- noordzeekanaal
+
+# validate te study.area
+study.area <- validate_waterbody(study.area)
 
 # ----------------
 # LOAD DETECTION STATION NETWORK
