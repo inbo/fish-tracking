@@ -465,6 +465,11 @@ locations.receivers <- load.receivers(
   coordinate_epsg
 )
 
+# Shad network
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_shad.csv",
+  projection = coordinate_epsg
+)
 
 
 # ----------------
