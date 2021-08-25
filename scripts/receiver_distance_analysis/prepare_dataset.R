@@ -361,15 +361,19 @@ study.area <- rbind(shad, ws_bpns)
 plot(study.area)
 
 
+# Reelease project
+danish_straits <- load.shapefile("./data/Denmark/danish_straits_final.shp",
+                         "danish_straits_final",
+                         coordinate_epsg)
 
-
+plot(danish_straits)
 
 
 # -----------------------
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- noordzeekanaal
+study.area <- danish_straits
 
 # validate te study.area
 study.area <- validate_waterbody(study.area)
@@ -502,6 +506,13 @@ locations.receivers <- load.receivers(
   "./data/receivernetworks/receivernetwork_shad.csv",
   projection = coordinate_epsg
 )
+
+# Reelease
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_reelease.csv",
+  projection = coordinate_epsg
+)
+
 
 
 # ----------------
