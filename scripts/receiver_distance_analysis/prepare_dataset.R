@@ -375,7 +375,7 @@ plot(danish_straits)
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
 study.area <- danish_straits
 
-# validate te study.area
+# validate the study.area
 study.area <- validate_waterbody(study.area)
 
 # ----------------
@@ -535,7 +535,7 @@ projections.locations.receivers <- find.projections.receivers(
 
 # for homogeneous study areas
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = noordzeekanaal,
+  shape.study.area = danish_straits,
   receivers = locations.receivers,
   projection = coordinate_epsg
 )
@@ -621,7 +621,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distancematrix_shad.csv")
+write.csv(cst.dst.frame_corrected, "./results/distancematrix_reelease.csv")
 
 
 # IDEA ...
