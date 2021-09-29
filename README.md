@@ -1,6 +1,6 @@
 ## fish-tracking
 
-This private repository contains a collection of (personal) scripts for processing and analyzing fish tracking data. The plan is to move common functions to the [glatos R package](https://github.com/inbo/glatos).
+This private repository contains a collection of (personal) scripts for processing and analyzing fish tracking data. The plan is to move common functions to the [glatos R package](https://github.com/inbo/glatos) or other packages, e.g. [actel](https://github.com/hugomflavio/actel/).
 
 To add a script yourself (or a set of scripts with a common purpose), create a **new directory** in the `scripts` folder. Within this folder, put the R/Rmd script(s) together with a `Readme.md` file, describing the scripts in the folder. Make sure the following minimal elements are provided:
 
