@@ -1,6 +1,6 @@
 ## fish-tracking
 
-This private repository contains a collection of (personal) scripts for processing and analyzing fish tracking data. The plan is to move common functions to the [glatos R package](https://github.com/inbo/glatos) or other packages, e.g. [actel](https://github.com/hugomflavio/actel/).
+This repository contains a collection of scripts for processing and analyzing fish tracking data. The plan is to move common functions to relevant R-packages, such as the [glatos R package](https://github.com/inbo/glatos) or other packages, e.g. [actel](https://github.com/hugomflavio/actel/).
 
 To add a script yourself (or a set of scripts with a common purpose), create a **new directory** in the `scripts` folder. Within this folder, put the R/Rmd script(s) together with a `Readme.md` file, describing the scripts in the folder. Make sure the following minimal elements are provided:
 
@@ -63,8 +63,6 @@ See issue https://github.com/PieterjanVerhelst/eel-ak-analysis/issues/6#issuecom
 * Purpose: Calculate exact fish positions based on triangulation (difference in time of arrival)
 * Usage: Habitat preference, habitat use, geographic distribution
  
-### Swim speed
-* Purpose: calculate swimming speed and swimming distances
-* Maintainer: Pieterjan Verhelst?
+
  
 
