@@ -369,6 +369,13 @@ danish_straits <- load.shapefile("./data/Denmark/danish_straits_final.shp",
 plot(danish_straits)
 
 
+# Michimit
+michimit <- load.shapefile("./data/Belgium_Netherlands/michimit_rivers.shp",
+                            "michimit_rivers",
+                            coordinate.string)
+plot(michimit)
+
+
 # -----------------------
 # SET STUDY AREA
 # -----------------------
