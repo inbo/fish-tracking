@@ -47,3 +47,4 @@ vignettes/*.pdf
 /scripts/receiver_distance_analysis/data/European_waterways/
 /scripts/receiver_distance_analysis/data/Denmark/
 /scripts/receiver_distance_analysis/data/Portugal/
+.Rproj.user

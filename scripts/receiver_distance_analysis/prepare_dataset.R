@@ -6,17 +6,18 @@
 ## Oscibio - INBO (LifeWatch project)
 ## 2016-2020
 
-library("sp")
+library("sf")
 library("rgeos")
 library("raster")
 library("mapview")
+library("leaflet")
 
 # --------------------
 # INTRODUCTION
 # --------------------
 
 # Define the projection for the analysis:
-coordinate.string <- CRS("+init=epsg:32631")
+coordinate_epsg <- 32631
 
 # Load the functionalities from the functions file:
 source("receiver_distance_fun.R")
@@ -27,22 +28,32 @@ source("receiver_distance_fun.R")
 
 
 # 2015 PHD VERHELST EEL
-pbarn_freshwater <- load.shapefile("./data/Belgium_Netherlands/pbarn_freshwater.shp",
-                       "pbarn_freshwater",
-                       coordinate.string)
-plot(pbarn_freshwater)
+zeeschelde_dijle <- load.shapefile("./data/Belgium_Netherlands/zeeschelde_dijle.shp",
+                       "zeeschelde_dijle",
+                       coordinate_epsg)
+plot(zeeschelde_dijle$geometry)
 
 ws_bpns <- load.shapefile("./data/Belgium_Netherlands/ws_bpns.shp",
                        "ws_bpns",
-                       coordinate.string)
-plot(ws_bpns)
+                       coordinate_epsg)
+plot(ws_bpns$geometry)
 
 # Validate waterbodies
-pbarn_freshwater <- validate_waterbody(pbarn_freshwater)
+zeeschelde_dijle <- validate_waterbody(zeeschelde_dijle)
 ws_bpns <- validate_waterbody(ws_bpns)
 
 # Combine shapefiles
-study.area <- gUnion(pbarn_freshwater, ws_bpns)
+zeeschelde_dijle$origin_shapefile = "zeeschelde_dijle"
+ws_bpns$origin_shapefile = "ws_bpns_sf"
+
+ws_bpns <- 
+  ws_bpns %>%
+  dplyr::select(Id, origin_shapefile, geometry)
+zeeschelde_dijle <- 
+  zeeschelde_dijle %>% 
+  dplyr::select(Id = OIDN, origin_shapefile, geometry)
+
+study.area <- rbind(zeeschelde_dijle, ws_bpns)
 
 plot(study.area)
 
@@ -60,16 +71,14 @@ river.names <- c("Schelde", "Durme", "Rupel", "Netekanaal",
 
 rivers <- load.shapefile("./data/lowcountries_water/LowCountries_Water_2004.shp",
                          "LowCountries_Water_2004",
-                         coordinate.string,
-                         river.names)
-
-
-
+                         projection = coordinate_epsg,
+                         subset.names = river.names,
+                         name_col = "NAME")
 
 # Nete Section (precompiled as Europe entire file is very large)
 nete <- load.shapefile("./data/europe_water/nete.shp",
                        "nete",
-                       coordinate.string,
+                       coordinate_epsg,
                        subset.names = NULL)
 ## to restart from the entire Europe shapefile:
 ## nete <- load.shapefile("./data/europe_water/Europe_Water_2008.shp",
@@ -80,57 +89,90 @@ nete <- load.shapefile("./data/europe_water/nete.shp",
 # Westerschelde
 westerschelde <- load.shapefile("./data/westerschelde_water/seavox_sea_area_polygons_v13.shp",
                                 "seavox_sea_area_polygons_v13",
-                                coordinate.string)
+                                coordinate_epsg)
 
 # Belgian part of the North Sea
 sea <- load.shapefile("./data/PJ_manual_water/PJ_ontbrekende_stukken_reduced.shp",
                                 "PJ_ontbrekende_stukken_reduced",
-                                coordinate.string)
+                                coordinate_epsg)
 
-# Validate waterbodies
+#' Validate waterbodies before combining them together, 
+#' otherwise just validate the study.area
 rivers <- validate_waterbody(rivers)
 nete <- validate_waterbody(nete)
 westerschelde <- validate_waterbody(westerschelde)
 sea <- validate_waterbody(sea)
 
-# Combine shapefiles
-study.area <- gUnion(rivers, nete)
-study.area <- gUnion(study.area, westerschelde)
-study.area <- gUnion(study.area, sea)
-
-# clean workspace from individual shapefiles
-rm(rivers, nete, westerschelde, sea)
+#' Combine shapefiles - Same geometry? Use gUnion()
+study.area <- gUnion(as_Spatial(rivers), as_Spatial(nete))
+study.area <- gUnion(study.area, as_Spatial(westerschelde))
+study.area <- gUnion(study.area, as_Spatial(sea))
+study.area <- st_as_sf(study.area)
 
 #### ####
+
+
+# 2012 LEOPOLDKANAAL
+leopoldkanaal <- load.shapefile("./data/Belgium_Netherlands/leopoldkanaal.shp",
+                                   "leopoldkanaal",
+                                   coordinate_epsg)
+plot(leopoldkanaal$geometry)
+
+ws_bpns <- load.shapefile("./data/Belgium_Netherlands/ws_bpns.shp",
+                          "ws_bpns",
+                          coordinate_epsg)
+plot(ws_bpns$geometry)
+
+# Validate waterbodies
+leopoldkanaal <- validate_waterbody(leopoldkanaal)
+ws_bpns <- validate_waterbody(ws_bpns)
+
+# Combine shapefiles
+leopoldkanaal$origin_shapefile = "leopoldkanaal"
+ws_bpns$origin_shapefile = "ws_bpns_sf"
+
+ws_bpns <- 
+  ws_bpns %>%
+  dplyr::select(Id, origin_shapefile, geometry)
+leopoldkanaal <- 
+  leopoldkanaal %>% 
+  dplyr::select(Id = OIDN, origin_shapefile, geometry)
+
+study.area <- rbind(leopoldkanaal, ws_bpns)
+
+plot(study.area)
 
 
 
 # RIVER FROME (UK)
 frome <- load.shapefile("./data/UK/Frome/frome.shp",
                          "frome",
-                         coordinate.string)
+                         coordinate_epsg)
 plot(frome)
+# Validate waterbodies
+frome <- validate_waterbody(frome)
+
 
 # RIVER STOUR (UK)
 stour <- load.shapefile("./data/UK/Stour/stour.shp",
                         "stour",
-                        coordinate.string)
+                        coordinate_epsg)
 
 # RIVER NENE (UK)
 nene <- load.shapefile("./data/UK/Nene/nene.shp",
                         "nene",
-                        coordinate.string)
+                        coordinate_epsg)
 
 
 # RIVER WARNOW (GERMANY)
 warnow <- load.shapefile("./data/Germany/warnow.shp",
                          "warnow",
-                         coordinate.string)
+                         coordinate_epsg)
 
 # RIVER GUDENA (DENMARK)
 gudena <- load.shapefile("./data/Denmark/rivers.shp",
                          "rivers",
-                         coordinate.string)
+                         coordinate_epsg)
 
 gudena <- gudena[gudena$rivers_id %in% c(12,22),]
 plot(gudena)
@@ -138,36 +180,20 @@ plot(gudena)
 # RIVER MONDEGO (PORTUGAL)
 mondego <- load.shapefile("./data/Portugal/Mondego.shp",
                          "Mondego",
-                         coordinate.string)
+                         coordinate_epsg)
 plot(mondego)
 
 # RIVERS SEMP PROJECT (LITHUANIA)
-curonian_lagoon <- load.shapefile("./data/Lithuania/curonian_lagoon.shp",
-                          "curonian_lagoon",
-                          coordinate.string)
-main <- load.shapefile("./data/Lithuania/Rivers.shp",
-                                  "Rivers",
-                                  coordinate.string)
-zeimena <- load.shapefile("./data/Lithuania/Zeimena.shp",
-                                  "Zeimena",
-                                  coordinate.string)
-
-# Validate waterbodies
-curonian_lagoon <- validate_waterbody(curonian_lagoon)
-main <- validate_waterbody(main)
-zeimena <- validate_waterbody(zeimena)
-
-# Combine shapefiles
-semp <- gUnion(curonian_lagoon, main)
-semp <- gUnion(semp, zeimena)
-
-plot(semp)
+semp <- load.shapefile("./data/Lithuania/semp_rivers.shp",
+                          "semp_rivers",
+                          coordinate_epsg)
+plot(semp$geometry)
 
 
 # EMMN project - Alta fjord Norway
 emmn <- load.shapefile("./data/Norway/alta.shp",
                           "alta",
-                          coordinate.string)
+                          coordinate_epsg)
 
 plot(emmn)
 
@@ -175,7 +201,7 @@ plot(emmn)
 # ESGL & 2011_loire project
 esgl <- load.shapefile("./data/France/loire_final.shp",
                        "loire_final",
-                       coordinate.string)
+                       coordinate_epsg)
 
 plot(esgl)
 
@@ -183,7 +209,7 @@ plot(esgl)
 # 2017_fremur project
 fremur <- load.shapefile("./data/France/fremur.shp",
                        "fremur",
-                       coordinate.string)
+                       coordinate_epsg)
 
 plot(fremur)
 
@@ -192,9 +218,155 @@ plot(fremur)
 # 2019_Grotenete
 grotenete <- load.shapefile("./data/Belgium_Netherlands/grotenete_zeeschelde.shp",
                                    "grotenete_zeeschelde",
-                                   coordinate.string)
+                                   coordinate_epsg)
 plot(grotenete)
 
+ws_bpns <- load.shapefile("./data/Belgium_Netherlands/ws_bpns.shp",
+                          "ws_bpns",
+                          coordinate_epsg)
+plot(ws_bpns$geometry)
+
+# Validate waterbodies
+grotenete <- validate_waterbody(grotenete)
+ws_bpns <- validate_waterbody(ws_bpns)
+
+# Combine shapefiles
+grotenete$origin_shapefile = "grotenete"
+ws_bpns$origin_shapefile = "ws_bpns_sf"
+
+ws_bpns <- 
+  ws_bpns %>%
+  dplyr::select(Id, origin_shapefile, geometry)
+grotenete <- 
+  grotenete %>% 
+  dplyr::select(Id = OIDN, origin_shapefile, geometry)
+
+study.area <- rbind(grotenete, ws_bpns)
+
+plot(study.area)
+
+
+# DAK SUPERPOLDER
+superpolder <- load.shapefile("./data/Belgium_Netherlands/superpolder.shp",
+                            "superpolder",
+                            coordinate_epsg)
+plot(superpolder)
+
+# DAK MARKIEZAATSMEER
+zeeschelde_dijle <- load.shapefile("./data/Belgium_Netherlands/zeeschelde_dijle.shp",
+                                          "zeeschelde_dijle",
+                                          coordinate_epsg)
+plot(zeeschelde_dijle$geometry)
+
+markiezaatsmeer <- load.shapefile("./data/Belgium_Netherlands/markiezaatsmeer_westerschelde.shp",
+                        "markiezaatsmeer_westerschelde",
+                        coordinate_epsg)
+plot(markiezaatsmeer$geometry)
+
+
+# Validate waterbodies
+zeeschelde_dijle <- validate_waterbody(zeeschelde_dijle)
+markiezaatsmeer <- validate_waterbody(markiezaatsmeer)
+
+
+# Combine shapefiles
+zeeschelde_dijle$origin_shapefile = "zeeschelde_dijle"
+markiezaatsmeer$origin_shapefile = "markiezaatsmeer_sf"
+markiezaatsmeer <- dplyr::rename(markiezaatsmeer, Id = ID)
+
+markiezaatsmeer <- 
+  markiezaatsmeer %>%
+  dplyr::select(Id, origin_shapefile, geometry)
+zeeschelde_dijle <- 
+  zeeschelde_dijle %>% 
+  dplyr::select(Id = OIDN, origin_shapefile, geometry)
+
+study.area <- rbind(zeeschelde_dijle, markiezaatsmeer)
+
+plot(study.area)
+
+
+
+# NOORDZEEKANAAL
+noordzeekanaal <- load.shapefile("./data/Belgium_Netherlands/noordzeekanaal_polygons.shp",
+                              "noordzeekanaal_polygons",
+                              coordinate_epsg)
+plot(noordzeekanaal)
+
+
+
+# 2013 ALBERTKANAAL
+albertkanaal_zeeschelde <- load.shapefile("./data/Belgium_Netherlands/albertkanaal_zeeschelde.shp",
+                                   "albertkanaal_zeeschelde",
+                                   coordinate_epsg)
+plot(albertkanaal_zeeschelde$geometry)
+
+meuse <- load.shapefile("./data/Belgium_Netherlands/meuse_total.shp",
+                                   "meuse_total",
+                                   coordinate_epsg)
+plot(meuse$geometry)
+
+
+# Validate waterbodies
+albertkanaal_zeeschelde <- validate_waterbody(albertkanaal_zeeschelde)
+meuse <- validate_waterbody(meuse)
+
+
+# Combine shapefiles
+albertkanaal_zeeschelde$origin_shapefile = "albertkanaal_zeeschelde"
+meuse$origin_shapefile = "meuse_sf"
+meuse <- dplyr::rename(meuse, Id = ID)
+
+meuse <- 
+  meuse %>%
+  dplyr::select(Id, origin_shapefile, geometry)
+albertkanaal_zeeschelde <- 
+  albertkanaal_zeeschelde %>% 
+  dplyr::select(Id = OIDN, origin_shapefile, geometry)
+
+study.area <- rbind(albertkanaal_zeeschelde, meuse)
+
+plot(study.area)
+
+
+
+# 2015 Fint
+shad <- load.shapefile("./data/Belgium_Netherlands/shad.shp",
+                                   "shad",
+                                   coordinate_epsg)
+plot(shad$geometry)
+
+ws_bpns <- load.shapefile("./data/Belgium_Netherlands/ws_bpns.shp",
+                          "ws_bpns",
+                          coordinate_epsg)
+plot(ws_bpns$geometry)
+
+# Validate waterbodies
+shad <- validate_waterbody(shad)
+ws_bpns <- validate_waterbody(ws_bpns)
+
+# Combine shapefiles
+shad$origin_shapefile = "shad"
+ws_bpns$origin_shapefile = "ws_bpns_sf"
+
+ws_bpns <- 
+  ws_bpns %>%
+  dplyr::select(Id, origin_shapefile, geometry)
+shad <- 
+  shad %>% 
+  dplyr::select(Id = OIDN, origin_shapefile, geometry)
+
+study.area <- rbind(shad, ws_bpns)
+
+plot(study.area)
+
+
+# Reelease project
+danish_straits <- load.shapefile("./data/Denmark/danish_straits_final.shp",
+                         "danish_straits_final",
+                         coordinate_epsg)
+
+plot(danish_straits)
 
 
 # Michimit
@@ -208,7 +380,10 @@ plot(michimit)
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- michimit
+study.area <- noordzeekanaal
+
+# validate the study.area
+study.area <- validate_waterbody(study.area)
 
 # ----------------
 # LOAD DETECTION STATION NETWORK
@@ -216,64 +391,134 @@ study.area <- michimit
 
 # LifeWatch network
 #locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_20160526.csv",
-#                                      coordinate.string)
+#                                      coordinate_epsg)
 
 # PhD Verhelst eel
-locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2015_phd_verhelst_eel.csv",
-                                      coordinate.string)
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_2015_phd_verhelst_eel.csv",
+  projection = coordinate_epsg
+)
+
+# 2012 Leopoldkanaal
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_2012_leopoldkanaal.csv",
+  projection = coordinate_epsg
+)
 
 # Frome network
-locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2014_Frome.csv",
-                                      coordinate.string)
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_2014_Frome.csv",
+  projection = coordinate_epsg
+)
 
 # Stour network
-locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2013_Stour.csv",
-                                      coordinate.string)
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_2013_Stour.csv",
+  coordinate_epsg
+)
 
 # Nene network
-locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2014_Nene.csv",
-                                      coordinate.string)
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_2014_Nene.csv",
+  coordinate_epsg
+)
 
 # Warnow network
-locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2011_Warnow.csv",
-                                      coordinate.string)
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_2011_Warnow.csv",
+  coordinate_epsg
+)
 
 # Gudena network
-locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2004_Gudena.csv",
-                                      coordinate.string)
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_2004_Gudena.csv",
+  coordinate_epsg
+)
 
 # Mondego network
-locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_PTN-Silver-eel-Mondego.csv",
-                                      coordinate.string)
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_PTN-Silver-eel-Mondego.csv",
+  coordinate_epsg
+)
 
 # SEMP network
-locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_SEMP.csv",
-                                      coordinate.string)
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_SEMP.csv",
+  coordinate_epsg
+)
 
 # EMMN network
-locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_EMMN.csv",
-                                      coordinate.string)
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_EMMN.csv",
+  coordinate_epsg
+)
 
 # ESGL network
-locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_ESGL.csv",
-                                      coordinate.string)
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_ESGL.csv",
+  coordinate_epsg
+)
 
 # 2011_loire network
-locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2011_loire.csv",
-                                      coordinate.string)
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_2011_loire.csv",
+  coordinate_epsg
+)
 
 # 2017_fremur network
-locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2017_Fremur.csv",
-                                      coordinate.string)
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_2017_Fremur.csv",
+  coordinate_epsg
+)
 
 # 2019_Grotenete network
-locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_2019_Grotenete_2.csv",
-                                      coordinate.string)
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_2019_Grotenete_2.csv",
+  coordinate_epsg
+)
+
+# DAK_superpolder network
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_DAK_SUPERPOLDER.csv",
+  coordinate_epsg
+)
+
+# DAK_markiezaatsmeer network
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_DAK_MARKIEZAAT.csv",
+  coordinate_epsg
+)
+
+# Noordzeekanaal network
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_Noordzeekanaal.csv",
+  coordinate_epsg
+)
+
+# 2013_Albertkanaal network
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_2013_albertkanaal.csv",
+  coordinate_epsg
+)
 
 
 # Michimit network
-locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_michimit.csv",
-                                      coordinate.string)
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_michimit.csv",
+  coordinate_epsg
+)
+
+# Shad network
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_shad.csv",
+  projection = coordinate_epsg
+)
+
+# Reelease
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_reelease.csv",
+  projection = coordinate_epsg
+)
 
 
 
@@ -286,44 +531,78 @@ locations.receivers <- load.receivers("./data/receivernetworks/receivernetwork_m
 # location receivers on the river shapefile (orthogonal projection)
 # Receivers inside the river body will not be projected
 
+# for study area combined by two study areas made of polygons and lines 
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = study.area,
+  shape.study.area = albertkanaal_zeeschelde,
   receivers = locations.receivers,
-  projection = coordinate.string
+  projection = coordinate_epsg,
+  shape.study.area2 = meuse, 
+  shape.study.area_merged = study.area
+)
+
+# for homogeneous study areas
+projections.locations.receivers <- find.projections.receivers(
+  shape.study.area = noordzeekanaal,
+  receivers = locations.receivers,
+  projection = coordinate_epsg
 )
 
 # ------------------------
 # CREATE PLOT TO CHECK ALL NECESSARY WATERWAYS ARE INCLUDED
 # ------------------------
+# for study.area with all same geometries
 mapView(study.area, map.types = "OpenStreetMap") +
 mapView(locations.receivers, col.regions = "red", map.types = "OpenStreetMap",
-        label = locations.receivers@data[["station_name"]]) +
+        label = locations.receivers$station_name) +
   mapView(projections.locations.receivers,
           col.regions = "white",
           map.types = "OpenStreetMap",
-          label = projections.locations.receivers@data[["station_name"]])
+          label = projections.locations.receivers$station_name)
+
+# for study.area with mixed polygons and lines
+leaflet(albertkanaal_zeeschelde %>% st_transform(crs = 4326)) %>%
+  addTiles(group = "OSM (default)") %>%
+  addPolylines() %>%
+  addPolygons(data = meuse %>% st_transform(4326)) %>%
+  addCircleMarkers(data = locations.receivers %>% st_transform(4326),
+                   radius = 3,
+                   color = "red",
+                   label = ~station_name,
+                   group = "receivers") %>%
+  addCircleMarkers(data = projections.locations.receivers %>% 
+                     st_transform(4326),
+                   radius = 3,
+                   color = "white",
+                   label = ~station_name,
+                   group = "projection receivers") %>%
+  addLayersControl(
+    baseGroups = "OSM (default)",
+    overlayGroups = c("receivers", "projection receivers"),
+    options = layersControlOptions(collapsed = FALSE)
+  )
 
 # ------------------------
 # CONVERT SHAPE TO RASTER
 # ------------------------
-res <- 50 # pixel is a square:  res x res (in meters)
+res <- 100 # pixel is a square:  res x res (in meters)
 
-x_size <- study.area@bbox[1,2] - study.area@bbox[1,1]
-y_size <- study.area@bbox[2,2] - study.area@bbox[2,1]
-
-nrows <- round(y_size / res)
-ncols <- round(x_size / res)
-
-message(glue("Pixel resolution: {res}m"))
-message(glue("Number of rows,cols: ({nrows},{ncols})"))
 # First time running the following function can give an error that can be ignored. The code will provide the output anyway. See stackoverflow link for more info about the bug.
 #https://stackoverflow.com/questions/61598340/why-does-rastertopoints-generate-an-error-on-first-call-but-not-second
+
+# for a homogenous study area
 study.area.binary <- shape.to.binarymask(
   shape.study.area = study.area,
   receivers = projections.locations.receivers,
-  nrows = nrows,
-  ncols = ncols
-)
+  resolution = res)
+
+# for a study area which is a combination of polygons and lines
+study.area.binary <- shape.to.binarymask(
+  shape.study.area = albertkanaal_zeeschelde,
+  shape.study.area2 = meuse,
+  shape.study.area_merged = study.area,
+  receivers = projections.locations.receivers,
+  resolution = res)
+
 
 # --------------------------------
 # ADJUST MASK TO CONTAIN RECEIVERS
@@ -336,7 +615,7 @@ study.area.binary.extended <- adapt.binarymask(binary.mask = study.area.binary,
 writeRaster(study.area.binary.extended, "./results/study_area_binary", "GTiff",
             overwrite = TRUE)
 
-# remove sutdy.area.binary raster (not needed anymore) to free some memory
+# remove study.area.binary raster (not needed anymore) to free some memory
 remove(study.area.binary)
 
 # -------------------------------
@@ -349,7 +628,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distancematrix_michimit.csv")
+write.csv(cst.dst.frame_corrected, "./results/distancematrix_2013_albertkanaal.csv")
 
 
 # IDEA ...
