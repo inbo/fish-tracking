@@ -8,7 +8,7 @@ Remarks:
 
 ## Maintainer
 
-Stijn Van Hoey
+Damiano Oldoni
 
 ### When/where used?
 
