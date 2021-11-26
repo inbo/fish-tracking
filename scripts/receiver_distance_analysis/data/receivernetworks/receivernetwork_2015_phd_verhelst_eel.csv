@@ -11,6 +11,7 @@
 "2015_phd_verhelst_eel","s-8",51.14319,4.33078
 "2015_phd_verhelst_eel","s-9",51.19069,4.32954
 "2015_phd_verhelst_eel","s-12",51.30305,4.28731
+"2015_phd_verhelst_eel","s-STD3",51.330504,4.270161
 "2015_phd_verhelst_eel","s-7",51.11414,4.24123
 "2015_phd_verhelst_eel","s-5",51.09258,4.17083
 "2015_phd_verhelst_eel","ak-41",51.239128,4.397469
@@ -71,7 +72,7 @@
 "2015_phd_verhelst_eel","bpns-S4",51.417167,3.0475
 "2015_phd_verhelst_eel","bpns-A1BIS",51.361333,2.967
 "2015_phd_verhelst_eel","bpns-S7",51.399667,3.173666667
-"2015_phd_verhelst_eel","bpns-O6",51.239667,2.9215
+"2015_phd_verhelst_eel","bpns-O6",51.243106,2.917725
 "2015_phd_verhelst_eel","M-4",51.02483717,4.495207458
 "2015_phd_verhelst_eel","M-4A",51.025057,4.495476
 "2015_phd_verhelst_eel","M-3",51.0229057,4.497271313
@@ -82,12 +83,15 @@
 "2015_phd_verhelst_eel","bpns-KB2",51.350667,2.703666667
 "2015_phd_verhelst_eel","bpns-middelkerkebank",51.3033,2.7125
 "2015_phd_verhelst_eel","bpns-nieuwpoortbank",51.1695,2.6015
-"2015_phd_verhelst_eel","PC4C-B08-1",51.65595,2.78632
 "2015_phd_verhelst_eel","ws-borssele",51.431616667,3.704916667
 "2015_phd_verhelst_eel","PC4C-C05-2",51.667924,2.801819
 "2015_phd_verhelst_eel","PC4C-C05-9",51.670454,2.801809
 "2015_phd_verhelst_eel","ws-GVWSP",51.447341,3.470514
 "2015_phd_verhelst_eel","bpns-Cpowerreefballs-CPOD",51.58,2.99549
+"2015_phd_verhelst_eel","bpns-zbe1",51.364298,3.200701
+"2015_phd_verhelst_eel","bpns-ZA2",51.3513,3.19883
+"2015_phd_verhelst_eel","ws-F53",51.41672,4.02487
+"2015_phd_verhelst_eel","bpns-WK14",51.3685,3.262
 "2015_phd_verhelst_eel","rel_schelde1",51.124754,4.278577
 "2015_phd_verhelst_eel","rel_dijle",51.02483717,4.495207458
 "2015_phd_verhelst_eel","rel_schelde2",51.03861,4.1177

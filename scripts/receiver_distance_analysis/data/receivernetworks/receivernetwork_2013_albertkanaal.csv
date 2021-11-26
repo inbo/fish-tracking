@@ -8,16 +8,16 @@
 "2013_albertkanaal","S09",51.097162,5.11063
 "2013_albertkanaal","S12",51.096669,5.111477
 "2013_albertkanaal","S02",51.096973,5.110242
-"2013_albertkanaal","S16",51.097907,5.109191
 "2013_albertkanaal","S08",51.097872,5.109724
 "2013_albertkanaal","ak-29",51.096888,5.1133155
 "2013_albertkanaal","S18",51.097433,5.109707
 "2013_albertkanaal","S17",51.098163,5.109424
-"2013_albertkanaal","S15",51.09763,5.108964
+"2013_albertkanaal","S16",51.097907,5.109191
 "2013_albertkanaal","ak-28",51.096684,5.108784
 "2013_albertkanaal","ak-32",51.098211,5.108959
 "2013_albertkanaal","ak-33",51.0985513,5.1029468
 "2013_albertkanaal","HH4",50.99323,5.245137
+"2013_albertkanaal","S15",51.09763,5.108964
 "2013_albertkanaal","ak-31",51.097875,5.108846
 "2013_albertkanaal","HH3",50.973296,5.270083
 "2013_albertkanaal","HH2",50.965597,5.287241
@@ -113,7 +113,6 @@
 "2013_albertkanaal","ws-PPC",51.3536136,3.7376409
 "2013_albertkanaal","ak-41",51.239128,4.397469
 "2013_albertkanaal","ws-SP3",51.459333,3.4718333
-"2013_albertkanaal","bpns-CNB07",51.66726,2.80668
 "2013_albertkanaal","ws-WN2",51.428174,3.462181
 "2013_albertkanaal","ws-GVWSP",51.447341,3.470514
 "2013_albertkanaal","zandvlietsluis haven B",51.34458,4.30243
@@ -129,5 +128,7 @@
 "2013_albertkanaal","s-Vlassenbroek",51.03955,4.16605
 "2013_albertkanaal","me-7-2",51.082219,4.366229
 "2013_albertkanaal","bpns-Whitley",51.1511666667,2.6603333333
-"2013_albertkanaal",NA,50.936,5.497
+"2013_albertkanaal","rel_albertkanaal2",50.936,5.497
 "2013_albertkanaal","rel_albertkanaal1",50.614681,5.604782
+"2013_albertkanaal","rel_albertkanaal3",50.938,5.437
+"2013_albertkanaal","rel_albertkanaal4",50.941,5.374
