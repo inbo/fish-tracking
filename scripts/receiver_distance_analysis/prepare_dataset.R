@@ -329,6 +329,14 @@ study.area <- rbind(albertkanaal_zeeschelde, meuse)
 plot(study.area)
 
 
+# life4fish project
+meuse <- load.shapefile("./data/Belgium_Netherlands/meuse.shp",
+                         "meuse",
+                         coordinate_epsg)
+
+plot(meuse)
+
+
 
 # 2015 Fint
 shad <- load.shapefile("./data/Belgium_Netherlands/shad.shp",
@@ -407,7 +415,7 @@ plot(study.area)
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- noordzeekanaal
+study.area <- meuse
 
 # validate the study.area
 study.area <- validate_waterbody(study.area)
@@ -500,7 +508,7 @@ locations.receivers <- load.receivers(
 
 # 2019_Grotenete network
 locations.receivers <- load.receivers(
-  "./data/receivernetworks/receivernetwork_2019_Grotenete_2.csv",
+  "./data/receivernetworks/receivernetwork_2019_Grotenete.csv",
   coordinate_epsg
 )
 
@@ -528,6 +536,11 @@ locations.receivers <- load.receivers(
   coordinate_epsg
 )
 
+# life4fish network
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_life4fish.csv",
+  coordinate_epsg
+)
 
 # Michimit network
 locations.receivers <- load.receivers(
@@ -560,16 +573,16 @@ locations.receivers <- load.receivers(
 
 # for study area combined by two study areas made of polygons and lines 
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = shad,
+  shape.study.area = albertkanaal_zeeschelde,
   receivers = locations.receivers,
   projection = coordinate_epsg,
-  shape.study.area2 = ws_bpns, 
+  shape.study.area2 = meuse, 
   shape.study.area_merged = study.area
 )
 
 # for homogeneous study areas
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = noordzeekanaal,
+  shape.study.area = meuse,
   receivers = locations.receivers,
   projection = coordinate_epsg
 )
@@ -587,10 +600,10 @@ mapView(locations.receivers, col.regions = "red", map.types = "OpenStreetMap",
           label = projections.locations.receivers$station_name)
 
 # for study.area with mixed polygons and lines
-leaflet(shad %>% st_transform(crs = 4326)) %>%
+leaflet(albertkanaal_zeeschelde %>% st_transform(crs = 4326)) %>%
   addTiles(group = "OSM (default)") %>%
   addPolylines() %>%
-  addPolygons(data = ws_bpns %>% st_transform(4326)) %>%
+  addPolygons(data = meuse %>% st_transform(4326)) %>%
   addCircleMarkers(data = locations.receivers %>% st_transform(4326),
                    radius = 3,
                    color = "red",
@@ -611,7 +624,7 @@ leaflet(shad %>% st_transform(crs = 4326)) %>%
 # ------------------------
 # CONVERT SHAPE TO RASTER
 # ------------------------
-res <- 50 # pixel is a square:  res x res (in meters)
+res <- 100 # pixel is a square:  res x res (in meters)
 
 # First time running the following function can give an error that can be ignored. The code will provide the output anyway. See stackoverflow link for more info about the bug.
 #https://stackoverflow.com/questions/61598340/why-does-rastertopoints-generate-an-error-on-first-call-but-not-second
@@ -624,8 +637,8 @@ study.area.binary <- shape.to.binarymask(
 
 # for a study area which is a combination of polygons and lines
 study.area.binary <- shape.to.binarymask(
-  shape.study.area = shad,
-  shape.study.area2 = ws_bpns,
+  shape.study.area = albertkanaal_zeeschelde,
+  shape.study.area2 = meuse,
   shape.study.area_merged = study.area,
   receivers = projections.locations.receivers,
   resolution = res)
@@ -655,7 +668,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distancematrix_shad.csv")
+write.csv(cst.dst.frame_corrected, "./results/distancematrix_life4fish.csv")
 
 
 # IDEA ...
