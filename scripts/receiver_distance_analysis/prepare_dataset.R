@@ -416,11 +416,21 @@ wyre <- load.shapefile("./data/UK/Wyre/wyre.shp",
 plot(wyre)
 
 
+
+# nedap_meuse project
+nedap_meuse <- load.shapefile("./data/Belgium_Netherlands/nedap_meuse.shp",
+                        "nedap_meuse",
+                        coordinate_epsg)
+
+plot(nedap_meuse)
+
+
+
 # -----------------------
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- wyre
+study.area <- nedap_meuse
 
 # validate the study.area
 study.area <- validate_waterbody(study.area)
@@ -571,6 +581,12 @@ locations.receivers <- load.receivers(
   projection = coordinate_epsg
 )
 
+# nedap_meuse
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_nedap_meuse.csv",
+  projection = coordinate_epsg
+)
+
 # ----------------
 # PROJECT RECEIVERS ON WATER SHAPEFILE
 # ----------------
@@ -591,7 +607,7 @@ projections.locations.receivers <- find.projections.receivers(
 
 # for homogeneous study areas
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = wyre,
+  shape.study.area = nedap_meuse,
   receivers = locations.receivers,
   projection = coordinate_epsg
 )
@@ -677,7 +693,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distancematrix_wyre.csv")
+write.csv(cst.dst.frame_corrected, "./results/distancematrix_nedap_meuse.csv")
 
 
 # IDEA ...
