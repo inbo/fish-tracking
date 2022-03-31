@@ -408,14 +408,19 @@ study.area <- rbind(michimit, ws_bpns)
 plot(study.area)
 
 
+# Reelease project
+wyre <- load.shapefile("./data/UK/Wyre/wyre.shp",
+                                 "wyre",
+                                 coordinate_epsg)
 
+plot(wyre)
 
 
 # -----------------------
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- meuse
+study.area <- wyre
 
 # validate the study.area
 study.area <- validate_waterbody(study.area)
@@ -560,7 +565,11 @@ locations.receivers <- load.receivers(
   projection = coordinate_epsg
 )
 
-
+# Wyre
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_wyre.csv",
+  projection = coordinate_epsg
+)
 
 # ----------------
 # PROJECT RECEIVERS ON WATER SHAPEFILE
@@ -582,7 +591,7 @@ projections.locations.receivers <- find.projections.receivers(
 
 # for homogeneous study areas
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = meuse,
+  shape.study.area = wyre,
   receivers = locations.receivers,
   projection = coordinate_epsg
 )
@@ -668,7 +677,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distancematrix_life4fish.csv")
+write.csv(cst.dst.frame_corrected, "./results/distancematrix_wyre.csv")
 
 
 # IDEA ...
