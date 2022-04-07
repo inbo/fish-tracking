@@ -344,27 +344,27 @@ shad <- load.shapefile("./data/Belgium_Netherlands/shad.shp",
                                    coordinate_epsg)
 plot(shad$geometry)
 
-ws_bpns <- load.shapefile("./data/Belgium_Netherlands/ws_bpns.shp",
-                          "ws_bpns",
+shad_marine <- load.shapefile("./data/Belgium_Netherlands/shad_marine.shp",
+                          "shad_marine",
                           coordinate_epsg)
-plot(ws_bpns$geometry)
+plot(shad_marine$geometry)
 
 # Validate waterbodies
 shad <- validate_waterbody(shad)
-ws_bpns <- validate_waterbody(ws_bpns)
+shad_marine <- validate_waterbody(shad_marine)
 
 # Combine shapefiles
 shad$origin_shapefile = "shad"
-ws_bpns$origin_shapefile = "ws_bpns_sf"
+shad_marine$origin_shapefile = "shad_marine_sf"
 
-ws_bpns <- 
-  ws_bpns %>%
+shad_marine <- 
+  shad_marine %>%
   dplyr::select(Id, origin_shapefile, geometry)
 shad <- 
   shad %>% 
   dplyr::select(Id = OIDN, origin_shapefile, geometry)
 
-study.area <- rbind(shad, ws_bpns)
+study.area <- rbind(shad, shad_marine)
 
 plot(study.area)
 
@@ -598,10 +598,10 @@ locations.receivers <- load.receivers(
 
 # for study area combined by two study areas made of polygons and lines 
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = albertkanaal_zeeschelde,
+  shape.study.area = shad,
   receivers = locations.receivers,
   projection = coordinate_epsg,
-  shape.study.area2 = meuse, 
+  shape.study.area2 = shad_marine, 
   shape.study.area_merged = study.area
 )
 
@@ -625,10 +625,10 @@ mapView(locations.receivers, col.regions = "red", map.types = "OpenStreetMap",
           label = projections.locations.receivers$station_name)
 
 # for study.area with mixed polygons and lines
-leaflet(albertkanaal_zeeschelde %>% st_transform(crs = 4326)) %>%
+leaflet(shad %>% st_transform(crs = 4326)) %>%
   addTiles(group = "OSM (default)") %>%
   addPolylines() %>%
-  addPolygons(data = meuse %>% st_transform(4326)) %>%
+  addPolygons(data = shad_marine %>% st_transform(4326)) %>%
   addCircleMarkers(data = locations.receivers %>% st_transform(4326),
                    radius = 3,
                    color = "red",
@@ -649,7 +649,7 @@ leaflet(albertkanaal_zeeschelde %>% st_transform(crs = 4326)) %>%
 # ------------------------
 # CONVERT SHAPE TO RASTER
 # ------------------------
-res <- 100 # pixel is a square:  res x res (in meters)
+res <- 50 # pixel is a square:  res x res (in meters)
 
 # First time running the following function can give an error that can be ignored. The code will provide the output anyway. See stackoverflow link for more info about the bug.
 #https://stackoverflow.com/questions/61598340/why-does-rastertopoints-generate-an-error-on-first-call-but-not-second
@@ -662,8 +662,8 @@ study.area.binary <- shape.to.binarymask(
 
 # for a study area which is a combination of polygons and lines
 study.area.binary <- shape.to.binarymask(
-  shape.study.area = albertkanaal_zeeschelde,
-  shape.study.area2 = meuse,
+  shape.study.area = shad,
+  shape.study.area2 = shad_marine,
   shape.study.area_merged = study.area,
   receivers = projections.locations.receivers,
   resolution = res)
@@ -693,7 +693,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distancematrix_nedap_meuse.csv")
+write.csv(cst.dst.frame_corrected, "./results/distancematrix_shad.csv")
 
 
 # IDEA ...
