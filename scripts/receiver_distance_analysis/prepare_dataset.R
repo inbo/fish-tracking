@@ -425,6 +425,41 @@ nedap_meuse <- load.shapefile("./data/Belgium_Netherlands/nedap_meuse.shp",
 plot(nedap_meuse)
 
 
+# Tyne
+river <- load.shapefile("./data/UK/Tyne/Tyne river merged.shp",
+                        "Tyne river merged",
+                        coordinate_epsg)
+plot(river)
+
+estuary <- load.shapefile("./data/UK/Tyne/Tyne_estuary.shp",
+                          "Tyne_estuary",
+                          coordinate_epsg)
+
+estuary <- estuary %>%
+  rename(Id = rbd_id)
+
+plot(estuary$geometry)
+
+# Validate waterbodies
+river <- validate_waterbody(river)
+estuary <- validate_waterbody(estuary)
+
+# Combine shapefiles
+river$origin_shapefile = "river"
+estuary$origin_shapefile = "estuary_sf"
+
+estuary <- 
+  estuary %>%
+  dplyr::select(Id, origin_shapefile, geometry)
+river <- 
+  river %>% 
+  dplyr::select(Id = OBJECTID, origin_shapefile, geometry)
+
+study.area <- rbind(river, estuary)
+
+plot(study.area)
+
+
 
 # -----------------------
 # SET STUDY AREA
@@ -587,6 +622,13 @@ locations.receivers <- load.receivers(
   projection = coordinate_epsg
 )
 
+# Tyne
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_tyne.csv",
+  projection = coordinate_epsg
+)
+
+
 # ----------------
 # PROJECT RECEIVERS ON WATER SHAPEFILE
 # ----------------
@@ -598,10 +640,10 @@ locations.receivers <- load.receivers(
 
 # for study area combined by two study areas made of polygons and lines 
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = shad,
+  shape.study.area = river,
   receivers = locations.receivers,
   projection = coordinate_epsg,
-  shape.study.area2 = shad_marine, 
+  shape.study.area2 = estuary, 
   shape.study.area_merged = study.area
 )
 
@@ -625,10 +667,10 @@ mapView(locations.receivers, col.regions = "red", map.types = "OpenStreetMap",
           label = projections.locations.receivers$station_name)
 
 # for study.area with mixed polygons and lines
-leaflet(shad %>% st_transform(crs = 4326)) %>%
+leaflet(river %>% st_transform(crs = 4326)) %>%
   addTiles(group = "OSM (default)") %>%
   addPolylines() %>%
-  addPolygons(data = shad_marine %>% st_transform(4326)) %>%
+  addPolygons(data = estuary %>% st_transform(4326)) %>%
   addCircleMarkers(data = locations.receivers %>% st_transform(4326),
                    radius = 3,
                    color = "red",
@@ -662,8 +704,8 @@ study.area.binary <- shape.to.binarymask(
 
 # for a study area which is a combination of polygons and lines
 study.area.binary <- shape.to.binarymask(
-  shape.study.area = shad,
-  shape.study.area2 = shad_marine,
+  shape.study.area = river,
+  shape.study.area2 = estuary,
   shape.study.area_merged = study.area,
   receivers = projections.locations.receivers,
   resolution = res)
@@ -693,7 +735,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distancematrix_shad.csv")
+write.csv(cst.dst.frame_corrected, "./results/distancematrix_tyne.csv")
 
 
 # IDEA ...
