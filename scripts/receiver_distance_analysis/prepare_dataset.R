@@ -461,11 +461,20 @@ plot(study.area)
 
 
 
+# Shakimardan project
+shakimardan <- load.shapefile("./data/Shakimardan/shakimardan_riversystem.shp",
+                       "shakimardan_riversystem",
+                       coordinate_epsg)
+
+plot(shakimardan)
+
+
+
 # -----------------------
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- nedap_meuse
+study.area <- shakimardan
 
 # validate the study.area
 study.area <- validate_waterbody(study.area)
@@ -629,6 +638,15 @@ locations.receivers <- load.receivers(
 )
 
 
+# Shakimardan
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/detectionnetwork_marinkas.csv",
+  projection = coordinate_epsg
+)
+
+
+
+
 # ----------------
 # PROJECT RECEIVERS ON WATER SHAPEFILE
 # ----------------
@@ -649,7 +667,7 @@ projections.locations.receivers <- find.projections.receivers(
 
 # for homogeneous study areas
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = nedap_meuse,
+  shape.study.area = shakimardan,
   receivers = locations.receivers,
   projection = coordinate_epsg
 )
@@ -691,7 +709,7 @@ leaflet(river %>% st_transform(crs = 4326)) %>%
 # ------------------------
 # CONVERT SHAPE TO RASTER
 # ------------------------
-res <- 100 # pixel is a square:  res x res (in meters)
+res <- 1 # pixel is a square:  res x res (in meters)
 
 # First time running the following function can give an error that can be ignored. The code will provide the output anyway. See stackoverflow link for more info about the bug.
 #https://stackoverflow.com/questions/61598340/why-does-rastertopoints-generate-an-error-on-first-call-but-not-second
@@ -735,7 +753,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distancematrix_tyne.csv")
+write.csv(cst.dst.frame_corrected, "./results/distancematrix_shakimardan.csv")
 
 
 # IDEA ...
