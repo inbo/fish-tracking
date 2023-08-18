@@ -658,10 +658,10 @@ locations.receivers <- load.receivers(
 
 # for study area combined by two study areas made of polygons and lines 
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = river,
+  shape.study.area = michimit,
   receivers = locations.receivers,
   projection = coordinate_epsg,
-  shape.study.area2 = estuary, 
+  shape.study.area2 = ws_bpns, 
   shape.study.area_merged = study.area
 )
 
