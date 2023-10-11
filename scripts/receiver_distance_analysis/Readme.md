@@ -12,4 +12,4 @@ Damiano Oldoni
 
 ### When/where used?
 
-Developed as pre-processing step for a receiver network requested by PieterJan Verhelst
+Developed as pre-processing step for a receiver network requested by Pieterjan Verhelst
