@@ -152,16 +152,35 @@ find.projections.receivers <- function(shape.study.area,
                                        shape.study.area2 = NULL,
                                        shape.study.area_merged = NULL) {
     
-    assert_that((is.null(shape.study.area2) & is.null(shape.study.area_merged)) |
+    assertthat::assert_that((is.null(shape.study.area2) & is.null(shape.study.area_merged)) |
                     (!is.null(shape.study.area2) & !is.null(shape.study.area_merged)),
                 msg = "Second shape study area and merged shape study area must be both provided or both NULL")
     
-    # transform to 4326 if not yet
-    receivers <- st_transform(receivers, 4326)
-    shape.study.area <- st_transform(shape.study.area, 4326)
+    assertthat::assert_that(
+      st_crs(shape.study.area) != st_crs(4326),
+      msg = paste("shape.study.area must have a planar projection (x, y).",
+                  "No lon/lat projection (EPSG=4326, WGS84) allowed.")
+    )
     
-    if (!is.null(shape.study.area2)) {
-        shape.study.area2 <- st_transform(shape.study.area2, 4326)
+    assertthat::assert_that(
+      st_crs(receivers) != st_crs(4326),
+      msg = paste("receivers must have a planar projection (x, y).",
+                  "No lon/lat projection (EPSG=4326, WGS84) allowed.")
+    )
+
+    if (!is.null(shape.study.area2) & !is.null(shape.study.area_merged)) {
+      assertthat::assert_that(
+        st_crs(shape.study.area2) != st_crs(4326),
+        msg = paste("shape.study.area2 must have a planar projection (x, y).",
+                    "No lon/lat projection (EPSG=4326, WGS84) allowed.")
+      )
+      assertthat::assert_that(
+        st_crs(shape.study.area_merged) != st_crs(4326),
+        msg = paste(
+          "shape.study.area_merged must have a planar projection (x, y).",
+          "No lon/lat projection (EPSG=4326, WGS84) allowed."
+        )
+      )
     }
     
     # transform to sf because it is much easier to complete some tasks
