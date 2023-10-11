@@ -660,7 +660,6 @@ locations.receivers <- load.receivers(
 projections.locations.receivers <- find.projections.receivers(
   shape.study.area = michimit,
   receivers = locations.receivers,
-  projection = coordinate_epsg,
   shape.study.area2 = ws_bpns, 
   shape.study.area_merged = study.area
 )
@@ -668,8 +667,7 @@ projections.locations.receivers <- find.projections.receivers(
 # for homogeneous study areas
 projections.locations.receivers <- find.projections.receivers(
   shape.study.area = shakimardan,
-  receivers = locations.receivers,
-  projection = coordinate_epsg
+  receivers = locations.receivers
 )
 
 # ------------------------

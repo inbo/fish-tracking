@@ -151,7 +151,6 @@ validate_waterbody <- function(waterbody) {
 #'   projection = 32631)
 find.projections.receivers <- function(shape.study.area,
                                        receivers,
-                                       projection,
                                        shape.study.area2 = NULL,
                                        shape.study.area_merged = NULL) {
     
