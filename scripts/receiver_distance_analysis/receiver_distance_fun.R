@@ -16,6 +16,8 @@ library("gdistance")
 library("assertthat")
 library("glue")
 library("rlang")
+library("dplyr")
+library(purrr)
 
 ## --------------------------------------------
 ## General functionalities
