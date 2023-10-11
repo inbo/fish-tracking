@@ -381,7 +381,7 @@ plot(danish_straits)
 michimit <- load.shapefile("./data/Belgium_Netherlands/michimit_rivers.shp",
                             "michimit_rivers",
                            coordinate_epsg)
-plot(michimit)
+plot(michimit$geometry)
 
 ws_bpns <- load.shapefile("./data/Belgium_Netherlands/ws_bpns.shp",
                           "ws_bpns",
