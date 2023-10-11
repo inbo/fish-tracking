@@ -8,7 +8,7 @@
 
 library("sp")
 library("sf")
-library("geosphere")
+library("terra")
 library("rgdal")
 library("rgeos")
 library("raster")
@@ -16,6 +16,8 @@ library("gdistance")
 library("assertthat")
 library("glue")
 library("rlang")
+library("dplyr")
+library("purrr")
 
 ## --------------------------------------------
 ## General functionalities
@@ -126,18 +128,21 @@ validate_waterbody <- function(waterbody) {
 #' Find the receiver projection on river body shapefile
 #'
 #' @param shape.study.area a simple feature (sf) data.frame, with polygons or
-#'   lines as geometry
-#' @param receivers a simple feature (sf) data.frame with points (receivers)
-#' @param projection a EPSG number, the CRS of both river body and
-#'   receivers
+#'   lines as geometry. The study area must have a planar CRS, no lat/lon
+#'   (WGS84) allowed.
+#' @param receivers a simple feature (sf) data.frame with points (receivers). It
+#'   must have the same CRS of `shape.study.area`. In particular, no lat/lon
+#'   (WGS84) allowed.
 #' @param shape.study.area2 a simple feature (sf) data.frame, with polygons or
 #'   lines as geometry. This is needed if the study area is a combination of
-#'   lines and polygons. Default: `NULL`
+#'   lines and polygons. Default: `NULL`. If given, it must have the same CRS of
+#'   `shape.study.area`.
 #' @param shape.study.area_merged a simple feature (sf) data.frame, with the
 #'   combinations of polygons and lines as geometry (done via  `rbind` before).
-#'   Default: `NULL`
+#'   Default: `NULL`. If given, it must have the same CRS of
+#'   `shape.study.area`.
 #' @return a simple feature (sf) data.frame with the projected points
-#'   (projection of the receivers)
+#'   (projection of the receivers).
 #' @export
 #'
 #' @examples
@@ -146,53 +151,82 @@ validate_waterbody <- function(waterbody) {
 #'   projection = 32631)
 find.projections.receivers <- function(shape.study.area,
                                        receivers,
-                                       projection,
                                        shape.study.area2 = NULL,
                                        shape.study.area_merged = NULL) {
     
-    assert_that((is.null(shape.study.area2) & is.null(shape.study.area_merged)) |
+    assertthat::assert_that((is.null(shape.study.area2) & is.null(shape.study.area_merged)) |
                     (!is.null(shape.study.area2) & !is.null(shape.study.area_merged)),
                 msg = "Second shape study area and merged shape study area must be both provided or both NULL")
     
-    # transform to 4326 if not yet
-    receivers <- st_transform(receivers, 4326)
-    shape.study.area <- st_transform(shape.study.area, 4326)
+    assertthat::assert_that(
+      st_crs(shape.study.area) != st_crs(4326),
+      msg = paste("shape.study.area must have a planar projection (x, y).",
+                  "No lon/lat projection (EPSG=4326, WGS84) allowed.")
+    )
     
-    if (!is.null(shape.study.area2)) {
-        shape.study.area2 <- st_transform(shape.study.area2, 4326)
+    assertthat::assert_that(
+      st_crs(receivers) != st_crs(4326),
+      msg = paste("receivers must have a planar projection (x, y).",
+                  "No lon/lat projection (EPSG=4326, WGS84) allowed.")
+    )
+
+    if (!is.null(shape.study.area2) & !is.null(shape.study.area_merged)) {
+      assertthat::assert_that(
+        st_crs(shape.study.area2) != st_crs(4326),
+        msg = paste("shape.study.area2 must have a planar projection (x, y).",
+                    "No lon/lat projection (EPSG=4326, WGS84) allowed.")
+      )
+      assertthat::assert_that(
+        st_crs(shape.study.area_merged) != st_crs(4326),
+        msg = paste(
+          "shape.study.area_merged must have a planar projection (x, y).",
+          "No lon/lat projection (EPSG=4326, WGS84) allowed."
+        )
+      )
     }
     
-    # transform to sf because it is much easier to complete some tasks
-    # afterwards
-    # shape.study.area <- st_as_sf(shape.study.area)
-
-    # receivers_sf <- st_as_sf(receivers)
-    # remove(receivers)
-
-    # calculate nearest point to line/polygon (transform to CRS 4326 first)
-    # this is done using crs 4326
-    shape.study.area_coords <- st_coordinates(shape.study.area)[,1:2]
+    # calculate nearest point to line/polygon
+    
+    # Apply st_coordinates row by row as it could be that shape.study.area is a
+    # mix of lines, multilines, polygons and multipolygons
+    shape.study.area_coords <- purrr::map(
+      1:nrow(shape.study.area), 
+      function(x) {
+        sf::st_coordinates(shape.study.area[x,])[,1:2]
+      }
+    )
+    shape.study.area_coords <- do.call(rbind, shape.study.area_coords)
     
     if (!is.null(shape.study.area2)) {
-        shape.study.area2_coords <- st_coordinates(shape.study.area2)[,1:2]
-        # combine coordinates
-        shape.study.area_coords <- rbind(shape.study.area_coords,
-                                         shape.study.area2_coords)
+      # Apply st_coordinates row by row as it could be that shape.study.area2 is
+      # a mix of lines, multilines, polygons and multipolygons
+      shape.study.area2_coords <- purrr::map(
+        1:nrow(shape.study.area2), 
+        function(x) {
+          sf::st_coordinates(shape.study.area2[x,])[,1:2]
+        }
+      )
+      shape.study.area2_coords <- do.call(rbind, shape.study.area2_coords)
+      # combine coordinates
+      shape.study.area_coords <- rbind(shape.study.area_coords,
+                                       shape.study.area2_coords)
     }
     
-
-    dist_receiver_river <- dist2Line(
-        p = st_coordinates(receivers),
-        line = shape.study.area_coords)
-
+    shape.study.area_geom <- sf::st_as_sf(
+      as.data.frame(shape.study.area_coords), 
+      coords = c("X", "Y"), 
+      crs = st_crs(study.area)
+    )
+    
+    dist_receiver_river <- terra::nearest(terra::vect(receivers), 
+                                          terra::vect(shape.study.area_geom),
+                                          centroids = FALSE)
+    
     # create projection receivers as sf dataframe
-    projections.receivers <- st_as_sf(
-        as.data.frame(dist_receiver_river),
-        coords = c("lon", "lat"),
-        crs = 4326)
+    projections.receivers <- st_as_sf(dist_receiver_river)
 
-    # remove distance column from projections
-    projections.receivers$distance <- NULL
+    # remove all columns from projections except geometry
+    projections.receivers <- projections.receivers %>% dplyr::select(geometry)
 
     # add columns with receivers info to projections
     if ("animal_project_code" %in% names(receivers)) {
@@ -218,14 +252,9 @@ find.projections.receivers <- function(shape.study.area,
 
 
     # intersect receivers and river body study area
-    # intersection has to be done in a planar projection
-    receivers <- st_transform(receivers, crs = projection)
     if (!is.null(shape.study.area_merged)) {
         shape.study.area <- shape.study.area_merged
     }
-    shape.study.area <-  st_transform(shape.study.area, crs = projection)
-    projections.receivers <- st_transform(projections.receivers, crs = projection)
-
     receivers_are_included <- st_intersects(receivers, shape.study.area)
 
     # check validity of intersection result
@@ -260,8 +289,6 @@ find.projections.receivers <- function(shape.study.area,
         message(msg)
     }
 
-    # return sp
-    # projections.receivers <- as_Spatial(projections.receivers)
     return(projections.receivers)
 }
 
