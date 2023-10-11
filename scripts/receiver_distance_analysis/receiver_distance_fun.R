@@ -279,8 +279,6 @@ find.projections.receivers <- function(shape.study.area,
         message(msg)
     }
 
-    # return sp
-    # projections.receivers <- as_Spatial(projections.receivers)
     return(projections.receivers)
 }
 
