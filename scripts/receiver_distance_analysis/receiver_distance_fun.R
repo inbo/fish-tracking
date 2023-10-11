@@ -171,7 +171,16 @@ find.projections.receivers <- function(shape.study.area,
 
     # calculate nearest point to line/polygon (transform to CRS 4326 first)
     # this is done using crs 4326
-    shape.study.area_coords <- st_coordinates(shape.study.area)[,1:2]
+    
+    # Apply st_coordinates row by row as it could be that shape.study.area is a
+    # mix of lines, multilines, polygons and multipolygons
+    shape.study.area_coords <- purrr::map(
+      1:nrow(shape.study.area), 
+      function(x) {
+        sf::st_coordinates(shape.study.area[x,])[,1:2]
+      }
+    )
+    shape.study.area_coords <- do.call(rbind, shape.study.area_coords)
     
     if (!is.null(shape.study.area2)) {
       # Apply st_coordinates row by row as it could be that shape.study.area2 is
