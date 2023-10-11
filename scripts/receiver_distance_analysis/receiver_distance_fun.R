@@ -17,7 +17,7 @@ library("assertthat")
 library("glue")
 library("rlang")
 library("dplyr")
-library(purrr)
+library("purrr")
 
 ## --------------------------------------------
 ## General functionalities
