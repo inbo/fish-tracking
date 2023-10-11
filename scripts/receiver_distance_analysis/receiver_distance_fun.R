@@ -224,13 +224,10 @@ find.projections.receivers <- function(shape.study.area,
                                           centroids = FALSE)
     
     # create projection receivers as sf dataframe
-    projections.receivers <- st_as_sf(
-        as.data.frame(dist_receiver_river),
-        coords = c("lon", "lat"),
-        crs = 4326)
+    projections.receivers <- st_as_sf(dist_receiver_river)
 
-    # remove distance column from projections
-    projections.receivers$distance <- NULL
+    # remove all columns from projections except geometry
+    projections.receivers <- projections.receivers %>% dplyr::select(geometry)
 
     # add columns with receivers info to projections
     if ("animal_project_code" %in% names(receivers)) {
