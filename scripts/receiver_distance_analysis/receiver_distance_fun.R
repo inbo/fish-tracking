@@ -128,18 +128,21 @@ validate_waterbody <- function(waterbody) {
 #' Find the receiver projection on river body shapefile
 #'
 #' @param shape.study.area a simple feature (sf) data.frame, with polygons or
-#'   lines as geometry
-#' @param receivers a simple feature (sf) data.frame with points (receivers)
-#' @param projection a EPSG number, the CRS of both river body and
-#'   receivers
+#'   lines as geometry. The study area must have a planar CRS, no lat/lon
+#'   (WGS84) allowed.
+#' @param receivers a simple feature (sf) data.frame with points (receivers). It
+#'   must have the same CRS of `shape.study.area`. In particular, no lat/lon
+#'   (WGS84) allowed.
 #' @param shape.study.area2 a simple feature (sf) data.frame, with polygons or
 #'   lines as geometry. This is needed if the study area is a combination of
-#'   lines and polygons. Default: `NULL`
+#'   lines and polygons. Default: `NULL`. If given, it must have the same CRS of
+#'   `shape.study.area`.
 #' @param shape.study.area_merged a simple feature (sf) data.frame, with the
 #'   combinations of polygons and lines as geometry (done via  `rbind` before).
-#'   Default: `NULL`
+#'   Default: `NULL`. If given, it must have the same CRS of
+#'   `shape.study.area`.
 #' @return a simple feature (sf) data.frame with the projected points
-#'   (projection of the receivers)
+#'   (projection of the receivers).
 #' @export
 #'
 #' @examples
