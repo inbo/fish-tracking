@@ -199,11 +199,16 @@ find.projections.receivers <- function(shape.study.area,
                                        shape.study.area2_coords)
     }
     
-
-    dist_receiver_river <- dist2Line(
-        p = st_coordinates(receivers),
-        line = shape.study.area_coords)
-
+    shape.study.area_geom <- sf::st_as_sf(
+      as.data.frame(shape.study.area_coords), 
+      coords = c("X", "Y"), 
+      crs = st_crs(study.area)
+    )
+    
+    dist_receiver_river <- terra::nearest(terra::vect(receivers), 
+                                          terra::vect(shape.study.area_geom),
+                                          centroids = FALSE)
+    
     # create projection receivers as sf dataframe
     projections.receivers <- st_as_sf(
         as.data.frame(dist_receiver_river),
