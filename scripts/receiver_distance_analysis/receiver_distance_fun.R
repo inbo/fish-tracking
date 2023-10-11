@@ -186,15 +186,7 @@ find.projections.receivers <- function(shape.study.area,
       )
     }
     
-    # transform to sf because it is much easier to complete some tasks
-    # afterwards
-    # shape.study.area <- st_as_sf(shape.study.area)
-
-    # receivers_sf <- st_as_sf(receivers)
-    # remove(receivers)
-
-    # calculate nearest point to line/polygon (transform to CRS 4326 first)
-    # this is done using crs 4326
+    # calculate nearest point to line/polygon
     
     # Apply st_coordinates row by row as it could be that shape.study.area is a
     # mix of lines, multilines, polygons and multipolygons
