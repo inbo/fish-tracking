@@ -8,7 +8,7 @@
 
 library("sp")
 library("sf")
-library("geosphere")
+library("terra")
 library("rgdal")
 library("rgeos")
 library("raster")
