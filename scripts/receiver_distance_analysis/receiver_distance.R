@@ -707,7 +707,7 @@ leaflet(michimit %>% st_transform(crs = 4326)) %>%
 # ------------------------
 # CONVERT SHAPE TO RASTER
 # ------------------------
-res <- 100 # pixel is a square:  res x res (in meters)
+res <- 10 # pixel is a square:  res x res (in meters)
 
 # First time running the following function can give an error that can be ignored. The code will provide the output anyway. See stackoverflow link for more info about the bug.
 #https://stackoverflow.com/questions/61598340/why-does-rastertopoints-generate-an-error-on-first-call-but-not-second
@@ -751,7 +751,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distancematrix_michimit_oct2023.csv")
+write.csv(cst.dst.frame_corrected, "./results/distancematrix_shakimardan_dec2023.csv")
 
 
 # IDEA ...
