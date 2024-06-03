@@ -19,6 +19,11 @@ library("leaflet")
 # Define the projection for the analysis:
 coordinate_epsg <- 32631
 
+# Shakimardan projection: UTM Zone 42 found using
+# https://mangomap.com/robertyoung/maps/69585/#
+# Related EPSG code: https://epsg.io/32642
+coordinate_epsg <- 32642
+
 # Load the functionalities from the functions file:
 source("receiver_distance_fun.R")
 
@@ -707,7 +712,7 @@ leaflet(shad %>% st_transform(crs = 4326)) %>%
 # ------------------------
 # CONVERT SHAPE TO RASTER
 # ------------------------
-res <- 300 # pixel is a square:  res x res (in meters)
+res <- 50 # pixel is a square:  res x res (in meters)
 
 # First time running the following function can give an error that can be ignored. The code will provide the output anyway. See stackoverflow link for more info about the bug.
 #https://stackoverflow.com/questions/61598340/why-does-rastertopoints-generate-an-error-on-first-call-but-not-second
