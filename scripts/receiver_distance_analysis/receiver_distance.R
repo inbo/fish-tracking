@@ -19,6 +19,11 @@ library("leaflet")
 # Define the projection for the analysis:
 coordinate_epsg <- 32631
 
+# Shakimardan projection: UTM Zone 42 found using
+# https://mangomap.com/robertyoung/maps/69585/#
+# Related EPSG code: https://epsg.io/32642
+coordinate_epsg <- 32642
+
 # Load the functionalities from the functions file:
 source("receiver_distance_fun.R")
 
