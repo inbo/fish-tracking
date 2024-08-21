@@ -756,7 +756,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distancematrix_shad.csv")
+write.csv(cst.dst.frame_corrected, "./results/distancematrix_shakimardan.csv")
 
 
 # IDEA ...
