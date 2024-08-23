@@ -475,11 +475,22 @@ plot(shakimardan)
 
 
 
+
+# Azores Ribeira Cruz
+cruz <- load.shapefile("./data/Azores/ribeira_cruz.shp",
+                              "ribeira_cruz",
+                              coordinate_epsg)
+
+plot(cruz)
+
+
+
+
 # -----------------------
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- shakimardan
+study.area <- cruz
 
 # validate the study.area
 study.area <- validate_waterbody(study.area)
@@ -651,6 +662,13 @@ locations.receivers <- load.receivers(
 
 
 
+# Azores Ribeira Cruz
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_cruz.csv",
+  projection = coordinate_epsg
+)
+
+
 
 # ----------------
 # PROJECT RECEIVERS ON WATER SHAPEFILE
@@ -671,7 +689,7 @@ projections.locations.receivers <- find.projections.receivers(
 
 # for homogeneous study areas
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = shakimardan,
+  shape.study.area = cruz,
   receivers = locations.receivers
 )
 
@@ -756,7 +774,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distancematrix_shakimardan.csv")
+write.csv(cst.dst.frame_corrected, "./results/distancematrix_cruz.csv")
 
 
 # IDEA ...
