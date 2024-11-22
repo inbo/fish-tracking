@@ -413,7 +413,7 @@ study.area <- rbind(michimit, ws_bpns)
 plot(study.area)
 
 
-# Reelease project
+# UK River Wyre
 wyre <- load.shapefile("./data/UK/Wyre/wyre.shp",
                                  "wyre",
                                  coordinate_epsg)
@@ -484,13 +484,19 @@ cruz <- load.shapefile("./data/Azores/ribeira_cruz.shp",
 plot(cruz)
 
 
+# UK River Test
+test <- load.shapefile("./data/UK/Test/River_Test.shp",
+                       "river_test",
+                       coordinate_epsg)
+
+plot(test)
 
 
 # -----------------------
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- cruz
+study.area <- test
 
 # validate the study.area
 study.area <- validate_waterbody(study.area)
@@ -629,38 +635,36 @@ locations.receivers <- load.receivers(
   projection = coordinate_epsg
 )
 
-# Reelease
+# Reelease network
 locations.receivers <- load.receivers(
   "./data/receivernetworks/receivernetwork_reelease.csv",
   projection = coordinate_epsg
 )
 
-# Wyre
+# Wyre network
 locations.receivers <- load.receivers(
   "./data/receivernetworks/receivernetwork_wyre.csv",
   projection = coordinate_epsg
 )
 
-# nedap_meuse
+# nedap_meuse network
 locations.receivers <- load.receivers(
   "./data/receivernetworks/receivernetwork_nedap_meuse.csv",
   projection = coordinate_epsg
 )
 
-# Tyne
+# Tyne network
 locations.receivers <- load.receivers(
   "./data/receivernetworks/receivernetwork_tyne.csv",
   projection = coordinate_epsg
 )
 
 
-# Shakimardan
+# Shakimardan positions
 locations.receivers <- load.receivers(
   "./data/receivernetworks/detectionnetwork_marinkas.csv",
   projection = coordinate_epsg
 )
-
-
 
 # Azores Ribeira Cruz
 locations.receivers <- load.receivers(
@@ -669,6 +673,11 @@ locations.receivers <- load.receivers(
 )
 
 
+# Test network
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_test.csv",
+  projection = coordinate_epsg
+)
 
 # ----------------
 # PROJECT RECEIVERS ON WATER SHAPEFILE
@@ -689,7 +698,7 @@ projections.locations.receivers <- find.projections.receivers(
 
 # for homogeneous study areas
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = cruz,
+  shape.study.area = test,
   receivers = locations.receivers
 )
 
@@ -774,7 +783,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distancematrix_cruz.csv")
+write.csv(cst.dst.frame_corrected, "./results/distancematrix_test.csv")
 
 
 # IDEA ...
