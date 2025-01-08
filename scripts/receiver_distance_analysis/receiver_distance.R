@@ -694,9 +694,9 @@ locations.receivers <- load.receivers(
 
 # for study area combined by two study areas made of polygons and lines 
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = grotenete,
+  shape.study.area = shad,
   receivers = locations.receivers,
-  shape.study.area2 = ws_bpns, 
+  shape.study.area2 = shad_marine, 
   shape.study.area_merged = study.area
 )
 
@@ -719,10 +719,10 @@ mapView(locations.receivers, col.regions = "red", map.types = "OpenStreetMap",
           label = projections.locations.receivers$station_name)
 
 # for study.area with mixed polygons and lines
-leaflet(grotenete %>% st_transform(crs = 4326)) %>%
+leaflet(shad %>% st_transform(crs = 4326)) %>%
   addTiles(group = "OSM (default)") %>%
   addPolylines() %>%
-  addPolygons(data = ws_bpns %>% st_transform(4326)) %>%
+  addPolygons(data = shad_marine %>% st_transform(4326)) %>%
   addCircleMarkers(data = locations.receivers %>% st_transform(4326),
                    radius = 3,
                    color = "red",
@@ -756,8 +756,8 @@ study.area.binary <- shape.to.binarymask(
 
 # for a study area which is a combination of polygons and lines
 study.area.binary <- shape.to.binarymask(
-  shape.study.area = grotenete,
-  shape.study.area2 = ws_bpns,
+  shape.study.area = shad,
+  shape.study.area2 = shad_marine,
   shape.study.area_merged = study.area,
   receivers = projections.locations.receivers,
   resolution = res)
