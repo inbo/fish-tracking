@@ -352,6 +352,10 @@ plot(shad$geometry)
 shad_marine <- load.shapefile("./data/Belgium_Netherlands/shad_marine.shp",
                           "shad_marine",
                           coordinate_epsg)
+shad_marine$Id_2 <- NULL # remove extra id column
+shad_marine <- shad_marine %>%   # rename id column
+  rename(
+    Id = id)
 plot(shad_marine$geometry)
 
 # Validate waterbodies
