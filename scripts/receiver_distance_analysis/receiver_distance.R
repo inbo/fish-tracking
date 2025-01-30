@@ -496,6 +496,42 @@ test <- load.shapefile("./data/UK/Test/River_Test.shp",
 plot(test)
 
 
+
+test <- load.shapefile("./data/UK/Test/River_Test.shp",
+                       "river_test",
+                       coordinate_epsg)
+plot(test$geometry)
+
+test_marine <- load.shapefile("./data/UK/Test/test_marine.shp",
+                              "test_marine",
+                              coordinate_epsg)
+
+test_marine <- test_marine %>%   # rename id column
+  rename(
+    Id = id)
+plot(test_marine$geometry)
+
+# Validate waterbodies
+test <- validate_waterbody(test)
+test_marine <- validate_waterbody(test_marine)
+
+# Combine shapefiles
+test$origin_shapefile = "test"
+test_marine$origin_shapefile = "test_marine_sf"
+
+test_marine <- 
+  test_marine %>%
+  dplyr::select(Id, origin_shapefile, geometry)
+test <- 
+  test %>% 
+  dplyr::select(Id = OBJECTID, origin_shapefile, geometry)
+
+study.area <- rbind(test, test_marine)
+
+plot(study.area)
+
+
+
 # -----------------------
 # SET STUDY AREA
 # -----------------------
@@ -694,9 +730,9 @@ locations.receivers <- load.receivers(
 
 # for study area combined by two study areas made of polygons and lines 
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = shad,
+  shape.study.area = test,
   receivers = locations.receivers,
-  shape.study.area2 = shad_marine, 
+  shape.study.area2 = test_marine, 
   shape.study.area_merged = study.area
 )
 
@@ -719,10 +755,10 @@ mapView(locations.receivers, col.regions = "red", map.types = "OpenStreetMap",
           label = projections.locations.receivers$station_name)
 
 # for study.area with mixed polygons and lines
-leaflet(shad %>% st_transform(crs = 4326)) %>%
+leaflet(test %>% st_transform(crs = 4326)) %>%
   addTiles(group = "OSM (default)") %>%
   addPolylines() %>%
-  addPolygons(data = shad_marine %>% st_transform(4326)) %>%
+  addPolygons(data = test_marine %>% st_transform(4326)) %>%
   addCircleMarkers(data = locations.receivers %>% st_transform(4326),
                    radius = 3,
                    color = "red",
@@ -743,7 +779,7 @@ leaflet(shad %>% st_transform(crs = 4326)) %>%
 # ------------------------
 # CONVERT SHAPE TO RASTER
 # ------------------------
-res <- 300 # pixel is a square:  res x res (in meters)
+res <- 100 # pixel is a square:  res x res (in meters)
 
 # First time running the following function can give an error that can be ignored. The code will provide the output anyway. See stackoverflow link for more info about the bug.
 #https://stackoverflow.com/questions/61598340/why-does-rastertopoints-generate-an-error-on-first-call-but-not-second
@@ -756,8 +792,8 @@ study.area.binary <- shape.to.binarymask(
 
 # for a study area which is a combination of polygons and lines
 study.area.binary <- shape.to.binarymask(
-  shape.study.area = shad,
-  shape.study.area2 = shad_marine,
+  shape.study.area = test,
+  shape.study.area2 = test_marine,
   shape.study.area_merged = study.area,
   receivers = projections.locations.receivers,
   resolution = res)
@@ -787,7 +823,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distancematrix_shad2.csv")
+write.csv(cst.dst.frame_corrected, "./results/distancematrix_test2.csv")
 
 
 # IDEA ...
