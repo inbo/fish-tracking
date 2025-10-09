@@ -7,7 +7,6 @@
 ## 2016-2020
 
 library("sf")
-library("rgeos")
 library("raster")
 library("mapview")
 library("leaflet")
