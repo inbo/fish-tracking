@@ -531,11 +531,27 @@ plot(study.area)
 
 
 
+# Scheldt River basin for DVW analysis
+study.area <- load.shapefile("./data/Belgium_Netherlands/dvw_study_area.shp",
+                          "dvw_study_area",
+                          coordinate_epsg)
+
+study.area <- study.area %>%   # rename id column
+  rename(
+    Id = ID)
+
+study.area <- study.area %>%   # select required columns
+  select(Id, geometry)
+
+plot(study.area$geometry)
+
+
+
 # -----------------------
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- test
+study.area <- frome
 
 # validate the study.area
 study.area <- validate_waterbody(study.area)
@@ -718,6 +734,14 @@ locations.receivers <- load.receivers(
   projection = coordinate_epsg
 )
 
+
+# Scheldt River basin network
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_2024_dvw_Scheldt.csv",
+  projection = coordinate_epsg
+)
+
+
 # ----------------
 # PROJECT RECEIVERS ON WATER SHAPEFILE
 # ----------------
@@ -737,7 +761,7 @@ projections.locations.receivers <- find.projections.receivers(
 
 # for homogeneous study areas
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = test,
+  shape.study.area = study.area,
   receivers = locations.receivers
 )
 
@@ -822,7 +846,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distancematrix_test2.csv")
+write.csv(cst.dst.frame_corrected, "./results/distancematrix_leie_scheldt_all_fish.csv")
 
 
 # IDEA ...
