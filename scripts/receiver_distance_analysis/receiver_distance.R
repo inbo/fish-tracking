@@ -108,11 +108,10 @@ nete <- validate_waterbody(nete)
 westerschelde <- validate_waterbody(westerschelde)
 sea <- validate_waterbody(sea)
 
-#' Combine shapefiles - Same geometry? Use gUnion()
-study.area <- gUnion(as_Spatial(rivers), as_Spatial(nete))
-study.area <- gUnion(study.area, as_Spatial(westerschelde))
-study.area <- gUnion(study.area, as_Spatial(sea))
-study.area <- st_as_sf(study.area)
+#' Combine shapefiles - Same geometry? Use `sf::st_union()`
+study.area <- sf::st_union(rivers, nete)
+study.area <- sf::st_union(study.area, westerschelde)
+study.area <- sf::st_union(study.area, sea)
 
 #### ####
 
