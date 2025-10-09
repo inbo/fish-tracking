@@ -7,7 +7,6 @@
 ## 2016-2020
 
 library("sf")
-library("rgeos")
 library("raster")
 library("mapview")
 library("leaflet")
@@ -108,11 +107,10 @@ nete <- validate_waterbody(nete)
 westerschelde <- validate_waterbody(westerschelde)
 sea <- validate_waterbody(sea)
 
-#' Combine shapefiles - Same geometry? Use gUnion()
-study.area <- gUnion(as_Spatial(rivers), as_Spatial(nete))
-study.area <- gUnion(study.area, as_Spatial(westerschelde))
-study.area <- gUnion(study.area, as_Spatial(sea))
-study.area <- st_as_sf(study.area)
+#' Combine shapefiles - Same geometry? Use `sf::st_union()`
+study.area <- sf::st_union(rivers, nete)
+study.area <- sf::st_union(study.area, westerschelde)
+study.area <- sf::st_union(study.area, sea)
 
 #### ####
 
@@ -532,11 +530,27 @@ plot(study.area)
 
 
 
+# Scheldt River basin for DVW analysis
+study.area <- load.shapefile("./data/Belgium_Netherlands/dvw_study_area.shp",
+                          "dvw_study_area",
+                          coordinate_epsg)
+
+study.area <- study.area %>%   # rename id column
+  rename(
+    Id = ID)
+
+study.area <- study.area %>%   # select required columns
+  select(Id, geometry)
+
+plot(study.area$geometry)
+
+
+
 # -----------------------
 # SET STUDY AREA
 # -----------------------
 #study.area <- study.area  # When the LifeWatch network is taken into account; sea 'Combine the shape files'
-study.area <- test
+study.area <- frome
 
 # validate the study.area
 study.area <- validate_waterbody(study.area)
@@ -719,6 +733,14 @@ locations.receivers <- load.receivers(
   projection = coordinate_epsg
 )
 
+
+# Scheldt River basin network
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_2024_dvw_Scheldt.csv",
+  projection = coordinate_epsg
+)
+
+
 # ----------------
 # PROJECT RECEIVERS ON WATER SHAPEFILE
 # ----------------
@@ -738,7 +760,7 @@ projections.locations.receivers <- find.projections.receivers(
 
 # for homogeneous study areas
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = test,
+  shape.study.area = study.area,
   receivers = locations.receivers
 )
 
@@ -779,7 +801,7 @@ leaflet(test %>% st_transform(crs = 4326)) %>%
 # ------------------------
 # CONVERT SHAPE TO RASTER
 # ------------------------
-res <- 100 # pixel is a square:  res x res (in meters)
+res <- 50 # pixel is a square:  res x res (in meters)
 
 # First time running the following function can give an error that can be ignored. The code will provide the output anyway. See stackoverflow link for more info about the bug.
 #https://stackoverflow.com/questions/61598340/why-does-rastertopoints-generate-an-error-on-first-call-but-not-second
@@ -823,7 +845,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distancematrix_test2.csv")
+write.csv(cst.dst.frame_corrected, "./results/distancematrix_leie_scheldt_all_fish.csv")
 
 
 # IDEA ...
