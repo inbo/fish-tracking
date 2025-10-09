@@ -9,8 +9,6 @@
 library("sp")
 library("sf")
 library("terra")
-library("rgdal")
-library("rgeos")
 library("raster")
 library("gdistance")
 library("assertthat")
