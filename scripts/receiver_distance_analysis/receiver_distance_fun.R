@@ -327,7 +327,7 @@ shape.to.binarymask <- function(shape.study.area, receivers,  resolution,
     # get extent of the total shape study area
     if (is.null(shape.study.area_merged)) {
         extent_river <- extent(shape.study.area)
-        bbox <- st_bbox(shape.study.area)
+        bbox <- sf::st_bbox(shape.study.area)
     } else {
         extent_river <- extent(shape.study.area_merged)
     }
@@ -481,7 +481,7 @@ get_patches_info <- function(binary.raster){
     # detect clumps (patches) of connected cells
     patch_count <- clump(binary.raster)
     # derive surface (cell count) for each patch
-    patch_cells <- zonal(binary.raster, patch_count, "sum")
+    patch_cells <- terra::zonal(binary.raster, patch_count, "sum")
     # sort to make last row main one and return
     patch_cells[sort.list(patch_cells[, 2]),, drop = FALSE]
 }
@@ -610,10 +610,10 @@ adapt.binarymask <- function(binary.mask, receivers){
 #'
 #' @examples
 get.distance.matrix <- function(binary.mask, receivers){
-    tr <- transition(binary.mask, max, directions = 8)
-    tr_geocorrected <- geoCorrection(tr, type = "c")
+    tr <- gdistance::transition(binary.mask, max, directions = 8)
+    tr_geocorrected <- gdistance::geoCorrection(tr, type = "c")
 
-    cst.dst <- costDistance(tr_geocorrected, as_Spatial(receivers))
+    cst.dst <- gdistance::costDistance(tr_geocorrected, as_Spatial(receivers))
     cst.dst.arr <- as.matrix(cst.dst)
     receiver_names <- receivers$station_name
     rownames(cst.dst.arr) <- receiver_names
