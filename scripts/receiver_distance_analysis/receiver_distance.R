@@ -800,9 +800,9 @@ locations.receivers <- load.receivers(
 
 # for study area combined by two study areas made of polygons and lines 
 projections.locations.receivers <- find.projections.receivers(
-  shape.study.area = test,
+  shape.study.area = frome,
   receivers = locations.receivers,
-  shape.study.area2 = test_marine, 
+  shape.study.area2 = frome_estuary, 
   shape.study.area_merged = study.area
 )
 
@@ -825,10 +825,10 @@ mapView(locations.receivers, col.regions = "red", map.types = "OpenStreetMap",
           label = projections.locations.receivers$station_name)
 
 # for study.area with mixed polygons and lines
-leaflet(test %>% st_transform(crs = 4326)) %>%
+leaflet(frome %>% st_transform(crs = 4326)) %>%
   addTiles(group = "OSM (default)") %>%
   addPolylines() %>%
-  addPolygons(data = test_marine %>% st_transform(4326)) %>%
+  addPolygons(data = frome_estuary %>% st_transform(4326)) %>%
   addCircleMarkers(data = locations.receivers %>% st_transform(4326),
                    radius = 3,
                    color = "red",
@@ -849,7 +849,7 @@ leaflet(test %>% st_transform(crs = 4326)) %>%
 # ------------------------
 # CONVERT SHAPE TO RASTER
 # ------------------------
-res <- 10 # pixel is a square:  res x res (in meters)
+res <- 100 # pixel is a square:  res x res (in meters)
 
 # First time running the following function can give an error that can be ignored. The code will provide the output anyway. See stackoverflow link for more info about the bug.
 #https://stackoverflow.com/questions/61598340/why-does-rastertopoints-generate-an-error-on-first-call-but-not-second
@@ -862,8 +862,8 @@ study.area.binary <- shape.to.binarymask(
 
 # for a study area which is a combination of polygons and lines
 study.area.binary <- shape.to.binarymask(
-  shape.study.area = test,
-  shape.study.area2 = test_marine,
+  shape.study.area = frome,
+  shape.study.area2 = frome_estuary,
   shape.study.area_merged = study.area,
   receivers = projections.locations.receivers,
   resolution = res)
@@ -893,7 +893,7 @@ cst.dst.frame_corrected <- get.distance.matrix(
 # inspect distance output
 cst.dst.frame_corrected
 # save distances
-write.csv(cst.dst.frame_corrected, "./results/distancematrix_leie_scheldt_all_fish2.csv")
+write.csv(cst.dst.frame_corrected, "./results/distancematrix_frome2026.csv")
 
 
 # IDEA ...
