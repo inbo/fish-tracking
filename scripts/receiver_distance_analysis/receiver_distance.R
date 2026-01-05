@@ -546,6 +546,48 @@ plot(study.area$geometry)
 
 
 
+
+# UK River Frome 2026
+frome <- load.shapefile("./data/UK/Frome/frome.shp",
+                        "frome",
+                        coordinate_epsg)
+plot(frome)
+
+
+frome_estuary <- load.shapefile("./data/UK/Frome/frome_estuary.shp",
+                              "frome_estuary",
+                              coordinate_epsg)
+
+frome_estuary <- frome_estuary %>%   # rename id column
+  rename(
+    Id = id)
+plot(frome_estuary$geometry)
+
+# Validate waterbodies
+frome <- validate_waterbody(frome)
+frome_estuary <- validate_waterbody(frome_estuary)
+
+# Combine shapefiles
+frome$origin_shapefile = "frome"
+frome$Id = '2'
+frome_estuary$origin_shapefile = "frome_estuary_sf"
+
+frome_estuary <- 
+  frome_estuary %>%
+  dplyr::select(Id, origin_shapefile, geometry)
+frome <- 
+  frome %>% 
+  dplyr::select(Id, origin_shapefile, geometry)
+
+study.area <- rbind(frome, frome_estuary)
+
+plot(study.area)
+
+
+
+
+
+
 # -----------------------
 # SET STUDY AREA
 # -----------------------
@@ -737,6 +779,12 @@ locations.receivers <- load.receivers(
 # Scheldt River basin network
 locations.receivers <- load.receivers(
   "./data/receivernetworks/receivernetwork_2024_dvw_Scheldt.csv",
+  projection = coordinate_epsg
+)
+
+# River Frome 2026 network
+locations.receivers <- load.receivers(
+  "./data/receivernetworks/receivernetwork_2026_frome.csv",
   projection = coordinate_epsg
 )
 
